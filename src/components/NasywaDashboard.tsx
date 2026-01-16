@@ -7,6 +7,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import confetti from "canvas-confetti";
 import { getPusherClient } from "@/lib/pusher";
+import InteractiveMap from "@/components/InteractiveMap";
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -1486,11 +1487,12 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                     />
                 )}
                 {showMap && (
-                    <MapOverlay
+                    <InteractiveMap
                         distance={distance}
                         onClose={() => setShowMap(false)}
                         myLocation={profiles.nasywa}
                         partnerLocation={profiles.sajid}
+                        myRole="nasywa"
                     />
                 )}
             </AnimatePresence>

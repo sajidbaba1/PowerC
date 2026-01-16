@@ -7,6 +7,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import confetti from "canvas-confetti";
 import { getPusherClient } from "@/lib/pusher";
+import InteractiveMap from "@/components/InteractiveMap";
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -1580,11 +1581,12 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                 }
                 {
                     showMap && (
-                        <MapOverlay
+                        <InteractiveMap
                             distance={distance}
                             onClose={() => setShowMap(false)}
                             myLocation={profiles.sajid}
                             partnerLocation={profiles.nasywa}
+                            myRole="sajid"
                         />
                     )
                 }
