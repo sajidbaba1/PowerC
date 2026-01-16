@@ -45,6 +45,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
     const [isOtherTyping, setIsOtherTyping] = useState(false);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const isTypingRef = useRef(false);
+    const [showRocket, setShowRocket] = useState(false);
 
 
     useEffect(() => {
@@ -327,6 +328,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
 
     const triggerFirework = (text: string) => {
         setFireworkText(text);
+        setShowRocket(true);
         const duration = 5 * 1000;
         const animationEnd = Date.now() + duration;
         const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
@@ -345,13 +347,16 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
         }, 250);
 
-        setTimeout(() => setFireworkText(null), 6000);
+        setTimeout(() => {
+            setFireworkText(null);
+            setShowRocket(false);
+        }, duration);
     };
 
     const sendHeartFirework = async () => {
         const text = "I love you Nasywa ❤️";
         const message = {
-            id: `firework-${Date.now()}`,
+            id: `firework - ${Date.now()} `,
             text: text,
             sender: "sajid",
             type: "heart_firework",
@@ -379,7 +384,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
         if (!text.trim()) return;
 
         const userMessage = {
-            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            id: `${Date.now()} -${Math.random().toString(36).substr(2, 9)} `,
             text: text,
             sender: "sajid",
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -533,7 +538,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                         : "glass border border-white/5 hover:border-white/20"
                                 )}
                             >
-                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${partner.color} flex items-center justify-center relative overflow-hidden`}>
+                                <div className={`w - 10 h - 10 rounded - xl bg - gradient - to - br ${partner.color} flex items - center justify - center relative overflow - hidden`}>
                                     {profiles[partner.id]?.avatarUrl ? (
                                         <img src={profiles[partner.id].avatarUrl} alt={partner.name} className="w-full h-full object-cover" />
                                     ) : (
@@ -564,7 +569,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         >
                             <Menu className="w-5 h-5" />
                         </button>
-                        <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-gradient-to-br ${chatPartners.find(p => p.id === activeChat)?.color} flex items-center justify-center shrink-0 overflow-hidden`}>
+                        <div className={`w - 8 h - 8 lg: w - 10 lg: h - 10 rounded - xl bg - gradient - to - br ${chatPartners.find(p => p.id === activeChat)?.color} flex items - center justify - center shrink - 0 overflow - hidden`}>
                             {profiles[activeChat]?.avatarUrl ? (
                                 <img src={profiles[activeChat].avatarUrl} alt={activeChat} className="w-full h-full object-cover" />
                             ) : (
@@ -724,31 +729,42 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                 accept="image/*"
                                 onChange={handleImageUpload}
                             />
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
-                            >
-                                <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                            </button>
-                            <button
-                                onClick={() => setShowStickers(!showStickers)}
-                                className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
-                            >
-                                <Smile className="w-5 h-5 text-muted-foreground" />
-                            </button>
-                            <button
-                                onClick={() => setIsDrawing(true)}
-                                className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
-                            >
-                                <Palette className="w-5 h-5 text-muted-foreground" />
-                            </button>
-                            <button
-                                onClick={sendHeartFirework}
-                                className="p-2 hover:bg-red-500/10 rounded-xl transition-colors shrink-0 group"
-                                title="Send Love Firework"
-                            >
-                                <Heart className="w-5 h-5 text-red-500 group-hover:scale-125 transition-transform fill-current" />
-                            </button>
+                            <AnimatePresence initial={false}>
+                                {!inputValue && (
+                                    <motion.div
+                                        initial={{ width: 0, opacity: 0 }}
+                                        animate={{ width: "auto", opacity: 1 }}
+                                        exit={{ width: 0, opacity: 0 }}
+                                        className="flex items-center overflow-hidden shrink-0"
+                                    >
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
+                                        >
+                                            <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                                        </button>
+                                        <button
+                                            onClick={() => setShowStickers(!showStickers)}
+                                            className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
+                                        >
+                                            <Smile className="w-5 h-5 text-muted-foreground" />
+                                        </button>
+                                        <button
+                                            onClick={() => setIsDrawing(true)}
+                                            className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
+                                        >
+                                            <Palette className="w-5 h-5 text-muted-foreground" />
+                                        </button>
+                                        <button
+                                            onClick={sendHeartFirework}
+                                            className="p-2 hover:bg-red-500/10 rounded-xl transition-colors shrink-0 group"
+                                            title="Send Love Firework"
+                                        >
+                                            <Heart className="w-5 h-5 text-red-500 group-hover:scale-125 transition-transform fill-current" />
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                             <textarea
                                 ref={textareaRef}
                                 value={inputValue}
@@ -764,7 +780,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                         handleSend();
                                     }
                                 }}
-                                placeholder={`Message ${activeChat}... (Shift+Enter for new line)`}
+                                placeholder={`Message ${activeChat}... (Shift + Enter for new line)`}
                                 className="flex-1 bg-transparent border-none outline-none text-sm px-2 lg:px-4 min-w-0 resize-none overflow-y-auto leading-relaxed"
                                 rows={1}
                                 style={{ minHeight: '40px', maxHeight: '150px' }}
@@ -849,7 +865,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                         if (!userEmail || learnedWords.length === 0) return;
                                         try {
                                             const content = learnedWords.map(w => `
-                                                <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1)">
+            < div style = "margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1)" >
                                                     <strong style="font-size: 16px;">${w.word}</strong><br>
                                                     <span style="color: #818cf8;">${w.indonesian}</span><br>
                                                     <em style="font-size: 12px; color: #94a3b8;">${w.meaning}</em>
@@ -875,10 +891,11 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                 >
                                     Email My Word List
                                 </button>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
+                            </motion.div >
+                        )
+                        }
+                    </AnimatePresence >
+                </div >
 
                 <div className="flex-1 overflow-y-auto p-3 lg:p-4 space-y-2">
                     {learnedWords.length === 0 ? (
@@ -900,120 +917,137 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                     )}
                 </div>
 
-                {learnedWords.length > 0 && (
-                    <div className="p-3 lg:p-4 border-t border-border shrink-0">
-                        <button
-                            onClick={() => setLearnedWords([])}
-                            className="w-full px-4 py-2 bg-destructive/10 text-destructive rounded-xl text-sm font-medium hover:bg-destructive/20 transition-all"
-                        >
-                            Clear All Words
-                        </button>
-                    </div>
-                )}
-            </aside>
+                {
+                    learnedWords.length > 0 && (
+                        <div className="p-3 lg:p-4 border-t border-border shrink-0">
+                            <button
+                                onClick={() => setLearnedWords([])}
+                                className="w-full px-4 py-2 bg-destructive/10 text-destructive rounded-xl text-sm font-medium hover:bg-destructive/20 transition-all"
+                            >
+                                Clear All Words
+                            </button>
+                        </div>
+                    )
+                }
+            </aside >
             {/* Settings Modal */}
             <AnimatePresence>
-                {showSettings && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowSettings(false)}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                        />
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="relative w-full max-w-md glass border border-white/20 rounded-3xl p-8 shadow-2xl overflow-hidden"
-                        >
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
-                            <div className="flex justify-between items-center mb-8">
-                                <h2 className="text-2xl font-bold font-display">Profile Settings</h2>
-                                <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                                    <X className="w-6 h-6" />
-                                </button>
-                            </div>
-
-                            <div className="flex flex-col items-center gap-6">
-                                <div className="relative group">
-                                    <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center overflow-hidden border-4 border-white/10 shadow-xl transition-transform group-hover:scale-105">
-                                        {profiles.sajid?.avatarUrl ? (
-                                            <img src={profiles.sajid.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <User className="w-12 h-12 text-white" />
-                                        )}
-                                    </div>
-                                    <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-all cursor-pointer rounded-3xl">
-                                        <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
-                                        <div className="flex flex-col items-center gap-1">
-                                            <Upload className="w-8 h-8 text-white" />
-                                            <span className="text-[10px] text-white font-bold uppercase">Update</span>
-                                        </div>
-                                    </label>
-                                </div>
-                                <p className="text-xs text-muted-foreground font-medium text-center">Your profile picture is stored securely in Cloudinary.</p>
-
-                                <div className="w-full space-y-5">
-                                    <div>
-                                        <label className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-2 block">Display Name</label>
-                                        <input
-                                            type="text"
-                                            value={profiles.sajid?.name || ""}
-                                            onChange={(e) => {
-                                                const newName = e.target.value;
-                                                setProfiles(prev => ({
-                                                    ...prev,
-                                                    sajid: { ...prev.sajid, name: newName }
-                                                }));
-                                            }}
-                                            onBlur={async () => {
-                                                if (!profiles.sajid) return;
-                                                await fetch("/api/profiles", {
-                                                    method: "POST",
-                                                    headers: { "Content-Type": "application/json" },
-                                                    body: JSON.stringify({
-                                                        role: "sajid",
-                                                        name: profiles.sajid.name,
-                                                        avatarUrl: profiles.sajid.avatarUrl
-                                                    })
-                                                });
-                                            }}
-                                            placeholder="Your name"
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/10 transition-all font-medium"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button
+                {
+                    showSettings && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
                                 onClick={() => setShowSettings(false)}
-                                className="w-full mt-10 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                            />
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                className="relative w-full max-w-md glass border border-white/20 rounded-3xl p-8 shadow-2xl overflow-hidden"
                             >
-                                Save Changes
-                            </button>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+                                <div className="flex justify-between items-center mb-8">
+                                    <h2 className="text-2xl font-bold font-display">Profile Settings</h2>
+                                    <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </div>
 
-            {/* Firework Text Overlay */}
+                                <div className="flex flex-col items-center gap-6">
+                                    <div className="relative group">
+                                        <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center overflow-hidden border-4 border-white/10 shadow-xl transition-transform group-hover:scale-105">
+                                            {profiles.sajid?.avatarUrl ? (
+                                                <img src={profiles.sajid.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <User className="w-12 h-12 text-white" />
+                                            )}
+                                        </div>
+                                        <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-all cursor-pointer rounded-3xl">
+                                            <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
+                                            <div className="flex flex-col items-center gap-1">
+                                                <Upload className="w-8 h-8 text-white" />
+                                                <span className="text-[10px] text-white font-bold uppercase">Update</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground font-medium text-center">Your profile picture is stored securely in Cloudinary.</p>
+
+                                    <div className="w-full space-y-5">
+                                        <div>
+                                            <label className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-2 block">Display Name</label>
+                                            <input
+                                                type="text"
+                                                value={profiles.sajid?.name || ""}
+                                                onChange={(e) => {
+                                                    const newName = e.target.value;
+                                                    setProfiles(prev => ({
+                                                        ...prev,
+                                                        sajid: { ...prev.sajid, name: newName }
+                                                    }));
+                                                }}
+                                                onBlur={async () => {
+                                                    if (!profiles.sajid) return;
+                                                    await fetch("/api/profiles", {
+                                                        method: "POST",
+                                                        headers: { "Content-Type": "application/json" },
+                                                        body: JSON.stringify({
+                                                            role: "sajid",
+                                                            name: profiles.sajid.name,
+                                                            avatarUrl: profiles.sajid.avatarUrl
+                                                        })
+                                                    });
+                                                }}
+                                                placeholder="Your name"
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/10 transition-all font-medium"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => setShowSettings(false)}
+                                    className="w-full mt-10 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                >
+                                    Save Changes
+                                </button>
+                            </motion.div>
+                        </div>
+                    )
+                }
+            </AnimatePresence >
+
+            {/* Firework Text & Rocket Overlay */}
             <AnimatePresence>
-                {fireworkText && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5, y: 100 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 1.5, y: -100 }}
-                        className="fixed inset-0 z-[10001] flex items-center justify-center pointer-events-none px-4"
-                    >
-                        <h1 className="text-4xl lg:text-7xl font-black text-white text-center drop-shadow-[0_0_30px_rgba(244,63,94,1)] drop-shadow-[0_0_60px_rgba(244,63,94,0.5)] bg-clip-text">
-                            {fireworkText}
-                        </h1>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+                {
+                    fireworkText && (
+                        <div className="fixed inset-0 z-[10001] flex flex-col items-center justify-center pointer-events-none px-4 overflow-hidden">
+                            {showRocket && (
+                                <motion.div
+                                    initial={{ y: 800, x: -200, rotate: -45, opacity: 0 }}
+                                    animate={{ y: -800, x: 200, rotate: -45, opacity: 1 }}
+                                    transition={{ duration: 3, ease: "easeInOut" }}
+                                    className="mb-12"
+                                >
+                                    <Rocket className="w-24 h-24 lg:w-40 lg:h-40 text-red-500 fill-current drop-shadow-[0_0_20px_rgba(244,63,94,1)] drop-shadow-[0_0_50px_rgba(244,63,94,0.5)]" />
+                                </motion.div>
+                            )}
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.5, y: 100 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 1.5, y: -100 }}
+                            >
+                                <h1 className="text-4xl lg:text-7xl font-black text-white text-center drop-shadow-[0_0_30px_rgba(244,63,94,1)] drop-shadow-[0_0_60px_rgba(244,63,94,0.5)] bg-clip-text">
+                                    {fireworkText}
+                                </h1>
+                            </motion.div>
+                        </div>
+                    )
+                }
+            </AnimatePresence >
+        </div >
     );
 }
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload, Check, CheckCheck } from "lucide-react";
+import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload, Rocket, Check, CheckCheck } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import confetti from "canvas-confetti";
@@ -43,6 +43,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
     const [isOtherTyping, setIsOtherTyping] = useState(false);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const isTypingRef = useRef(false);
+    const [showRocket, setShowRocket] = useState(false);
 
 
     useEffect(() => {
@@ -318,6 +319,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
 
     const triggerFirework = (text: string) => {
         setFireworkText(text);
+        setShowRocket(true);
         const duration = 5 * 1000;
         const animationEnd = Date.now() + duration;
         const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
@@ -336,7 +338,10 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
             confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
         }, 250);
 
-        setTimeout(() => setFireworkText(null), 6000);
+        setTimeout(() => {
+            setFireworkText(null);
+            setShowRocket(false);
+        }, duration);
     };
 
     const sendHeartFirework = async () => {
@@ -714,31 +719,42 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                 accept="image/*"
                                 onChange={handleImageUpload}
                             />
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
-                            >
-                                <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                            </button>
-                            <button
-                                onClick={() => setShowStickers(!showStickers)}
-                                className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
-                            >
-                                <Smile className="w-5 h-5 text-muted-foreground" />
-                            </button>
-                            <button
-                                onClick={() => setIsDrawing(true)}
-                                className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
-                            >
-                                <Palette className="w-5 h-5 text-muted-foreground" />
-                            </button>
-                            <button
-                                onClick={sendHeartFirework}
-                                className="p-2 hover:bg-red-500/10 rounded-xl transition-colors shrink-0 group"
-                                title="Send Love Firework"
-                            >
-                                <Heart className="w-5 h-5 text-red-500 group-hover:scale-125 transition-transform fill-current" />
-                            </button>
+                            <AnimatePresence initial={false}>
+                                {!inputValue && (
+                                    <motion.div
+                                        initial={{ width: 0, opacity: 0 }}
+                                        animate={{ width: "auto", opacity: 1 }}
+                                        exit={{ width: 0, opacity: 0 }}
+                                        className="flex items-center overflow-hidden shrink-0"
+                                    >
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
+                                        >
+                                            <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                                        </button>
+                                        <button
+                                            onClick={() => setShowStickers(!showStickers)}
+                                            className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
+                                        >
+                                            <Smile className="w-5 h-5 text-muted-foreground" />
+                                        </button>
+                                        <button
+                                            onClick={() => setIsDrawing(true)}
+                                            className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
+                                        >
+                                            <Palette className="w-5 h-5 text-muted-foreground" />
+                                        </button>
+                                        <button
+                                            onClick={sendHeartFirework}
+                                            className="p-2 hover:bg-red-500/10 rounded-xl transition-colors shrink-0 group"
+                                            title="Send Love Firework"
+                                        >
+                                            <Heart className="w-5 h-5 text-red-500 group-hover:scale-125 transition-transform fill-current" />
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                             <textarea
                                 ref={textareaRef}
                                 value={inputValue}
@@ -988,19 +1004,30 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                 )}
             </AnimatePresence>
 
-            {/* Firework Text Overlay */}
+            {/* Firework Text & Rocket Overlay */}
             <AnimatePresence>
                 {fireworkText && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5, y: 100 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 1.5, y: -100 }}
-                        className="fixed inset-0 z-[10001] flex items-center justify-center pointer-events-none px-4"
-                    >
-                        <h1 className="text-4xl lg:text-7xl font-black text-white text-center drop-shadow-[0_0_30px_rgba(244,63,94,1)] drop-shadow-[0_0_60px_rgba(244,63,94,0.5)] bg-clip-text">
-                            {fireworkText}
-                        </h1>
-                    </motion.div>
+                    <div className="fixed inset-0 z-[10001] flex flex-col items-center justify-center pointer-events-none px-4 overflow-hidden">
+                        {showRocket && (
+                            <motion.div
+                                initial={{ y: 800, x: -200, rotate: -45, opacity: 0 }}
+                                animate={{ y: -800, x: 200, rotate: -45, opacity: 1 }}
+                                transition={{ duration: 3, ease: "easeInOut" }}
+                                className="mb-12"
+                            >
+                                <Rocket className="w-24 h-24 lg:w-40 lg:h-40 text-red-500 fill-current drop-shadow-[0_0_20px_rgba(244,63,94,1)] drop-shadow-[0_0_50px_rgba(244,63,94,0.5)]" />
+                            </motion.div>
+                        )}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.5, y: 100 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 1.5, y: -100 }}
+                        >
+                            <h1 className="text-4xl lg:text-7xl font-black text-white text-center drop-shadow-[0_0_30px_rgba(244,63,94,1)] drop-shadow-[0_0_60px_rgba(244,63,94,0.5)] bg-clip-text">
+                                {fireworkText}
+                            </h1>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
         </div>
