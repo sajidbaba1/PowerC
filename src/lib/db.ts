@@ -1,4 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
@@ -25,7 +27,12 @@ export const getPrisma = (): PrismaClient => {
         return createProxy("prisma") as unknown as PrismaClient;
     }
 
+    // Create a connection pool
+    const pool = new Pool({ connectionString: url });
+    const adapter = new PrismaPg(pool);
+
     const client = new PrismaClient({
+        adapter,
         log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
     });
 
