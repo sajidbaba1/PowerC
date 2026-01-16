@@ -11,6 +11,7 @@ import InteractiveMap from "@/components/InteractiveMap";
 import StreakOverlay from "@/components/StreakOverlay";
 import MusicPlayer, { EffectType } from './MusicPlayer';
 import BackgroundEffects from './BackgroundEffects';
+import SlideshowBackground from './SlideshowBackground';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -28,6 +29,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
         nasywa: [],
         admin: []
     });
+    const [isMusicPlaying, setIsMusicPlaying] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [selectedMessage, setSelectedMessage] = useState<any>(null);
     const [learnedWords, setLearnedWords] = useState<any[]>([]);
@@ -878,12 +880,14 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
 
     return (
         <div className="flex h-[100dvh] bg-background overflow-hidden relative">
+            <SlideshowBackground isPlaying={isMusicPlaying} />
             <BackgroundEffects effect={backgroundEffect} />
             <MusicPlayer
                 activeChat={activeChat}
                 pusherClient={pusher}
                 currentEffect={backgroundEffect}
                 onEffectChange={setBackgroundEffect}
+                onPlayingChange={setIsMusicPlaying}
             />
             {/* Mobile Overlay */}
             {(showSidebar || showWordBucket) && (

@@ -11,6 +11,7 @@ import InteractiveMap from "@/components/InteractiveMap";
 import StreakOverlay from "@/components/StreakOverlay";
 import MusicPlayer, { EffectType } from './MusicPlayer';
 import BackgroundEffects from './BackgroundEffects';
+import SlideshowBackground from './SlideshowBackground';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -25,6 +26,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
     const pusher = getPusherClient();
     const [activeChat, setActiveChat] = useState<"sajid" | "admin">("sajid");
     const [backgroundEffect, setBackgroundEffect] = useState<EffectType>("none");
+    const [isMusicPlaying, setIsMusicPlaying] = useState(false);
     const [messages, setMessages] = useState<Record<string, any[]>>({
         sajid: [],
         admin: []
@@ -786,12 +788,14 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
 
     return (
         <div className="flex h-[100dvh] bg-background overflow-hidden relative">
+            <SlideshowBackground isPlaying={isMusicPlaying} />
             <BackgroundEffects effect={backgroundEffect} />
             <MusicPlayer
                 activeChat={activeChat}
                 pusherClient={pusher}
                 currentEffect={backgroundEffect}
                 onEffectChange={setBackgroundEffect}
+                onPlayingChange={setIsMusicPlaying}
             />
             {/* Mobile Overlay */}
             {(showSidebar || showWordBucket) && (

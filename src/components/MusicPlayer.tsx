@@ -21,9 +21,10 @@ interface MusicPlayerProps {
     pusherClient: any;
     currentEffect: EffectType;
     onEffectChange: (effect: EffectType) => void;
+    onPlayingChange?: (isPlaying: boolean) => void;
 }
 
-export default function MusicPlayer({ activeChat, pusherClient, currentEffect, onEffectChange }: MusicPlayerProps) {
+export default function MusicPlayer({ activeChat, pusherClient, currentEffect, onEffectChange, onPlayingChange }: MusicPlayerProps) {
     const [playlist, setPlaylist] = useState<Song[]>([
         { id: "1", url: "https://youtu.be/xq01EtpC1jc", title: "Night Changes", effect: "snow" },
         { id: "2", url: "https://youtu.be/_uxvtB7iLlA", title: "Perfect", effect: "hearts" },
@@ -34,12 +35,7 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
-    const [newUrl, setNewUrl] = useState("");
-    const [newTitle, setNewTitle] = useState("");
-    const [newEffect, setNewEffect] = useState<EffectType>("none");
     const [volume, setVolume] = useState(0.5);
-    const [searchResults, setSearchResults] = useState<any[]>([]);
-    const [isSearching, setIsSearching] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [hasInteracted, setHasInteracted] = useState(false);
 
@@ -55,6 +51,11 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
             window.removeEventListener('keydown', handleInteraction);
         };
     }, []);
+
+    // Notify parent about playing state
+    useEffect(() => {
+        if (onPlayingChange) onPlayingChange(isPlaying);
+    }, [isPlaying, onPlayingChange]);
 
     // Sync state via Pusher & Fetch Data
     useEffect(() => {
@@ -131,68 +132,6 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
 
     const handleDelete = (id: string) => {
         const newPlaylist = playlist.filter(s => s.id !== id);
-        broadcastState({ playlist: newPlaylist });
-    };
-
-    const handleSearchOrAdd = async () => {
-        if (!newUrl) return;
-        setIsSearching(true);
-        setSearchResults([]);
-
-        // URL Detection
-        if (newUrl.includes("youtube.com") || newUrl.includes("youtu.be")) {
-            let title = `Song ${playlist.length + 1}`;
-
-            // Try fetching title
-            try {
-                let videoId = "";
-                if (newUrl.includes("v=")) videoId = newUrl.split("v=")[1].split("&")[0].split("?")[0];
-                else if (newUrl.includes("youtu.be/")) videoId = newUrl.split("youtu.be/")[1].split("?")[0];
-
-                if (videoId) {
-                    const res = await fetch(`/api/youtube?videoId=${videoId}`);
-                    const data = await res.json();
-                    if (data.title) title = data.title;
-                }
-            } catch (e) { console.error(e); }
-
-            const song: Song = {
-                id: Date.now().toString(),
-                url: newUrl,
-                title,
-                effect: newEffect
-            };
-
-            const newPlaylist = [...playlist, song];
-            setNewUrl("");
-            broadcastState({ playlist: newPlaylist });
-            setIsSearching(false);
-            return;
-        }
-
-        // Search
-        try {
-            const res = await fetch(`/api/youtube?query=${encodeURIComponent(newUrl)}`);
-            const data = await res.json();
-            if (data.items) {
-                setSearchResults(data.items);
-            }
-        } catch (e) {
-            console.error("Search failed", e);
-        }
-        setIsSearching(false);
-    };
-
-    const addSearchResult = (video: any) => {
-        const song: Song = {
-            id: Date.now().toString(),
-            url: video.url,
-            title: video.title,
-            effect: newEffect
-        };
-        const newPlaylist = [...playlist, song];
-        setNewUrl("");
-        setSearchResults([]);
         broadcastState({ playlist: newPlaylist });
     };
 
@@ -291,74 +230,23 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                                 <div className="text-white/50 text-center py-4 text-sm">No songs in playlist</div>
                             )}
 
-                            {/* Search / Add Section */}
-                            <div className="mt-4 pt-4 border-t border-white/10 space-y-2 relative">
-                                <div className="flex gap-2">
-                                    <input
-                                        placeholder="Link or Search Song..."
-                                        value={newUrl}
-                                        onChange={(e) => setNewUrl(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleSearchOrAdd()}
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-pink-500"
-                                    />
-                                </div>
-
-                                {/* Search Results Overlay */}
-                                {searchResults.length > 0 && (
-                                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-zinc-900 border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 max-h-[250px] overflow-y-auto">
-                                        <div className="flex items-center justify-between p-2 bg-black/50 border-b border-white/5">
-                                            <span className="text-[10px] uppercase font-bold text-muted-foreground">Results</span>
-                                            <button onClick={() => setSearchResults([])}><X className="w-3 h-3 text-white/50 hover:text-white" /></button>
-                                        </div>
-                                        {searchResults.map((video) => (
-                                            <div
-                                                key={video.id}
-                                                onClick={() => addSearchResult(video)}
-                                                className="flex items-center gap-2 p-2 hover:bg-white/10 cursor-pointer border-b border-white/5 last:border-0"
-                                            >
-                                                <img src={video.thumbnails?.default?.url} className="w-10 h-8 object-cover rounded" />
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-xs text-white font-medium truncate">{video.title}</div>
-                                                </div>
-                                                <PlusCircle className="w-4 h-4 text-pink-500" />
+                            {/* Playlist Mini View - Simplified (No Search) */}
+                            <div className="mt-4 pt-4 border-t border-white/10">
+                                <div className="text-xs font-bold text-white mb-2 ml-1">Up Next</div>
+                                <div className="max-h-[150px] overflow-y-auto space-y-1">
+                                    {playlist.map((s, i) => (
+                                        <div key={s.id} className={`flex items-center justify-between text-xs p-1.5 rounded ${i === currentIndex ? 'bg-pink-500/20 text-pink-300' : 'text-white/70 hover:bg-white/5'}`}>
+                                            <div onClick={() => { setCurrentIndex(i); broadcastState({ index: i }); }} className="cursor-pointer truncate max-w-[200px]">
+                                                {s.title}
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                <div className="flex items-center gap-2">
-                                    <select
-                                        value={newEffect}
-                                        onChange={(e) => setNewEffect(e.target.value as EffectType)}
-                                        className="bg-black/50 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none"
-                                    >
-                                        <option value="none">No Vibe</option>
-                                        <option value="snow">❄️ Snow (Cozy)</option>
-                                        <option value="hearts">❤️ Hearts (Romantic)</option>
-                                        <option value="rain">🌧️ Rain (Calm)</option>
-                                    </select>
-                                    <button
-                                        onClick={handleSearchOrAdd}
-                                        disabled={isSearching}
-                                        className="flex-1 bg-pink-500 hover:bg-pink-600 text-white rounded-lg py-1.5 text-xs font-bold disabled:opacity-50"
-                                    >
-                                        {isSearching ? '...' : (newUrl.includes('http') ? 'Add' : 'Search')}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Playlist Mini View */}
-                            <div className="mt-4 max-h-[100px] overflow-y-auto space-y-1">
-                                {playlist.map((s, i) => (
-                                    <div key={s.id} className={`flex items-center justify-between text-xs p-1.5 rounded ${i === currentIndex ? 'bg-pink-500/20 text-pink-300' : 'text-white/70 hover:bg-white/5'}`}>
-                                        <div onClick={() => { setCurrentIndex(i); broadcastState({ index: i }); }} className="cursor-pointer truncate max-w-[200px]">
-                                            {s.title}
+                                            {(userEmail === 'admin' || true) && (
+                                                <button onClick={() => handleDelete(s.id)}>
+                                                    <Trash2 className="w-3 h-3 hover:text-red-400" />
+                                                </button>
+                                            )}
                                         </div>
-                                        <button onClick={() => handleDelete(s.id)}>
-                                            <Trash2 className="w-3 h-3 hover:text-red-400" />
-                                        </button>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
                         </motion.div>
                     )}
