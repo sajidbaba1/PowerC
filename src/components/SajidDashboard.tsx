@@ -882,14 +882,6 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
         <div className="flex h-[100dvh] bg-background overflow-hidden relative">
             <SlideshowBackground isPlaying={isMusicPlaying} />
             <BackgroundEffects effect={backgroundEffect} />
-            <MusicPlayer
-                activeChat={activeChat}
-                pusherClient={pusher}
-                currentEffect={backgroundEffect}
-                onEffectChange={setBackgroundEffect}
-                onPlayingChange={setIsMusicPlaying}
-                userRole="sajid"
-            />
             {/* Mobile Overlay */}
             {(showSidebar || showWordBucket) && (
                 <div
@@ -1064,6 +1056,19 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                             </div>
                         </div>
                     </div>
+
+                    <div className="flex-1 flex justify-center px-4 overflow-hidden">
+                        <MusicPlayer
+                            activeChat={activeChat}
+                            pusherClient={pusher}
+                            currentEffect={backgroundEffect}
+                            onEffectChange={setBackgroundEffect}
+                            onPlayingChange={setIsMusicPlaying}
+                            userRole="sajid"
+                            inline={true}
+                        />
+                    </div>
+
                     <div className="flex items-center gap-2">
                         {/* Streak Button */}
                         <button

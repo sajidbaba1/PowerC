@@ -790,14 +790,6 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
         <div className="flex h-[100dvh] bg-background overflow-hidden relative">
             <SlideshowBackground isPlaying={isMusicPlaying} />
             <BackgroundEffects effect={backgroundEffect} />
-            <MusicPlayer
-                activeChat={activeChat}
-                pusherClient={pusher}
-                currentEffect={backgroundEffect}
-                onEffectChange={setBackgroundEffect}
-                onPlayingChange={setIsMusicPlaying}
-                userRole="nasywa"
-            />
             {/* Mobile Overlay */}
             {(showSidebar || showWordBucket) && (
                 <div
@@ -962,6 +954,19 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                             <p className="text-[10px] lg:text-xs text-green-500">Online</p>
                         </div>
                     </div>
+
+                    <div className="flex-1 flex justify-center px-4 overflow-hidden">
+                        <MusicPlayer
+                            activeChat={activeChat}
+                            pusherClient={pusher}
+                            currentEffect={backgroundEffect}
+                            onEffectChange={setBackgroundEffect}
+                            onPlayingChange={setIsMusicPlaying}
+                            userRole="nasywa"
+                            inline={true}
+                        />
+                    </div>
+
                     <div className="flex items-center gap-2">
                         {/* Streak Button */}
                         <button

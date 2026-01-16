@@ -2,6 +2,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Play, Pause, Volume2, VolumeX, SkipForward } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
+}
 
 // Dynamic import for ReactPlayer to avoid SSR issues
 const ReactPlayer = dynamic(() => import('react-player'), { ssr: false }) as any;
@@ -15,9 +21,20 @@ interface MusicPlayerProps {
     onEffectChange: (effect: EffectType) => void;
     onPlayingChange?: (isPlaying: boolean) => void;
     userRole?: string;
+    inline?: boolean;
+    className?: string;
 }
 
-export default function MusicPlayer({ activeChat, pusherClient, currentEffect, onEffectChange, onPlayingChange, userRole }: MusicPlayerProps) {
+export default function MusicPlayer({
+    activeChat,
+    pusherClient,
+    currentEffect,
+    onEffectChange,
+    onPlayingChange,
+    userRole,
+    inline,
+    className
+}: MusicPlayerProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [hasInteracted, setHasInteracted] = useState(false);
@@ -170,27 +187,30 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                 style={{ display: 'none' }}
             />
 
-            <div className="fixed bottom-24 left-4 z-[9999]">
+            <div className={cn(
+                !inline && "fixed bottom-24 left-4 z-[9999]",
+                className
+            )}>
                 {isPlaying && (
-                    <div className="flex items-center gap-2 bg-zinc-900/90 border border-pink-500/30 backdrop-blur-md p-2 rounded-full shadow-2xl hover:scale-105 transition-all">
-                        <div className="flex items-center gap-2 px-2 max-w-[140px]">
-                            <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse shrink-0" />
-                            <div className="truncate text-[10px] text-white font-bold uppercase tracking-wider">
+                    <div className="flex items-center gap-2 bg-zinc-900/40 border border-white/10 backdrop-blur-md p-1.5 rounded-2xl shadow-xl hover:scale-[1.02] transition-all">
+                        <div className="flex items-center gap-2 px-2 max-w-[120px]">
+                            <div className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse shrink-0" />
+                            <div className="truncate text-[9px] text-white/90 font-bold uppercase tracking-wider">
                                 {LOCAL_SONGS[currentIndex]?.title}
                             </div>
                         </div>
-                        <button onClick={() => setIsMuted(!isMuted)} className="p-1.5 text-white/80 hover:text-white transition-colors">
-                            {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                        <button onClick={() => setIsMuted(!isMuted)} className="p-1 text-white/60 hover:text-white transition-colors">
+                            {isMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
                         </button>
                         {userRole === 'admin' && (
-                            <button onClick={handleNext} className="p-1.5 text-white/80 hover:text-white transition-colors border-l border-white/10 ml-1">
-                                <SkipForward className="w-3.5 h-3.5 fill-current" />
+                            <button onClick={handleNext} className="p-1 text-white/60 hover:text-white transition-colors border-l border-white/10 ml-0.5">
+                                <SkipForward className="w-3 h-3 fill-current" />
                             </button>
                         )}
                     </div>
                 )}
 
-                {!isPlaying && userRole === 'admin' && (
+                {!isPlaying && userRole === 'admin' && !inline && (
                     <button
                         onClick={handleStart}
                         className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2 transition-all text-sm"

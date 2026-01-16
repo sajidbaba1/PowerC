@@ -217,14 +217,7 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
         <div className="flex h-screen bg-background overflow-hidden relative">
             <BackgroundEffects effect={backgroundEffect} />
 
-            <MusicPlayer
-                activeChat="sajid-nasywa"
-                pusherClient={pusher}
-                currentEffect={backgroundEffect}
-                onEffectChange={setBackgroundEffect}
-                onPlayingChange={(isPlaying) => setVibeSettings(prev => ({ ...prev, isPlaying }))}
-                userRole="admin"
-            />
+
 
             {/* Mobile Overlay */}
             {showSidebar && (
@@ -360,6 +353,18 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                             <Zap className="w-5 h-5 text-pink-500" />
                             <span className="font-semibold text-sm">Vibe Controller</span>
                         </button>
+                    </div>
+
+                    <div className="mt-auto p-4 border-t border-white/5">
+                        <MusicPlayer
+                            activeChat="sajid-nasywa"
+                            pusherClient={pusher}
+                            currentEffect={backgroundEffect}
+                            onEffectChange={setBackgroundEffect}
+                            onPlayingChange={(isPlaying) => setVibeSettings(prev => ({ ...prev, isPlaying }))}
+                            userRole="admin"
+                            inline={true}
+                        />
                     </div>
                 </div>
             </aside>
