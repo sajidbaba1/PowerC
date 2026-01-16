@@ -8,6 +8,7 @@ import { twMerge } from "tailwind-merge";
 import confetti from "canvas-confetti";
 import { getPusherClient } from "@/lib/pusher";
 import InteractiveMap from "@/components/InteractiveMap";
+import StreakOverlay from "@/components/StreakOverlay";
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -53,6 +54,8 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
     const [showMap, setShowMap] = useState(false);
     const [distance, setDistance] = useState<number | null>(null);
     const [showGratitudePrompt, setShowGratitudePrompt] = useState(false);
+    const [showStreak, setShowStreak] = useState(false);
+    const [currentStreak, setCurrentStreak] = useState(0);
 
     const [profiles, setProfiles] = useState<Record<string, any>>({});
     const [fireworkText, setFireworkText] = useState<string | null>(null);
@@ -150,6 +153,18 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
         fetchJarNotes();
         recordLogin();
         updateLocation();
+
+        // Fetch streak data
+        const fetchStreak = async () => {
+            try {
+                const res = await fetch("/api/streak");
+                const data = await res.json();
+                setCurrentStreak(data.currentStreak || 0);
+            } catch (error) {
+                console.error("Failed to fetch streak:", error);
+            }
+        };
+        fetchStreak();
 
         // Prompt for gratitude once a day
         const lastPrompt = localStorage.getItem("lastGratitudePrompt");
@@ -705,6 +720,13 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             })
         }).catch(err => console.error("Initial sync failed:", err));
 
+        // Record streak activity
+        fetch("/api/streak", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ role: "sajid" })
+        }).catch(err => console.error("Failed to record streak:", err));
+
         // 3. Request translation (background)
         try {
             console.log("Requesting translation...");
@@ -947,6 +969,15 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
+                        {/* Streak Button */}
+                        <button
+                            onClick={() => setShowStreak(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-500/10 to-pink-500/10 border border-orange-500/20 rounded-xl hover:border-orange-500/40 transition-all group"
+                            title="View Love Streak"
+                        >
+                            <Flame className="w-4 h-4 text-orange-500" />
+                            <span className="text-sm font-bold text-orange-500">{currentStreak}</span>
+                        </button>
                         <button onClick={handleClearChat} className="p-2 hover:bg-destructive/10 rounded-lg transition-colors group" title="Clear Chat">
                             <Trash2 className="w-4 h-4 lg:w-5 lg:h-5 text-muted-foreground group-hover:text-destructive" />
                         </button>
@@ -1646,6 +1677,13 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                             myLocation={profiles.sajid}
                             partnerLocation={profiles.nasywa}
                             myRole="sajid"
+                        />
+                    )
+                }
+                {
+                    showStreak && (
+                        <StreakOverlay
+                            onClose={() => setShowStreak(false)}
                         />
                     )
                 }

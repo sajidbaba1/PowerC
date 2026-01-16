@@ -94,3 +94,13 @@ model Image {
   viewed      Boolean  @default(false)
   createdAt   DateTime @default(now())
 }
+
+model ChatActivity {
+  id           String   @id @default(cuid())
+  date         String   @unique // Format: YYYY-MM-DD
+  sajidActive  Boolean  @default(false)
+  nasywaActive Boolean  @default(false)
+  messageCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

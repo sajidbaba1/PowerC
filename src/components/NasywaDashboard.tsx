@@ -8,6 +8,7 @@ import { twMerge } from "tailwind-merge";
 import confetti from "canvas-confetti";
 import { getPusherClient } from "@/lib/pusher";
 import InteractiveMap from "@/components/InteractiveMap";
+import StreakOverlay from "@/components/StreakOverlay";
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -57,6 +58,8 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
     const [secretUnlockTime, setSecretUnlockTime] = useState<string>("20:00");
     const [jarNotes, setJarNotes] = useState<any[]>([]);
     const [showJar, setShowJar] = useState(false);
+    const [showStreak, setShowStreak] = useState(false);
+    const [currentStreak, setCurrentStreak] = useState(0);
     const [showMap, setShowMap] = useState(false);
     const [distance, setDistance] = useState<number | null>(null);
     const [showGratitudePrompt, setShowGratitudePrompt] = useState(false);
@@ -124,6 +127,18 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
         fetchLoveNotes();
         fetchMilestones();
         recordLogin();
+
+        // Fetch streak data
+        const fetchStreak = async () => {
+            try {
+                const res = await fetch("/api/streak");
+                const data = await res.json();
+                setCurrentStreak(data.currentStreak || 0);
+            } catch (error) {
+                console.error("Failed to fetch streak:", error);
+            }
+        };
+        fetchStreak();
     }, []);
 
     const handleMoodUpdate = async (mood: string) => {
@@ -628,6 +643,13 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
             })
         }).catch(err => console.error("Initial sync failed:", err));
 
+        // Record streak activity
+        fetch("/api/streak", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ role: "nasywa" })
+        }).catch(err => console.error("Failed to record streak:", err));
+
         // 3. Request translation (background)
         try {
             console.log("Requesting translation...");
@@ -859,6 +881,15 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
+                        {/* Streak Button */}
+                        <button
+                            onClick={() => setShowStreak(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-500/10 to-pink-500/10 border border-orange-500/20 rounded-xl hover:border-orange-500/40 transition-all group"
+                            title="View Love Streak"
+                        >
+                            <Flame className="w-4 h-4 text-orange-500" />
+                            <span className="text-sm font-bold text-orange-500">{currentStreak}</span>
+                        </button>
                         <button onClick={handleClearChat} className="p-2 hover:bg-destructive/10 rounded-lg transition-colors group" title="Clear Chat">
                             <Trash2 className="w-4 h-4 lg:w-5 lg:h-5 text-muted-foreground group-hover:text-destructive" />
                         </button>
@@ -1542,6 +1573,11 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                         myLocation={profiles.nasywa}
                         partnerLocation={profiles.sajid}
                         myRole="nasywa"
+                    />
+                )}
+                {showStreak && (
+                    <StreakOverlay
+                        onClose={() => setShowStreak(false)}
                     />
                 )}
             </AnimatePresence>
