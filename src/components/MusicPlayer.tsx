@@ -123,8 +123,8 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
             // Try fetching title
             try {
                 let videoId = "";
-                if (newUrl.includes("v=")) videoId = newUrl.split("v=")[1].split("&")[0];
-                else if (newUrl.includes("youtu.be/")) videoId = newUrl.split("youtu.be/")[1];
+                if (newUrl.includes("v=")) videoId = newUrl.split("v=")[1].split("&")[0].split("?")[0];
+                else if (newUrl.includes("youtu.be/")) videoId = newUrl.split("youtu.be/")[1].split("?")[0];
 
                 if (videoId) {
                     const res = await fetch(`/api/youtube?videoId=${videoId}`);
