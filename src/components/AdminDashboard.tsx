@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { LOCAL_SONGS } from "@/lib/songs";
+import { getPusherClient } from "@/lib/pusher";
+import MusicPlayer from './MusicPlayer';
+import BackgroundEffects, { EffectType } from './BackgroundEffects';
 import {
     LogOut,
     Users,
@@ -39,24 +43,29 @@ interface AdminDashboardProps {
 }
 
 export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
+    const pusher = getPusherClient();
     const [activeTab, setActiveTab] = useState("overview");
     const [keys, setKeys] = useState<any[]>([]);
     const [newKey, setNewKey] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showSidebar, setShowSidebar] = useState(false);
     const [loginHistory, setLoginHistory] = useState<any[]>([]);
+    const [backgroundEffect, setBackgroundEffect] = useState<EffectType>("none");
     const [vibeSettings, setVibeSettings] = useState({
         isPlaying: false,
         effect: "auto",
         sajidVolume: 100,
-        nasywaVolume: 100
+        nasywaVolume: 100,
+        currentIndex: 0
     });
 
     useEffect(() => {
         fetchKeys();
         fetchLoginHistory();
         const savedTheme = localStorage.getItem('power-couple-theme');
-        if (savedTheme) setPalette(savedTheme);
+        if (savedTheme) {
+            // Palette logic if needed
+        }
     }, []);
 
     const fetchLoginHistory = async () => {
@@ -137,7 +146,10 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
             chatKey,
             // Convert 0-100 to 0-1 for the player
             sajidVolume: (updates.sajidVolume !== undefined ? updates.sajidVolume : vibeSettings.sajidVolume) / 100,
-            nasywaVolume: (updates.nasywaVolume !== undefined ? updates.nasywaVolume : vibeSettings.nasywaVolume) / 100
+            nasywaVolume: (updates.nasywaVolume !== undefined ? updates.nasywaVolume : vibeSettings.nasywaVolume) / 100,
+            // If effect is auto, we tell the player to follow the song
+            effect: (updates.effect !== undefined ? updates.effect : vibeSettings.effect),
+            index: (updates.currentIndex !== undefined ? updates.currentIndex : vibeSettings.currentIndex)
         };
 
         await fetch("/api/chat/music", {
@@ -165,6 +177,11 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
     const handleSetVolume = (target: 'sajid' | 'nasywa', volume: number) => {
         broadcastMusic({ [`${target}Volume`]: volume });
         setVibeSettings(prev => ({ ...prev, [`${target}Volume`]: volume }));
+    };
+
+    const handleSetSong = (index: number) => {
+        broadcastMusic({ currentIndex: index, isPlaying: true });
+        setVibeSettings(prev => ({ ...prev, currentIndex: index, isPlaying: true }));
     };
 
     const palettes = [
@@ -197,7 +214,18 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
     ];
 
     return (
-        <div className="flex h-screen bg-background overflow-hidden">
+        <div className="flex h-screen bg-background overflow-hidden relative">
+            <BackgroundEffects effect={backgroundEffect} />
+
+            <MusicPlayer
+                activeChat="sajid-nasywa"
+                pusherClient={pusher}
+                currentEffect={backgroundEffect}
+                onEffectChange={setBackgroundEffect}
+                onPlayingChange={(isPlaying) => setVibeSettings(prev => ({ ...prev, isPlaying }))}
+                userRole="admin"
+            />
+
             {/* Mobile Overlay */}
             {showSidebar && (
                 <div
@@ -693,6 +721,31 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                                             </div>
                                         ))}
                                     </div>
+                                </div>
+                            </div>
+
+                            {/* Song Selection */}
+                            <div className="pt-8 border-t border-white/10">
+                                <h2 className="text-lg font-bold flex items-center gap-2 mb-6">
+                                    <Music className="w-5 h-5 text-indigo-400" />
+                                    Song Master
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {LOCAL_SONGS.map((song, idx) => (
+                                        <button
+                                            key={song.id}
+                                            onClick={() => handleSetSong(idx)}
+                                            className={cn(
+                                                "p-4 rounded-2xl flex flex-col items-start gap-1 transition-all border text-left",
+                                                vibeSettings.currentIndex === idx && vibeSettings.isPlaying
+                                                    ? "bg-indigo-500/20 border-indigo-500 shadow-lg shadow-indigo-500/10"
+                                                    : "bg-white/5 border-white/5 hover:bg-white/10"
+                                            )}
+                                        >
+                                            <span className="font-bold text-sm truncate w-full">{song.title}</span>
+                                            <span className="text-[10px] uppercase font-black tracking-widest text-indigo-400">{song.effect} Effect</span>
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         </motion.div>

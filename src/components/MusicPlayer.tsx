@@ -6,48 +6,7 @@ import { Play, Pause, Volume2, VolumeX, SkipForward } from 'lucide-react';
 // Dynamic import for ReactPlayer to avoid SSR issues
 const ReactPlayer = dynamic(() => import('react-player'), { ssr: false }) as any;
 
-import { EffectType } from './BackgroundEffects';
-
-export interface Song {
-    id: string;
-    url: string;
-    title: string;
-    effect: EffectType;
-}
-
-// Fixed playlist with Cloudinary URLs for high-quality slowed & reverb versions
-const LOCAL_SONGS: Song[] = [
-    {
-        id: "l1",
-        title: "Saiyaara Reprise",
-        url: "https://res.cloudinary.com/dd431rll2/video/upload/v1768599601/Saiyaara_Reprise_Female_Slowed_Reverb_Shreya_Ghoshal_SR_Lofi_hm61dp.mp3",
-        effect: "snow"
-    },
-    {
-        id: "l2",
-        title: "Oh Oh Jane Jaana",
-        url: "https://res.cloudinary.com/dd431rll2/video/upload/v1768599606/Oh_Oh_Jane_Jaana_Slowed_Reverbed_ay5adk.mp3",
-        effect: "stars"
-    },
-    {
-        id: "l3",
-        title: "Na Rasta Maloom",
-        url: "https://res.cloudinary.com/dd431rll2/video/upload/v1768599602/na_rasta_maloom_na_tere_naam_pata_maloom_na_rasta_maloom_na_rasta_maloom_lofi_1_pt1g0d.mp3",
-        effect: "rain"
-    },
-    {
-        id: "l4",
-        title: "Sun Meri Shehzadi",
-        url: "https://res.cloudinary.com/dd431rll2/video/upload/v1768599602/Sun_meri_shehzadi_-_Slowed_Down_Reverb_Saaton_Janam_Mein_Tere_Night_Song_uhegyf.mp3",
-        effect: "hearts"
-    },
-    {
-        id: "l5",
-        title: "Tujhe Sochta Hoon",
-        url: "https://res.cloudinary.com/dd431rll2/video/upload/v1768599607/Tujhe_Sochta_Hoon_Slowed_Reverb_Rain_K.K_Wormono_lofi_wxjw1b.mp3",
-        effect: "sparkles"
-    }
-];
+import { LOCAL_SONGS, Song, EffectType } from '@/lib/songs';
 
 interface MusicPlayerProps {
     activeChat: string;
@@ -59,7 +18,6 @@ interface MusicPlayerProps {
 }
 
 export default function MusicPlayer({ activeChat, pusherClient, currentEffect, onEffectChange, onPlayingChange, userRole }: MusicPlayerProps) {
-    const [playlist, setPlaylist] = useState<Song[]>(LOCAL_SONGS);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [hasInteracted, setHasInteracted] = useState(false);
@@ -69,11 +27,6 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => setMounted(true), []);
-
-    // Shuffle playlist on mount
-    useEffect(() => {
-        setPlaylist([...LOCAL_SONGS].sort(() => Math.random() - 0.5));
-    }, []);
 
     // Report state changes to parent (fixes slideshow bug)
     useEffect(() => {
@@ -95,12 +48,11 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
             console.log("🎵 Remote Music Update:", data);
             if (data.index !== undefined) {
                 setCurrentIndex(data.index);
-                // Reset manual effect on remote song change?
-                // No, let admin keep control until they explicitly change it.
             }
             if (data.isPlaying !== undefined) {
                 setIsPlaying(data.isPlaying);
-                if (data.isPlaying) setHasInteracted(true);
+                // Note: We don't setHasInteracted(true) here because browser will still block audio.play()
+                // Instead, the UI will change to prompt the user to click.
             }
             if (data.effect !== undefined) {
                 if (data.effect === 'auto') {
@@ -111,7 +63,6 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                 }
             }
 
-            // Handle individual volume control from Admin
             if (userRole === 'sajid' && data.sajidVolume !== undefined) setVolume(data.sajidVolume);
             if (userRole === 'nasywa' && data.nasywaVolume !== undefined) setVolume(data.nasywaVolume);
         });
@@ -121,16 +72,15 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
 
     // Apply Effect when song changes - ONLY if no manual override
     useEffect(() => {
-        const song = playlist[currentIndex];
+        const song = LOCAL_SONGS[currentIndex];
         if (song && isPlaying && !manualEffect) {
             onEffectChange(song.effect);
         }
-    }, [currentIndex, isPlaying, playlist, onEffectChange, manualEffect]);
+    }, [currentIndex, isPlaying, onEffectChange, manualEffect]);
 
     const broadcastState = async (updates: Partial<{ index: number, isPlaying: boolean, effect?: string }>) => {
         if (updates.index !== undefined) {
             setCurrentIndex(updates.index);
-            // When user manually skip, we reset manual effect to the new song's effect
             setManualEffect(null);
         }
         if (updates.isPlaying !== undefined) setIsPlaying(updates.isPlaying);
@@ -145,7 +95,7 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                 chatKey,
                 index: updates.index !== undefined ? updates.index : currentIndex,
                 isPlaying: updates.isPlaying !== undefined ? updates.isPlaying : isPlaying,
-                effect: updates.effect || (updates.index !== undefined ? playlist[updates.index].effect : undefined),
+                effect: updates.effect || (updates.index !== undefined ? LOCAL_SONGS[updates.index].effect : undefined),
                 playlist: []
             })
         });
@@ -153,11 +103,11 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
 
     const handleStart = () => {
         setHasInteracted(true);
-        broadcastState({ isPlaying: true });
+        if (!isPlaying) broadcastState({ isPlaying: true });
     };
 
     const handleNext = () => {
-        const nextIndex = (currentIndex + 1) % playlist.length;
+        const nextIndex = (currentIndex + 1) % LOCAL_SONGS.length;
         broadcastState({ index: nextIndex });
     };
 
@@ -171,13 +121,14 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
             const playPromise = audioRef.current.play();
             if (playPromise !== undefined) {
                 playPromise.catch((error: any) => {
-                    console.error("Playback failed:", error);
+                    console.error("Playback failed (likely browser policy):", error);
+                    // If it fails, we keep hasInteracted so user can try clicking again?
                 });
             }
         } else {
             audioRef.current.pause();
         }
-    }, [isPlaying, hasInteracted, currentIndex, playlist]);
+    }, [isPlaying, hasInteracted, currentIndex]);
 
     // Update volume based on mute and current volume set by admin
     useEffect(() => {
@@ -192,7 +143,7 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
         <>
             <audio
                 ref={audioRef}
-                src={playlist[currentIndex]?.url}
+                src={LOCAL_SONGS[currentIndex]?.url}
                 onEnded={handleNext}
                 onPlay={() => console.log("🎵 Native Playback Started")}
                 onError={(e) => console.error("🎵 Native Audio Error:", e)}
@@ -201,8 +152,17 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
             />
 
             <div className="fixed bottom-24 left-4 z-[9999]">
-                {!isPlaying ? (
-                    // Only Admin can "Start Vibes" from scratch
+                {!hasInteracted ? (
+                    // If Admin started music but user hasn't interacted, show "Join Vibe"
+                    <button
+                        onClick={handleStart}
+                        className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2 transition-all"
+                    >
+                        <Play className="w-5 h-5 fill-current" />
+                        {isPlaying ? "Join the Vibe 🎵" : "Start Vibes 🎵"}
+                    </button>
+                ) : !isPlaying ? (
+                    // Only Admin can "Start" from scratch
                     userRole === 'admin' ? (
                         <button
                             onClick={handleStart}
@@ -215,12 +175,11 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                 ) : (
                     <div className="flex items-center gap-2 bg-zinc-900/90 border border-pink-500/30 backdrop-blur-md p-2 rounded-full shadow-2xl hover:scale-105 transition-all">
                         <div className="px-2 max-w-[150px] truncate text-xs text-white font-medium">
-                            {playlist[currentIndex]?.title}
+                            {LOCAL_SONGS[currentIndex]?.title}
                         </div>
                         <button onClick={() => setIsMuted(!isMuted)} className="p-2 text-white/80 hover:text-white">
                             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                         </button>
-                        {/* Only Admin or owner can skip? Keeping skip for now as it's useful */}
                         <button onClick={handleNext} className="p-2 text-white/80 hover:text-white">
                             <SkipForward className="w-4 h-4 fill-current" />
                         </button>
@@ -230,3 +189,4 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
         </>
     );
 }
+
