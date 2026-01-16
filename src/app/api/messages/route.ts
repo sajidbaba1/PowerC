@@ -1,11 +1,5 @@
 import { NextResponse } from "next/server";
-
-// In-memory message store (in production, use a database)
-const messageStore: Record<string, any[]> = {
-    "sajid-nasywa": [],
-    "sajid-admin": [],
-    "nasywa-admin": []
-};
+import { getPrisma } from "@/lib/db";
 
 function getChatKey(user1: string, user2: string) {
     const sorted = [user1, user2].sort();
@@ -23,7 +17,14 @@ export async function GET(req: Request) {
         }
 
         const chatKey = getChatKey(user1, user2);
-        return NextResponse.json(messageStore[chatKey] || []);
+        const prisma = getPrisma();
+
+        const messages = await prisma.message.findMany({
+            where: { chatKey },
+            orderBy: { createdAt: "asc" }
+        });
+
+        return NextResponse.json(messages);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -38,20 +39,65 @@ export async function POST(req: Request) {
         }
 
         const chatKey = getChatKey(user1, user2);
+        const prisma = getPrisma();
 
-        if (!messageStore[chatKey]) {
-            messageStore[chatKey] = [];
-        }
+        // Check if message already exists by id (optimistic update from client)
+        const existingMessage = await prisma.message.findUnique({
+            where: { id: message.id }
+        });
 
-        // Search for existing message by ID and update it, otherwise push new one
-        const existingIndex = messageStore[chatKey].findIndex(m => m.id === message.id);
-        if (existingIndex !== -1) {
-            messageStore[chatKey][existingIndex] = message;
+        let savedMessage;
+        if (existingMessage) {
+            savedMessage = await prisma.message.update({
+                where: { id: message.id },
+                data: {
+                    translation: message.translation,
+                    hindiTranslation: message.hindiTranslation,
+                    wordBreakdown: message.wordBreakdown,
+                    status: message.status || "sent"
+                }
+            });
         } else {
-            messageStore[chatKey].push(message);
+            savedMessage = await prisma.message.create({
+                data: {
+                    id: message.id,
+                    text: message.text,
+                    translation: message.translation,
+                    hindiTranslation: message.hindiTranslation,
+                    sender: message.sender,
+                    receiver: user2 === message.sender ? user1 : user2, // determine receiver
+                    chatKey: chatKey,
+                    wordBreakdown: message.wordBreakdown,
+                    status: message.status || "sent"
+                }
+            });
         }
 
-        return NextResponse.json({ success: true, message });
+        return NextResponse.json({ success: true, message: savedMessage });
+    } catch (error: any) {
+        console.error("POST failure:", error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
+export async function DELETE(req: Request) {
+    try {
+        const { searchParams } = new URL(req.url);
+        const user1 = searchParams.get("user1");
+        const user2 = searchParams.get("user2");
+
+        if (!user1 || !user2) {
+            return NextResponse.json({ error: "Both users required" }, { status: 400 });
+        }
+
+        const chatKey = getChatKey(user1, user2);
+        const prisma = getPrisma();
+
+        await prisma.message.deleteMany({
+            where: { chatKey }
+        });
+
+        return NextResponse.json({ success: true, message: "Chat cleared" });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

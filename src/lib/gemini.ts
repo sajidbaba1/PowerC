@@ -7,8 +7,10 @@ export async function getGeminiModel() {
     // Try to get from Env keys first
     const envKeys = process.env.GEMINI_API_KEYS?.split(",") || [];
     if (envKeys.length > 0) {
-        apiKey = envKeys[0];
-        console.log("Using Gemini API Key from environment variable");
+        // Use a simple rotation based on current time/usage
+        const index = Math.floor(Date.now() / 1000) % envKeys.length;
+        apiKey = envKeys[index];
+        console.log(`Using Gemini API Key index ${index} from environment variable`);
     }
 
     // If no env key, try DB (only if configured and NOT the local proxy protocol which hangs)

@@ -69,6 +69,13 @@ export default function LoginScreen({ onLogin }: LoginProps) {
                                     onClick={() => {
                                         setSelectedRole(user.role);
                                         setError("");
+                                        // Auto-fill password
+                                        const passwords: Record<string, string> = {
+                                            sajid: "sajid123",
+                                            nasywa: "nasywa123",
+                                            admin: "admin123"
+                                        };
+                                        setPassword(passwords[user.role]);
                                     }}
                                     className={`w-full p-4 rounded-2xl border-2 transition-all flex items-center gap-4 ${selectedRole === user.role
                                         ? "border-primary bg-primary/10 scale-105"

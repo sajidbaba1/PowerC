@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail } from "lucide-react";
+import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -28,7 +28,92 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
     const [showEmailSettings, setShowEmailSettings] = useState(false);
     const [showSidebar, setShowSidebar] = useState(false);
     const [showWordBucket, setShowWordBucket] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [isDrawing, setIsDrawing] = useState(false);
+    const [showStickers, setShowStickers] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleClearChat = async () => {
+        if (!confirm("Clear this chat permanently?")) return;
+        try {
+            await fetch(`/api/messages?user1=nasywa&user2=${activeChat}`, { method: "DELETE" });
+            setMessages(prev => ({ ...prev, [activeChat]: [] }));
+        } catch (e) {
+            console.error("Failed to clear chat", e);
+        }
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64 = reader.result as string;
+            // Send as an image message
+            const userMessage = {
+                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                text: "[Image]",
+                imageUrl: base64,
+                sender: "nasywa",
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: "sending"
+            };
+
+            setMessages((prev) => ({
+                ...prev,
+                [activeChat]: [...prev[activeChat], userMessage]
+            }));
+
+            // Upload via API
+            try {
+                const res = await fetch("/api/images", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        image: base64,
+                        sender: "nasywa",
+                        receiver: activeChat,
+                        viewType: "permanent"
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    // Update the message in store too
+                    await fetch("/api/messages", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            user1: "nasywa",
+                            user2: activeChat,
+                            message: { ...userMessage, imageUrl: data.image.url, status: "sent" }
+                        })
+                    });
+                }
+            } catch (err) {
+                console.error("Image upload failed", err);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const startRecording = () => {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("Speech recognition not supported in this browser.");
+            return;
+        }
+
+        const recognition = new (window as any).webkitSpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.onstart = () => setIsRecording(true);
+        recognition.onend = () => setIsRecording(false);
+        recognition.onresult = (event: any) => {
+            const transcript = event.results[0][0].transcript;
+            setInputValue(transcript);
+        };
+        recognition.start();
+    };
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -78,15 +163,18 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
         return () => clearInterval(interval);
     }, [activeChat]);
 
-    const handleSend = async () => {
-        if (!inputValue.trim()) return;
+    const handleSend = async (textOverride?: string, isSticker = false) => {
+        const text = textOverride || inputValue;
+        if (!text.trim()) return;
 
         const userMessage = {
-            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique string ID
-            text: inputValue,
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            text: text,
             sender: "nasywa",
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            status: "sending"
+            status: "sending",
+            isSticker: isSticker,
+            isHeart: text === "❤️" || text === "💖"
         };
 
         setMessages((prev) => ({
@@ -311,24 +399,96 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                     <div ref={messagesEndRef} />
                 </div>
 
+                {/* Input */}
                 <div className="fixed lg:relative bottom-0 left-0 right-0 lg:bottom-auto lg:left-auto lg:right-auto p-3 lg:p-6 lg:pt-0 shrink-0 bg-background z-40">
-                    <div className="glass border border-white/10 rounded-2xl p-2 flex items-center gap-2">
-                        <input
-                            type="text"
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                            placeholder={`Message ${activeChat}...`}
-                            className="flex-1 bg-transparent border-none outline-none text-sm px-2 lg:px-4 min-w-0"
-                        />
-                        <button
-                            onClick={handleSend}
-                            className="p-2 lg:p-3 bg-primary hover:bg-primary/90 rounded-xl transition-all neon-border shrink-0"
-                        >
-                            <Send className="w-4 h-4 lg:w-5 lg:h-5 text-primary-foreground" />
-                        </button>
+                    <div className="flex flex-col gap-2">
+                        {showStickers && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="glass p-3 rounded-2xl border border-white/10 grid grid-cols-6 gap-2 mb-2"
+                            >
+                                {["❤️", "💖", "✨", "🔥", "😭", "😂", "🌹", "💎", "🌈", "🍦", "🎁", "🎈"].map(s => (
+                                    <button
+                                        key={s}
+                                        onClick={() => {
+                                            setInputValue("");
+                                            handleSend(s, true); // Send as sticker
+                                            setShowStickers(false);
+                                        }}
+                                        className="text-2xl hover:scale-125 transition-transform"
+                                    >
+                                        {s}
+                                    </button>
+                                ))}
+                            </motion.div>
+                        )}
+
+                        <div className="glass border border-white/10 rounded-2xl p-2 flex items-center gap-2">
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                            />
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
+                            >
+                                <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                            </button>
+                            <button
+                                onClick={() => setShowStickers(!showStickers)}
+                                className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
+                            >
+                                <Smile className="w-5 h-5 text-muted-foreground" />
+                            </button>
+                            <button
+                                onClick={() => setIsDrawing(true)}
+                                className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
+                            >
+                                <Palette className="w-5 h-5 text-muted-foreground" />
+                            </button>
+                            <input
+                                type="text"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                                placeholder={`Message ${activeChat}...`}
+                                className="flex-1 bg-transparent border-none outline-none text-sm px-2 lg:px-4 min-w-0"
+                            />
+                            <button
+                                onClick={startRecording}
+                                className={cn(
+                                    "p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0",
+                                    isRecording && "text-red-500 animate-pulse"
+                                )}
+                            >
+                                <Mic className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={() => handleSend()}
+                                className="p-2 lg:p-3 bg-primary hover:bg-primary/90 rounded-xl transition-all neon-border shrink-0"
+                            >
+                                <Send className="w-4 h-4 lg:w-5 lg:h-5 text-primary-foreground" />
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                {/* Drawing Overlay */}
+                <AnimatePresence>
+                    {isDrawing && (
+                        <DrawingOverlay
+                            onClose={() => setIsDrawing(false)}
+                            onSave={(img) => {
+                                handleImageUpload({ target: { files: [dataURLtoFile(img, 'heart.png')] } } as any);
+                                setIsDrawing(false);
+                            }}
+                        />
+                    )}
+                </AnimatePresence>
             </main>
 
             {/* Word Bucket */}
@@ -442,4 +602,113 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
             </aside>
         </div>
     );
+}
+
+function DrawingOverlay({ onClose, onSave }: { onClose: () => void, onSave: (img: string) => void }) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [isDrawing, setIsDrawing] = useState(false);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+    }, []);
+
+    const startDrawing = (e: any) => {
+        setIsDrawing(true);
+        draw(e);
+    };
+
+    const stopDrawing = () => {
+        setIsDrawing(false);
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        canvas.getContext('2d')?.beginPath();
+    };
+
+    const draw = (e: any) => {
+        if (!isDrawing) return;
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
+        const y = (e.clientY || e.touches?.[0]?.clientY) - rect.top;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-4"
+        >
+            <div className="bg-card w-full max-w-lg rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
+                <div className="p-4 border-b border-border flex items-center justify-between">
+                    <h3 className="font-semibold">Draw a Heart ❤️</h3>
+                    <button onClick={onClose} className="p-2 hover:bg-muted rounded-full">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+                <div className="p-6">
+                    <canvas
+                        ref={canvasRef}
+                        width={400}
+                        height={400}
+                        className="w-full aspect-square bg-white rounded-2xl cursor-crosshair touch-none"
+                        onMouseDown={startDrawing}
+                        onMouseMove={draw}
+                        onMouseUp={stopDrawing}
+                        onMouseLeave={stopDrawing}
+                        onTouchStart={startDrawing}
+                        onTouchMove={draw}
+                        onTouchEnd={stopDrawing}
+                    />
+                </div>
+                <div className="p-4 border-t border-border flex gap-3">
+                    <button
+                        onClick={() => {
+                            const canvas = canvasRef.current;
+                            if (canvas) canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+                        }}
+                        className="flex-1 py-3 bg-muted hover:bg-muted/80 rounded-xl transition-all"
+                    >
+                        Clear
+                    </button>
+                    <button
+                        onClick={() => {
+                            const canvas = canvasRef.current;
+                            if (canvas) onSave(canvas.toDataURL());
+                        }}
+                        className="flex-1 py-3 bg-primary text-primary-foreground rounded-xl font-bold shadow-lg"
+                    >
+                        Send Heart
+                    </button>
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+function dataURLtoFile(dataurl: string, filename: string) {
+    const arr = dataurl.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
 }

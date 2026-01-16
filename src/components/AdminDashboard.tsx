@@ -12,7 +12,8 @@ import {
     RotateCcw,
     Shield,
     Activity,
-    Database
+    Database,
+    Image as ImageIcon
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -158,6 +159,18 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                         >
                             <Users className="w-5 h-5" />
                             <span className="font-semibold text-sm">Users</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("media")}
+                            className={cn(
+                                "w-full p-4 rounded-2xl transition-all flex items-center gap-3",
+                                activeTab === "media"
+                                    ? "bg-primary/10 border-2 border-primary"
+                                    : "glass border border-white/5 hover:border-white/20"
+                            )}
+                        >
+                            <ImageIcon className="w-5 h-5" />
+                            <span className="font-semibold text-sm">Media Gallery</span>
                         </button>
                     </div>
                 </div>
@@ -319,7 +332,46 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                         </div>
                     </div>
                 )}
+                {activeTab === "media" && (
+                    <div className="space-y-8">
+                        <div>
+                            <h1 className="text-3xl font-bold mb-2">Media Gallery</h1>
+                            <p className="text-muted-foreground">Monitor images and drawings exchanged between users</p>
+                        </div>
+
+                        <MediaGallery />
+                    </div>
+                )}
             </main>
+        </div>
+    );
+}
+
+function MediaGallery() {
+    const [images, setImages] = useState<any[]>([]);
+
+    useEffect(() => {
+        fetch("/api/images")
+            .then(res => res.json())
+            .then(data => setImages(Array.isArray(data) ? data : []));
+    }, []);
+
+    return (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {images.map((img) => (
+                <div key={img.id} className="group relative aspect-square rounded-2xl overflow-hidden glass border border-white/10">
+                    <img src={img.url} alt="Shared" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                        <p className="text-xs font-bold text-white uppercase">{img.sender} → {img.receiver}</p>
+                        <p className="text-[10px] text-white/70">{new Date(img.createdAt).toLocaleString()}</p>
+                    </div>
+                </div>
+            ))}
+            {images.length === 0 && (
+                <div className="col-span-full py-12 text-center text-muted-foreground border-2 border-dashed border-border rounded-3xl">
+                    No images shared yet.
+                </div>
+            )}
         </div>
     );
 }

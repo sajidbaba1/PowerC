@@ -23,7 +23,9 @@ model Message {
   text             String
   translation      String?
   hindiTranslation String?
-  sender           String   @default("indian")
+  sender           String   // sajid or nasywa
+  receiver         String   // nasywa, sajid or admin
+  chatKey          String   // e.g., "nasywa-sajid"
   status           String   @default("sent")
   wordBreakdown    Json?    // Array of {word, hindi, meaning}
   createdAt        DateTime @default(now())
