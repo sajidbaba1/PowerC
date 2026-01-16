@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Music, Play, Pause, SkipForward, Trash2, Volume2, Minimize2, Search, PlusCircle, X } from 'lucide-react';
+import { Music, Play, Pause, SkipForward, Trash2, Volume2, Minimize2, Search, PlusCircle, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Dynamic import for ReactPlayer to avoid SSR issues
@@ -38,6 +38,11 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
     const [volume, setVolume] = useState(0.5);
     const [mounted, setMounted] = useState(false);
     const [hasInteracted, setHasInteracted] = useState(false);
+
+    // Search State
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
 
     useEffect(() => setMounted(true), []);
 
@@ -101,12 +106,13 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
     }, [currentIndex, isPlaying, playlist, onEffectChange, currentEffect]);
 
     const broadcastState = async (updates: Partial<{ playlist: Song[], index: number, isPlaying: boolean }>) => {
+        // Optimistic update
         if (updates.playlist !== undefined) setPlaylist(updates.playlist);
         if (updates.index !== undefined) setCurrentIndex(updates.index);
         if (updates.isPlaying !== undefined) setIsPlaying(updates.isPlaying);
 
         const sorted = ["sajid", "nasywa"].sort();
-        const chatKey = `${sorted[0]}-${sorted[1]}`;
+        const chatKey = sorted.join('-');
 
         await fetch("/api/chat/music", {
             method: "POST",
@@ -132,7 +138,51 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
 
     const handleDelete = (id: string) => {
         const newPlaylist = playlist.filter(s => s.id !== id);
-        broadcastState({ playlist: newPlaylist });
+        // Adjust index if needed
+        let newIndex = currentIndex;
+        if (currentIndex >= newPlaylist.length) newIndex = Math.max(0, newPlaylist.length - 1);
+
+        broadcastState({ playlist: newPlaylist, index: newIndex });
+    };
+
+    const handleSearch = async () => {
+        if (!searchQuery.trim()) return;
+        setIsSearching(true);
+        try {
+            const res = await fetch(`/api/youtube?query=${encodeURIComponent(searchQuery)}`);
+            const data = await res.json();
+            if (data.items) {
+                setSearchResults(data.items);
+            }
+        } catch (error) {
+            console.error("Search failed", error);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const playSearchResult = (video: any) => {
+        const newSong: Song = {
+            id: Date.now().toString(),
+            url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
+            title: video.snippet.title,
+            effect: "hearts" // Default effect
+        };
+
+        // Add to playlist AND Play Immediately
+        const newPlaylist = [...playlist, newSong];
+        const newIndex = newPlaylist.length - 1;
+
+        setSearchQuery(""); // Clear search
+        setSearchResults([]); // Close results
+
+        broadcastState({
+            playlist: newPlaylist,
+            index: newIndex, // Jump to this new song
+            isPlaying: true // Auto play
+        });
+
+        setHasInteracted(true); // Assume click is interaction
     };
 
     if (!mounted) return null;
@@ -230,7 +280,52 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                                 <div className="text-white/50 text-center py-4 text-sm">No songs in playlist</div>
                             )}
 
-                            {/* Playlist Mini View - Simplified (No Search) */}
+                            {/* Search Section (Restored) */}
+                            <div className="mt-4 pt-4 border-t border-white/10 relative">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Search song to play..."
+                                        className="flex-1 bg-white/10 text-xs text-white p-2 rounded-lg outline-none focus:ring-1 focus:ring-pink-500"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                    />
+                                    <button onClick={handleSearch} disabled={isSearching} className="p-2 bg-pink-500 rounded-lg text-white">
+                                        {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                                    </button>
+                                </div>
+
+                                {/* Search Results */}
+                                {searchResults.length > 0 && (
+                                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-zinc-900 border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 max-h-[250px] overflow-y-auto">
+                                        <div className="flex items-center justify-between p-2 bg-black/50 border-b border-white/5">
+                                            <span className="text-[10px] uppercase font-bold text-muted-foreground">Results</span>
+                                            <button onClick={() => setSearchResults([])}><X className="w-3 h-3 text-white/50 hover:text-white" /></button>
+                                        </div>
+                                        {searchResults.map((video) => (
+                                            <div
+                                                key={video.id.videoId}
+                                                className="flex items-center gap-2 p-2 hover:bg-white/10 border-b border-white/5 last:border-0"
+                                            >
+                                                <img src={video.snippet.thumbnails?.default?.url} className="w-10 h-8 object-cover rounded" />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-xs text-white font-medium truncate">{video.snippet.title}</div>
+                                                </div>
+                                                <button
+                                                    onClick={() => playSearchResult(video)}
+                                                    className="p-1.5 bg-pink-500/20 text-pink-400 hover:bg-pink-500 hover:text-white rounded-full transition-colors"
+                                                    title="Play Now"
+                                                >
+                                                    <Play className="w-3 h-3 fill-current" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Playlist Mini View */}
                             <div className="mt-4 pt-4 border-t border-white/10">
                                 <div className="text-xs font-bold text-white mb-2 ml-1">Up Next</div>
                                 <div className="max-h-[150px] overflow-y-auto space-y-1">
@@ -239,11 +334,9 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                                             <div onClick={() => { setCurrentIndex(i); broadcastState({ index: i }); }} className="cursor-pointer truncate max-w-[200px]">
                                                 {s.title}
                                             </div>
-                                            {(userEmail === 'admin' || true) && (
-                                                <button onClick={() => handleDelete(s.id)}>
-                                                    <Trash2 className="w-3 h-3 hover:text-red-400" />
-                                                </button>
-                                            )}
+                                            <button onClick={() => handleDelete(s.id)}>
+                                                <Trash2 className="w-3 h-3 hover:text-red-400" />
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
