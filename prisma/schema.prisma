@@ -1,0 +1,30 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  status    String   @default("active") // active, exhausted, inactive
+  usage     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id               String   @id @default(cuid())
+  text             String
+  translation      String?
+  hindiTranslation String?
+  sender           String   @default("indian")
+  status           String   @default("sent")
+  wordBreakdown    Json?    // Array of {word, hindi, meaning}
+  createdAt        DateTime @default(now())
+}
