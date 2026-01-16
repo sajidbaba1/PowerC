@@ -33,21 +33,25 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     try {
         const { user1, user2, message } = await req.json();
+        console.log(`API POST: Attempting to save message from ${message.sender} to ${user2 === message.sender ? user1 : user2}`);
 
-        if (!user1 || !user2 || !message) {
+        if (!user1 || !user2 || !message || !message.id) {
+            console.error("API POST: Missing critical fields", { user1, user2, messageId: message?.id });
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
         const chatKey = getChatKey(user1, user2);
         const prisma = getPrisma();
 
-        // Check if message already exists by id (optimistic update from client)
+        // Check if message already exists by id
+        console.log(`API POST: Checking existence for ID ${message.id}`);
         const existingMessage = await prisma.message.findUnique({
             where: { id: message.id }
         });
 
         let savedMessage;
         if (existingMessage) {
+            console.log(`API POST: Updating existing message ${message.id}`);
             savedMessage = await prisma.message.update({
                 where: { id: message.id },
                 data: {
@@ -58,6 +62,7 @@ export async function POST(req: Request) {
                 }
             });
         } else {
+            console.log(`API POST: Creating new message ${message.id} with text: ${message.text?.substring(0, 20)}...`);
             savedMessage = await prisma.message.create({
                 data: {
                     id: message.id,
@@ -65,7 +70,7 @@ export async function POST(req: Request) {
                     translation: message.translation,
                     hindiTranslation: message.hindiTranslation,
                     sender: message.sender,
-                    receiver: user2 === message.sender ? user1 : user2, // determine receiver
+                    receiver: user2 === message.sender ? user1 : user2,
                     chatKey: chatKey,
                     wordBreakdown: message.wordBreakdown,
                     status: message.status || "sent"
@@ -73,10 +78,11 @@ export async function POST(req: Request) {
             });
         }
 
+        console.log(`API POST: Success for ${message.id}`);
         return NextResponse.json({ success: true, message: savedMessage });
     } catch (error: any) {
-        console.error("POST failure:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error("API POST FAILURE:", error);
+        return NextResponse.json({ error: error.message, stack: error.stack }, { status: 500 });
     }
 }
 

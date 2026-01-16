@@ -236,6 +236,11 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                         </div>
 
                         <div className="p-8 rounded-3xl bg-indigo-500/5 border border-indigo-500/10">
+                            <h2 className="text-xl font-semibold mb-6">Database Status</h2>
+                            <DbDiagnostic />
+                        </div>
+
+                        <div className="p-8 rounded-3xl glass border border-white/5">
                             <h2 className="text-xl font-semibold mb-6">Theme Palette</h2>
                             <div className="flex flex-wrap gap-4">
                                 {palettes.map((p) => (
@@ -372,6 +377,47 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                     </div>
                 )}
             </main>
+        </div>
+    );
+}
+
+function DbDiagnostic() {
+    const [status, setStatus] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+
+    const checkDb = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch("/api/debug/db");
+            const data = await res.json();
+            setStatus(data);
+        } catch (e: any) {
+            setStatus({ status: "failed", error: e.message });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-4">
+            <button
+                onClick={checkDb}
+                disabled={loading}
+                className="px-4 py-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-colors disabled:opacity-50"
+            >
+                {loading ? "Checking..." : "Verify DB Connection"}
+            </button>
+            {status && (
+                <div className={cn(
+                    "p-4 rounded-xl text-xs font-mono break-all",
+                    status.status === "connected" ? "bg-green-500/10 text-green-500" : "bg-destructive/10 text-destructive"
+                )}>
+                    <p>Status: {status.status}</p>
+                    {status.messageCount !== undefined && <p>Total Messages: {status.messageCount}</p>}
+                    {status.error && <p className="mt-2">Error: {status.error}</p>}
+                    {!status.hasDbUrl && <p className="mt-2 text-yellow-500">Warning: No DATABASE_URL found in Environment!</p>}
+                </div>
+            )}
         </div>
     );
 }

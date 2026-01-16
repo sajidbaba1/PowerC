@@ -141,15 +141,17 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         const localMessages = prev[activeChat] || [];
                         const messageMap = new Map();
 
+                        // Add local messages first to keep them if server is slow or fails
+                        localMessages.forEach(m => messageMap.set(m.id, m));
+
+                        // Overwrite with server messages (source of truth)
                         data.forEach(m => messageMap.set(m.id, m));
-                        localMessages.forEach(m => {
-                            if (m.status === "sending" && !messageMap.has(m.id)) {
-                                messageMap.set(m.id, m);
-                            }
-                        });
 
                         const merged = Array.from(messageMap.values()).sort((a, b) => {
-                            return a.id.toString().localeCompare(b.id.toString());
+                            // Sort by createdAt primarily, fallback to ID timestamp
+                            const timeA = a.createdAt ? new Date(a.createdAt).getTime() : parseFloat(a.id);
+                            const timeB = b.createdAt ? new Date(b.createdAt).getTime() : parseFloat(b.id);
+                            return timeA - timeB;
                         });
 
                         return { ...prev, [activeChat]: merged };

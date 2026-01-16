@@ -135,19 +135,17 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                         // Create a map of ALL messages by ID to prevent duplicates
                         const messageMap = new Map();
 
-                        // Add server messages first (they are the source of truth)
+                        // Add local messages first to keep them if server is slow or fails
+                        localMessages.forEach(m => messageMap.set(m.id, m));
+
+                        // Overwrite with server messages (source of truth)
                         data.forEach(m => messageMap.set(m.id, m));
 
-                        // Add local messages that are still "sending" and not yet on server
-                        localMessages.forEach(m => {
-                            if (m.status === "sending" && !messageMap.has(m.id)) {
-                                messageMap.set(m.id, m);
-                            }
-                        });
-
                         const merged = Array.from(messageMap.values()).sort((a, b) => {
-                            // Sort by timestamp or ID
-                            return a.id.toString().localeCompare(b.id.toString());
+                            // Sort by createdAt primarily, fallback to ID timestamp
+                            const timeA = a.createdAt ? new Date(a.createdAt).getTime() : parseFloat(a.id);
+                            const timeB = b.createdAt ? new Date(b.createdAt).getTime() : parseFloat(b.id);
+                            return timeA - timeB;
                         });
 
                         return { ...prev, [activeChat]: merged };
