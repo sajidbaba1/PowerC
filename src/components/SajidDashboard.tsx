@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload, Rocket, Check, CheckCheck } from "lucide-react";
+import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload, Rocket, Check, CheckCheck, Ghost, Flame, Coffee, HeartOff, MapPin, Calendar, Lock, Unlock, Play, Pause, Music, Stars, Layout, Plus } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import confetti from "canvas-confetti";
@@ -34,7 +34,15 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
     const [isDrawing, setIsDrawing] = useState(false);
     const [showStickers, setShowStickers] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
-    const [profile, setProfile] = useState<{ name: string, avatarUrl: string | null } | null>(null);
+    const [showLoveWall, setShowLoveWall] = useState(false);
+    const [showMilestones, setShowMilestones] = useState(false);
+    const [loveNotes, setLoveNotes] = useState<any[]>([]);
+    const [milestones, setMilestones] = useState<any[]>([]);
+    const [currentHug, setCurrentHug] = useState<boolean>(false);
+    const [currentKiss, setCurrentKiss] = useState<boolean>(false);
+    const [unlockTimer, setUnlockTimer] = useState<Record<string, string>>({});
+    const [isSecretMode, setIsSecretMode] = useState(false);
+    const [secretUnlockTime, setSecretUnlockTime] = useState<string>("20:00");
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -47,6 +55,18 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
     const isTypingRef = useRef(false);
     const [showRocket, setShowRocket] = useState(false);
     const [chatWallpaper, setChatWallpaper] = useState<string | null>(null);
+
+    const isUnlocked = (msg: any) => {
+        if (msg.type !== "secret" || msg.sender === "sajid") return true;
+        if (!msg.unlockAt) return true;
+
+        const now = new Date();
+        const [hours, minutes] = msg.unlockAt.split(':').map(Number);
+        const unlockTime = new Date();
+        unlockTime.setHours(hours, minutes, 0, 0);
+
+        return now >= unlockTime;
+    };
 
     useEffect(() => {
         const savedWallpaper = localStorage.getItem(`chatWallpaper_sajid_${activeChat}`);
@@ -77,8 +97,48 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                 console.error("Failed to fetch profiles", e);
             }
         };
+        const fetchLoveNotes = async () => {
+            const res = await fetch("/api/lovenotes");
+            const data = await res.json();
+            if (Array.isArray(data)) setLoveNotes(data);
+        };
+        const fetchMilestones = async () => {
+            const res = await fetch("/api/milestones");
+            const data = await res.json();
+            if (Array.isArray(data)) setMilestones(data);
+        };
+        const recordLogin = async () => {
+            await fetch("/api/admin/login-history", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ role: "sajid" })
+            });
+        };
+
         fetchProfiles();
+        fetchLoveNotes();
+        fetchMilestones();
+        recordLogin();
     }, []);
+
+    const handleMoodUpdate = async (mood: string) => {
+        try {
+            const res = await fetch("/api/profiles", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    role: "sajid",
+                    mood,
+                    name: profiles.sajid?.name,
+                    avatarUrl: profiles.sajid?.avatarUrl
+                })
+            });
+            const updated = await res.json();
+            setProfiles(prev => ({ ...prev, sajid: updated }));
+        } catch (e) {
+            console.error("Failed to update mood", e);
+        }
+    };
 
     const handleClearChat = async () => {
         if (!confirm("Clear this chat permanently?")) return;
@@ -274,6 +334,32 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             }
         });
 
+        channel.bind("profile-update", (data: { role: string, profile: any }) => {
+            setProfiles(prev => ({ ...prev, [data.role]: data.profile }));
+        });
+
+        channel.bind("hug", () => {
+            setCurrentHug(true);
+            setTimeout(() => setCurrentHug(false), 5000);
+        });
+
+        channel.bind("kiss", () => {
+            setCurrentKiss(true);
+            setTimeout(() => setCurrentKiss(false), 5000);
+        });
+
+        channel.bind("new-lovenote", (note: any) => {
+            setLoveNotes(prev => [note, ...prev]);
+        });
+
+        channel.bind("delete-lovenote", (data: { id: string }) => {
+            setLoveNotes(prev => prev.filter(n => n.id !== data.id));
+        });
+
+        channel.bind("new-milestone", (milestone: any) => {
+            setMilestones(prev => [...prev, milestone].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+        });
+
         channel.bind("messages-seen", (data: { messageIds: string[] }) => {
             setMessages((prev) => {
                 const chatMessages = prev[activeChat] || [];
@@ -348,52 +434,152 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
         setShowRocket(true);
         const duration = 5 * 1000;
         const animationEnd = Date.now() + duration;
-        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
-
-        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
         const interval: any = setInterval(function () {
             const timeLeft = animationEnd - Date.now();
-
             if (timeLeft <= 0) {
+                setShowRocket(false);
                 return clearInterval(interval);
             }
+            confetti({
+                particleCount: 2,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: ["#ff0000", "#ffa500", "#ff69b4"]
+            });
+            confetti({
+                particleCount: 2,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: ["#ff0000", "#ffa500", "#ff69b4"]
+            });
+        }, 50);
 
-            const particleCount = 50 * (timeLeft / duration);
-            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
-            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
-        }, 250);
-
-        setTimeout(() => {
-            setFireworkText(null);
-            setShowRocket(false);
-        }, duration);
+        setTimeout(() => setFireworkText(null), 5000);
     };
 
     const sendHeartFirework = async () => {
-        const text = "I love you Nasywa ❤️";
-        const message = {
-            id: `firework - ${Date.now()} `,
-            text: text,
+        const text = "I love you ❤️";
+        const msgId = `msg-${Date.now()}`;
+        const newMessage = {
+            id: msgId,
+            text,
             sender: "sajid",
-            type: "heart_firework",
-            timestamp: new Date().toLocaleTimeString(),
-            status: "sent"
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            status: "sending",
+            type: "heart_firework"
         };
 
-        // Trigger locally immediately
-        lastFireworkId.current = message.id;
-        triggerFirework(text);
+        setMessages(prev => ({
+            ...prev,
+            [activeChat]: [...prev[activeChat], newMessage]
+        }));
 
         await fetch("/api/messages", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                user1: "sajid",
-                user2: "nasywa",
-                message: message
-            })
+            body: JSON.stringify({ user1: "sajid", user2: activeChat, message: newMessage })
         });
+
+        triggerFirework(text);
+    };
+
+    const sendHug = async () => {
+        const sorted = ["sajid", activeChat].sort();
+        const chatKey = `${sorted[0]}-${sorted[1]}`;
+
+        // Broadcast via a special event
+        setCurrentHug(true);
+        setTimeout(() => setCurrentHug(false), 5000);
+
+        // We also save it as a message type so it shows in history
+        const msgId = `msg-${Date.now()}`;
+        const newMessage = {
+            id: msgId,
+            text: "Sent you a Huge Hug! 🤗",
+            sender: "sajid",
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            status: "sending",
+            type: "hug"
+        };
+
+        setMessages(prev => ({ ...prev, [activeChat]: [...prev[activeChat], newMessage] }));
+
+        await fetch("/api/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user1: "sajid", user2: activeChat, message: newMessage })
+        });
+
+        // Trigger the animation for the other person
+        await fetch("/api/chat/animation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chatKey, type: "hug" })
+        });
+    };
+
+    const sendKiss = async () => {
+        const sorted = ["sajid", activeChat].sort();
+        const chatKey = `${sorted[0]}-${sorted[1]}`;
+
+        setCurrentKiss(true);
+        setTimeout(() => setCurrentKiss(false), 5000);
+
+        const msgId = `msg-${Date.now()}`;
+        const newMessage = {
+            id: msgId,
+            text: "Sent you a Big Kiss! 💋",
+            sender: "sajid",
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            status: "sending",
+            type: "kiss"
+        };
+
+        setMessages(prev => ({ ...prev, [activeChat]: [...prev[activeChat], newMessage] }));
+
+        await fetch("/api/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user1: "sajid", user2: activeChat, message: newMessage })
+        });
+
+        await fetch("/api/chat/animation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chatKey, type: "kiss" })
+        });
+    };
+
+    const handleAddLoveNote = async (text: string) => {
+        const res = await fetch("/api/lovenotes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, author: "sajid" })
+        });
+        const note = await res.json();
+        setLoveNotes(prev => [note, ...prev]);
+    };
+
+    const handleDeleteLoveNote = async (id: string) => {
+        await fetch("/api/lovenotes", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id })
+        });
+        setLoveNotes(prev => prev.filter(n => n.id !== id));
+    };
+
+    const handleAddMilestone = async (data: { title: string, date: string }) => {
+        const res = await fetch("/api/milestones", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        const milestone = await res.json();
+        setMilestones(prev => [...prev, milestone].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
     };
 
     const handleSend = async (textOverride?: string, isSticker = false) => {
@@ -525,7 +711,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                             </div>
                             <div>
                                 <h2 className="font-semibold text-sm lg:text-base">{profiles.sajid?.name || user.name}</h2>
-                                <p className="text-xs text-muted-foreground">Learning Indonesian</p>
+                                <p className="text-xs text-muted-foreground mr-1 capitalize">{profiles.sajid?.mood ? `Feeling ${profiles.sajid.mood}` : "Learning Indonesian"}</p>
                             </div>
                         </div>
                         <div className="flex gap-1">
@@ -536,6 +722,45 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                 <LogOut className="w-4 h-4 lg:w-5 lg:h-5 text-muted-foreground" />
                             </button>
                         </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar">
+                        {[
+                            { label: "Happy", icon: Smile, color: "text-yellow-500", bg: "bg-yellow-500/10" },
+                            { label: "Miss You", icon: Heart, color: "text-pink-500", bg: "bg-pink-500/10" },
+                            { label: "Tired", icon: Coffee, color: "text-orange-500", bg: "bg-orange-500/10" },
+                            { label: "Need a Hug", icon: Ghost, color: "text-blue-500", bg: "bg-blue-500/10" }
+                        ].map((m) => (
+                            <button
+                                key={m.label}
+                                onClick={() => handleMoodUpdate(m.label)}
+                                className={cn(
+                                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all shrink-0",
+                                    profiles.sajid?.mood === m.label
+                                        ? `${m.bg} border-${m.color.split('-')[1]}-500/50 scale-105`
+                                        : "bg-transparent border-transparent hover:bg-muted"
+                                )}
+                            >
+                                <m.icon className={cn("w-3.5 h-3.5", m.color)} />
+                                <span className="text-[10px] font-bold whitespace-nowrap">{m.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                        <button
+                            onClick={() => setShowLoveWall(true)}
+                            className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-xl py-2.5 text-xs font-bold shadow-lg shadow-pink-500/20 hover:scale-[1.02] transition-all"
+                        >
+                            <Layout className="w-3.5 h-3.5" />
+                            Love Wall
+                        </button>
+                        <button
+                            onClick={() => setShowMilestones(true)}
+                            className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-indigo-500 to-purple-500 text-white rounded-xl py-2.5 text-xs font-bold shadow-lg shadow-indigo-500/20 hover:scale-[1.02] transition-all"
+                        >
+                            <Calendar className="w-3.5 h-3.5" />
+                            Milestones
+                        </button>
                     </div>
                 </div>
 
@@ -595,7 +820,17 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         </div>
                         <div className="min-w-0">
                             <h2 className="font-semibold text-sm lg:text-base capitalize truncate">{profiles[activeChat]?.name || activeChat}</h2>
-                            <p className="text-[10px] lg:text-xs text-green-500">Online</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-[10px] lg:text-xs text-green-500 flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                    Online
+                                </p>
+                                {profiles[activeChat]?.mood && (
+                                    <span className="text-[10px] lg:text-xs text-muted-foreground flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded-full border border-white/10 uppercase tracking-tighter">
+                                        is feeling {profiles[activeChat].mood}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -660,6 +895,14 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                         <div className="text-sm lg:text-base break-words">
                                             {msg.imageUrl ? (
                                                 <img src={msg.imageUrl} alt="Sent" className="max-w-full rounded-lg mb-2 shadow-lg cursor-pointer" onClick={() => window.open(msg.imageUrl, '_blank')} />
+                                            ) : msg.type === "secret" && !isUnlocked(msg) ? (
+                                                <div className="flex flex-col items-center gap-2 py-4 px-8 opacity-50 select-none">
+                                                    <Lock className="w-8 h-8 animate-pulse text-amber-500" />
+                                                    <p className="text-[10px] font-bold uppercase tracking-widest text-center">
+                                                        Secret Message<br />
+                                                        <span className="text-amber-500">Unlocks at {msg.unlockAt}</span>
+                                                    </p>
+                                                </div>
                                             ) : msg.isHeart ? (
                                                 <motion.div
                                                     animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
@@ -779,6 +1022,30 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                             className="p-2 hover:bg-white/5 rounded-xl transition-colors shrink-0"
                                         >
                                             <Palette className="w-5 h-5 text-muted-foreground" />
+                                        </button>
+                                        <button
+                                            onClick={sendHug}
+                                            className="p-2 hover:bg-blue-500/10 rounded-xl transition-colors shrink-0 group"
+                                            title="Send a Virtual Hug"
+                                        >
+                                            <Ghost className="w-5 h-5 text-blue-500 group-hover:scale-125 transition-transform" />
+                                        </button>
+                                        <button
+                                            onClick={sendKiss}
+                                            className="p-2 hover:bg-pink-500/10 rounded-xl transition-colors shrink-0 group"
+                                            title="Send a Virtual Kiss"
+                                        >
+                                            <Flame className="w-5 h-5 text-pink-500 group-hover:scale-125 transition-transform" />
+                                        </button>
+                                        <button
+                                            onClick={() => setIsSecretMode(!isSecretMode)}
+                                            className={cn(
+                                                "p-2 rounded-xl transition-colors shrink-0 group",
+                                                isSecretMode ? "bg-amber-500/20 text-amber-500" : "hover:bg-white/5 text-muted-foreground"
+                                            )}
+                                            title="Send a Secret Surprise"
+                                        >
+                                            {isSecretMode ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
                                         </button>
                                         <button
                                             onClick={sendHeartFirework}
@@ -1066,6 +1333,62 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                 }
             </AnimatePresence >
 
+            {/* Fullscreen Animations: Hug & Kiss */}
+            <AnimatePresence>
+                {currentHug && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.5 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+                    >
+                        <div className="relative">
+                            <motion.div
+                                animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
+                                transition={{ repeat: Infinity, duration: 2 }}
+                            >
+                                <Ghost className="w-64 h-64 text-blue-400 drop-shadow-[0_0_30px_rgba(96,165,250,0.5)]" />
+                            </motion.div>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: -40 }}
+                                className="absolute inset-x-0 -bottom-10 text-center"
+                            >
+                                <span className="text-4xl font-black text-white drop-shadow-lg uppercase tracking-widest bg-black/20 px-4 py-2 rounded-2xl backdrop-blur-sm whitespace-nowrap">A Huge Hug! 🤗</span>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {currentKiss && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.5 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+                    >
+                        <div className="relative text-center">
+                            <motion.div
+                                animate={{ y: [0, -20, 0], scale: [1, 1.1, 1] }}
+                                transition={{ repeat: Infinity, duration: 1.5 }}
+                            >
+                                <Flame className="w-64 h-64 text-pink-500 drop-shadow-[0_0_30px_rgba(236,72,153,0.5)] fill-current mx-auto" />
+                            </motion.div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Heart className="w-32 h-32 text-white animate-ping opacity-50" />
+                            </div>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: -40 }}
+                                className="absolute inset-x-0 -bottom-10 text-center"
+                            >
+                                <span className="text-4xl font-black text-white drop-shadow-lg uppercase tracking-widest bg-black/20 px-4 py-2 rounded-2xl backdrop-blur-sm whitespace-nowrap">Big Kiss! 💋</span>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Firework Text & Rocket Overlay */}
             <AnimatePresence>
                 {
@@ -1094,6 +1417,27 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                     )
                 }
             </AnimatePresence >
+
+            {/* Love Features Overlays */}
+            <AnimatePresence>
+                {showLoveWall && (
+                    <LoveWallOverlay
+                        notes={loveNotes}
+                        onClose={() => setShowLoveWall(false)}
+                        onAdd={handleAddLoveNote}
+                        onDelete={handleDeleteLoveNote}
+                        role="sajid"
+                    />
+                )}
+                {showMilestones && (
+                    <MilestonesOverlay
+                        milestones={milestones}
+                        onClose={() => setShowMilestones(false)}
+                        onAdd={handleAddMilestone}
+                        role="sajid"
+                    />
+                )}
+            </AnimatePresence>
         </div >
     );
 }
@@ -1205,4 +1549,197 @@ function dataURLtoFile(dataurl: string, filename: string) {
         u8arr[n] = bstr.charCodeAt(n);
     }
     return new File([u8arr], filename, { type: mime });
+}
+
+function LoveWallOverlay({ notes, onClose, onAdd, onDelete, role }: { notes: any[], onClose: () => void, onAdd: (text: string) => void, onDelete: (id: string) => void, role: string }) {
+    const [newNote, setNewNote] = useState("");
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 lg:p-8"
+        >
+            <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                className="bg-card w-full max-w-4xl max-h-[90vh] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl flex flex-col"
+            >
+                <div className="p-6 border-b border-border flex items-center justify-between bg-gradient-to-r from-pink-500/10 to-rose-500/10">
+                    <div>
+                        <h3 className="text-2xl font-black flex items-center gap-3">
+                            <Heart className="text-pink-500 fill-current" />
+                            Our Love Wall
+                        </h3>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">Capture every sweet moment</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 lg:p-10 custom-scrollbar">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="p-6 rounded-3xl bg-white/5 border-2 border-dashed border-white/10 flex flex-col gap-4">
+                            <textarea
+                                value={newNote}
+                                onChange={(e) => setNewNote(e.target.value)}
+                                placeholder="I love when you..."
+                                className="flex-1 bg-transparent resize-none outline-none text-sm font-medium italic placeholder:text-muted-foreground/30"
+                            />
+                            <button
+                                onClick={() => {
+                                    if (newNote.trim()) {
+                                        onAdd(newNote);
+                                        setNewNote("");
+                                    }
+                                }}
+                                className="w-full py-2.5 bg-pink-500 text-white rounded-xl text-xs font-bold hover:bg-pink-600 transition-all flex items-center justify-center gap-2"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Add Note
+                            </button>
+                        </div>
+
+                        {notes.map((note) => (
+                            <motion.div
+                                key={note.id}
+                                layout
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="p-6 rounded-3xl bg-gradient-to-br from-pink-500/5 to-rose-500/5 border border-pink-500/20 shadow-lg relative group overflow-hidden"
+                            >
+                                <div className="absolute -top-4 -right-4 w-12 h-12 bg-pink-500/10 rounded-full blur-xl group-hover:bg-pink-500/20 transition-all" />
+                                <p className="text-sm font-medium italic mb-4 leading-relaxed">{note.text}</p>
+                                <div className="flex items-center justify-between mt-auto">
+                                    <div className="flex items-center gap-2">
+                                        <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black uppercase text-white", note.author === 'sajid' ? 'bg-blue-500' : 'bg-pink-500')}>
+                                            {note.author[0]}
+                                        </div>
+                                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">{new Date(note.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                    {note.author === role && (
+                                        <button
+                                            onClick={() => onDelete(note.id)}
+                                            className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-red-500 rounded-lg transition-all"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+}
+
+function MilestonesOverlay({ milestones, onClose, onAdd, role }: { milestones: any[], onClose: () => void, onAdd: (data: any) => void, role: string }) {
+    const [title, setTitle] = useState("");
+    const [date, setDate] = useState("");
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 lg:p-8"
+        >
+            <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                className="bg-card w-full max-w-2xl max-h-[90vh] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl flex flex-col"
+            >
+                <div className="p-6 border-b border-border flex items-center justify-between bg-gradient-to-r from-indigo-500/10 to-purple-500/10">
+                    <div>
+                        <h3 className="text-2xl font-black flex items-center gap-3">
+                            <Calendar className="text-indigo-500" />
+                            Our Journey
+                        </h3>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">Every step of the way</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar">
+                    <div className="space-y-8 relative">
+                        {/* Timeline line */}
+                        <div className="absolute left-[11px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-indigo-500/50 to-purple-500/50" />
+
+                        {milestones.map((m, idx) => {
+                            const mDate = new Date(m.date);
+                            const diff = mDate.getTime() - Date.now();
+                            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                            const isPast = days < 0;
+
+                            return (
+                                <motion.div
+                                    key={m.id}
+                                    initial={{ x: -20, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    className="flex gap-6 relative"
+                                >
+                                    <div className={cn(
+                                        "w-6 h-6 rounded-full border-2 border-background z-10 shrink-0 mt-1",
+                                        isPast ? "bg-indigo-500" : "bg-white border-indigo-500 animate-pulse"
+                                    )} />
+                                    <div className="flex-1 p-4 rounded-2xl bg-white/5 border border-white/10 shadow-lg">
+                                        <h4 className="font-black text-sm uppercase tracking-wider">{m.title}</h4>
+                                        <div className="flex items-center gap-3 mt-2">
+                                            <span className="text-[10px] font-bold text-muted-foreground uppercase">{mDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                                            <span className={cn(
+                                                "text-[10px] font-black px-2 py-0.5 rounded-full",
+                                                isPast ? "bg-white/10 text-white/50" : "bg-green-500/20 text-green-500"
+                                            )}>
+                                                {isPast ? "COMPLETED" : `${Math.abs(days)} DAYS TO GO`}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+
+                        <div className="flex gap-6 relative">
+                            <div className="w-6 h-6 rounded-full border-2 border-dashed border-indigo-500/50 z-10 shrink-0 mt-1" />
+                            <div className="flex-1 p-6 rounded-2xl bg-indigo-500/5 border-2 border-dashed border-indigo-500/20 flex flex-col gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <input
+                                        type="text"
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        placeholder="Event Name"
+                                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"
+                                    />
+                                    <input
+                                        type="date"
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        if (title && date) {
+                                            onAdd({ title, date });
+                                            setTitle("");
+                                            setDate("");
+                                        }
+                                    }}
+                                    className="w-full py-3 bg-indigo-500 text-white rounded-xl text-xs font-bold hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20"
+                                >
+                                    Add New Milestone
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
 }

@@ -15,7 +15,8 @@ import {
     Database,
     Image as ImageIcon,
     Menu,
-    X
+    X,
+    Clock
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -35,12 +36,24 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
     const [newKey, setNewKey] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showSidebar, setShowSidebar] = useState(false);
+    const [loginHistory, setLoginHistory] = useState<any[]>([]);
 
     useEffect(() => {
         fetchKeys();
+        fetchLoginHistory();
         const savedTheme = localStorage.getItem('power-couple-theme');
         if (savedTheme) setPalette(savedTheme);
     }, []);
+
+    const fetchLoginHistory = async () => {
+        try {
+            const res = await fetch("/api/admin/login-history");
+            const data = await res.json();
+            setLoginHistory(Array.isArray(data) ? data : []);
+        } catch (e) {
+            console.error("Failed to fetch login history", e);
+        }
+    };
 
     const fetchKeys = async () => {
         try {
@@ -234,6 +247,21 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                         >
                             <ImageIcon className="w-5 h-5" />
                             <span className="font-semibold text-sm">Media Gallery</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab("login-history");
+                                setShowSidebar(false);
+                            }}
+                            className={cn(
+                                "w-full p-3 lg:p-4 rounded-2xl transition-all flex items-center gap-3",
+                                activeTab === "login-history"
+                                    ? "bg-primary/10 border-2 border-primary"
+                                    : "glass border border-white/5 hover:border-white/20"
+                            )}
+                        >
+                            <Clock className="w-5 h-5" />
+                            <span className="font-semibold text-sm">Login History</span>
                         </button>
                     </div>
                 </div>
@@ -443,6 +471,68 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                         </div>
 
                         <MediaGallery />
+                    </div>
+                )}
+                {activeTab === "login-history" && (
+                    <div className="space-y-8">
+                        <div>
+                            <h1 className="text-3xl font-bold mb-2">Login History</h1>
+                            <p className="text-muted-foreground">Monitor when Sajid and Nasywa log in</p>
+                        </div>
+
+                        <div className="glass border border-white/5 rounded-3xl overflow-hidden">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-white/5 border-b border-white/10 text-xs font-black uppercase tracking-widest text-muted-foreground">
+                                        <th className="px-6 py-4">User</th>
+                                        <th className="px-6 py-4">Time (12h)</th>
+                                        <th className="px-6 py-4">Date</th>
+                                        <th className="px-6 py-4 text-right">Relative Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loginHistory.map((login) => {
+                                        const date = new Date(login.timestamp);
+                                        const time12 = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                                        const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+
+                                        // Simple time ago
+                                        const diff = Date.now() - date.getTime();
+                                        const mins = Math.floor(diff / 60000);
+                                        const hrs = Math.floor(mins / 60);
+                                        const days = Math.floor(hrs / 24);
+
+                                        let timeAgo = "";
+                                        if (days > 0) timeAgo = `${days}d ago`;
+                                        else if (hrs > 0) timeAgo = `${hrs}hr ago`;
+                                        else if (mins > 0) timeAgo = `${mins}m ago`;
+                                        else timeAgo = "Just now";
+
+                                        return (
+                                            <tr key={login.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={cn(
+                                                            "w-2 h-2 rounded-full",
+                                                            login.role === "sajid" ? "bg-blue-500" : "bg-pink-500"
+                                                        )} />
+                                                        <span className="font-semibold capitalize">{login.role}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm font-medium">{time12}</td>
+                                                <td className="px-6 py-4 text-sm text-muted-foreground">{dateStr}</td>
+                                                <td className="px-6 py-4 text-sm text-right font-black text-indigo-400">{timeAgo}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {loginHistory.length === 0 && (
+                                        <tr>
+                                            <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground italic">No login records found.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
             </main>

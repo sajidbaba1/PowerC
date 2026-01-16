@@ -59,7 +59,11 @@ export async function POST(req: Request) {
                     translation: message.translation,
                     hindiTranslation: message.hindiTranslation,
                     wordBreakdown: message.wordBreakdown,
-                    status: message.status || "sent"
+                    status: message.status || "sent",
+                    imageUrl: message.imageUrl,
+                    audioUrl: message.audioUrl,
+                    unlockAt: message.unlockAt ? new Date(message.unlockAt) : undefined,
+                    type: message.type || "text"
                 }
             });
         } else {
@@ -74,7 +78,11 @@ export async function POST(req: Request) {
                     receiver: user2 === message.sender ? user1 : user2,
                     chatKey: chatKey,
                     wordBreakdown: message.wordBreakdown,
-                    status: message.status || "sent"
+                    status: message.status || "sent",
+                    imageUrl: message.imageUrl,
+                    audioUrl: message.audioUrl,
+                    unlockAt: message.unlockAt ? new Date(message.unlockAt) : undefined,
+                    type: message.type || "text"
                 }
             });
         }

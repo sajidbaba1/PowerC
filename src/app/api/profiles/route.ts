@@ -34,17 +34,32 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
-        const { role, name, avatarUrl } = await req.json();
+        const { role, name, avatarUrl, mood } = await req.json();
 
         if (!role) {
             return NextResponse.json({ error: "Role required" }, { status: 400 });
         }
 
         const prisma = getPrisma();
+        const data: any = { name, avatarUrl };
+        if (mood) {
+            data.mood = mood;
+            data.moodUpdatedAt = new Date();
+        }
+
         const profile = await prisma.profile.upsert({
             where: { role },
-            update: { name, avatarUrl },
-            create: { role, name, avatarUrl }
+            update: data,
+            create: { role, ...data }
+        });
+
+        // Broadcast profile update
+        const sorted = ["sajid", "nasywa"].sort();
+        const chatKey = `${sorted[0]}-${sorted[1]}`;
+        const { pusherServer } = await import("@/lib/pusher");
+        await pusherServer.trigger(chatKey, "profile-update", {
+            role,
+            profile
         });
 
         return NextResponse.json(profile);

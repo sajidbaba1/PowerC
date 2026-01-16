@@ -19,11 +19,13 @@ model ApiKey {
 }
 
 model Profile {
-  id        String   @id @default(cuid())
-  role      String   @unique // sajid or nasywa
-  name      String
-  avatarUrl String?
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  role          String   @unique // sajid or nasywa
+  name          String
+  avatarUrl     String?
+  mood          String?  // Happy, Miss You, Tired, Need a Hug
+  moodUpdatedAt DateTime?
+  updatedAt     DateTime @updatedAt
 }
 
 model Message {
@@ -35,8 +37,37 @@ model Message {
   receiver         String   // nasywa, sajid or admin
   chatKey          String   // e.g., "nasywa-sajid"
   status           String   @default("sent")
+  type             String   @default("text") // text, image, sticker, heart_firework, hug, kiss, audio, secret
   wordBreakdown    Json?    // Array of {word, hindi, meaning}
+  imageUrl         String?
+  audioUrl         String?
+  unlockAt         DateTime? // For secret messages
   createdAt        DateTime @default(now())
+}
+
+model LoveNote {
+  id        String   @id @default(cuid())
+  content   String?
+  imageUrl  String?
+  sender    String
+  x         Float    @default(0) // For positioning on the wall
+  y         Float    @default(0)
+  rotation  Float    @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Milestone {
+  id        String   @id @default(cuid())
+  title     String
+  date      DateTime
+  type      String   @default("anniversary") // anniversary, birthday, date, other
+  createdAt DateTime @default(now())
+}
+
+model LoginHistory {
+  id        String   @id @default(cuid())
+  role      String   // sajid or nasywa
+  timestamp DateTime @default(now())
 }
 
 model Image {
