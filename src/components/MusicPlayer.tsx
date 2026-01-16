@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Music, Play, Pause, SkipForward, Trash2, Volume2, Minimize2, Search, PlusCircle, X, Loader2 } from 'lucide-react';
+import { Music, Play, Pause, SkipForward, Trash2, Volume2, Minimize2, Search, PlusCircle, X, Loader2, Shuffle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Dynamic import for ReactPlayer to avoid SSR issues
@@ -16,6 +16,33 @@ export interface Song {
     effect: EffectType;
 }
 
+const LOCAL_SONGS: Song[] = [
+    {
+        id: "l1",
+        title: "Saiyaara Reprise (Slowed)",
+        url: "/songs/Saiyaara Reprise Female (Slowed  Reverb)  Shreya Ghoshal  SR Lofi.mp3",
+        effect: "snow"
+    },
+    {
+        id: "l2",
+        title: "Oh Oh Jane Jaana (Slowed)",
+        url: "/songs/Oh Oh Jane Jaana (Slowed  Reverbed).mp3",
+        effect: "hearts"
+    },
+    {
+        id: "l3",
+        title: "Na Rasta Maloom",
+        url: "/songs/na rasta maloom na tere naam pata maloom  na rasta maloom  na rasta maloom lofi (1).mp3",
+        effect: "rain"
+    },
+    {
+        id: "l4",
+        title: "Mere Mehboob Qayamat Hogi",
+        url: "/songs/Mere Mehboob Qayamat Hogi - Slowed reverb  Abhay Jain  Mere Mehboob Qayamat Hogi lofi Lover Boy G.mp3",
+        effect: "hearts"
+    }
+];
+
 interface MusicPlayerProps {
     activeChat: string;
     pusherClient: any;
@@ -25,13 +52,7 @@ interface MusicPlayerProps {
 }
 
 export default function MusicPlayer({ activeChat, pusherClient, currentEffect, onEffectChange, onPlayingChange }: MusicPlayerProps) {
-    const [playlist, setPlaylist] = useState<Song[]>([
-        { id: "1", url: "https://youtu.be/xq01EtpC1jc", title: "Night Changes", effect: "snow" },
-        { id: "2", url: "https://youtu.be/_uxvtB7iLlA", title: "Perfect", effect: "hearts" },
-        { id: "3", url: "https://youtu.be/6fUMMBjLkQw", title: "Dandelions", effect: "rain" },
-        { id: "4", url: "https://youtu.be/cYzy0e0rPPQ", title: "Until I Found You", effect: "hearts" },
-        { id: "5", url: "https://youtu.be/PA5-dSV32YM", title: "At My Worst", effect: "snow" },
-    ]);
+    const [playlist, setPlaylist] = useState<Song[]>(LOCAL_SONGS);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -46,7 +67,7 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
 
     useEffect(() => setMounted(true), []);
 
-    // Interaction Listener for Safe Autoplay
+    // Interaction Listener
     useEffect(() => {
         const handleInteraction = () => setHasInteracted(true);
         window.addEventListener('click', handleInteraction);
@@ -57,10 +78,20 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
         };
     }, []);
 
-    // Notify parent about playing state
+    // Notify parent
     useEffect(() => {
         if (onPlayingChange) onPlayingChange(isPlaying);
     }, [isPlaying, onPlayingChange]);
+
+    // Shuffle on Mount (Client-side)
+    useEffect(() => {
+        // Only shuffle if we are using the default local list (prevent shuffling active shared sessions randomly)
+        // Actually, let's just shuffle the LOCAL_SONGS initially
+        const shuffled = [...LOCAL_SONGS].sort(() => Math.random() - 0.5);
+        // We only set this if we haven't loaded a playlist from DB yet? 
+        // For now, let's just set it. 
+        setPlaylist(shuffled);
+    }, []);
 
     // Sync state via Pusher & Fetch Data
     useEffect(() => {
@@ -78,6 +109,7 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
         fetch(`/api/chat/music?chatKey=${chatKey}`)
             .then(res => res.json())
             .then(data => {
+                // Only overwrite if DB has data, otherwise keep our local shuffle
                 if (data.playlist && data.playlist.length > 0) {
                     setPlaylist(data.playlist);
                 }
@@ -95,7 +127,7 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
         return () => channel.unbind("music-update");
     }, [pusherClient, activeChat, currentIndex, isPlaying]);
 
-    // Update effect when song changes or plays
+    // Update effect
     useEffect(() => {
         const song = playlist[currentIndex];
         if (song && isPlaying) {
@@ -106,7 +138,6 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
     }, [currentIndex, isPlaying, playlist, onEffectChange, currentEffect]);
 
     const broadcastState = async (updates: Partial<{ playlist: Song[], index: number, isPlaying: boolean }>) => {
-        // Optimistic update
         if (updates.playlist !== undefined) setPlaylist(updates.playlist);
         if (updates.index !== undefined) setCurrentIndex(updates.index);
         if (updates.isPlaying !== undefined) setIsPlaying(updates.isPlaying);
@@ -138,10 +169,8 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
 
     const handleDelete = (id: string) => {
         const newPlaylist = playlist.filter(s => s.id !== id);
-        // Adjust index if needed
         let newIndex = currentIndex;
         if (currentIndex >= newPlaylist.length) newIndex = Math.max(0, newPlaylist.length - 1);
-
         broadcastState({ playlist: newPlaylist, index: newIndex });
     };
 
@@ -166,23 +195,21 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
             id: Date.now().toString(),
             url: video.url || `https://www.youtube.com/watch?v=${video.id}`,
             title: video.title || video.snippet?.title || "Unknown Song",
-            effect: "hearts" // Default effect
+            effect: "hearts"
         };
 
-        // Add to playlist AND Play Immediately
         const newPlaylist = [...playlist, newSong];
         const newIndex = newPlaylist.length - 1;
 
-        setSearchQuery(""); // Clear search
-        setSearchResults([]); // Close results
+        setSearchQuery("");
+        setSearchResults([]);
 
         broadcastState({
             playlist: newPlaylist,
-            index: newIndex, // Jump to this new song
-            isPlaying: true // Auto play
+            index: newIndex,
+            isPlaying: true
         });
-
-        setHasInteracted(true); // Assume click is interaction
+        setHasInteracted(true);
     };
 
     if (!mounted) return null;
@@ -190,7 +217,6 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
     return (
         <>
             <div className="fixed bottom-4 left-4 z-[300]">
-                {/* Minimized Player Button */}
                 {!isExpanded && (
                     <button
                         onClick={() => setIsExpanded(true)}
@@ -200,7 +226,6 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                     </button>
                 )}
 
-                {/* Hidden React Player (Technically visible 1px to bypass browser checks) */}
                 <div className="fixed bottom-0 right-0 w-px h-px overflow-hidden z-[9999]">
                     <ReactPlayer
                         url={playlist[currentIndex]?.url}
@@ -208,30 +233,22 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                         volume={volume}
                         muted={false}
                         onEnded={handleNext}
-                        onReady={() => console.log("Player Ready")}
-                        onStart={() => console.log("Player Started")}
-                        onPlay={() => console.log("Player Playing")}
-                        onError={(e: any) => console.log("Player Status:", e.target?.error || "Error")}
                         width="1px"
                         height="1px"
                         playsinline={true}
+                        // Remove YouTube config for local files, or keep generic
                         config={{
-                            youtube: {
-                                playerVars: { showinfo: 0, controls: 0, disablekb: 1, origin: typeof window !== 'undefined' ? window.location.origin : undefined }
-                            }
+                            file: { forceAudio: true }
                         }}
                     />
                 </div>
 
-                {/* Audio Blocked Prompt */}
                 {isPlaying && !hasInteracted && (
                     <div className="fixed bottom-20 left-4 z-[300] bg-pink-500 text-white px-4 py-2 rounded-full shadow-lg animate-bounce cursor-pointer flex items-center gap-2 font-bold text-xs" onClick={() => setHasInteracted(true)}>
                         <Play className="w-3 h-3 fill-current" /> Tap to Join Music 🎵
                     </div>
                 )}
 
-
-                {/* Expanded Player Interface */}
                 <AnimatePresence>
                     {isExpanded && (
                         <motion.div
@@ -250,7 +267,6 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                                 </button>
                             </div>
 
-                            {/* Current Song Display */}
                             {playlist.length > 0 ? (
                                 <div className="mb-4 text-center">
                                     <div className="text-white font-bold truncate">{playlist[currentIndex]?.title}</div>
@@ -280,7 +296,6 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                                 <div className="text-white/50 text-center py-4 text-sm">No songs in playlist</div>
                             )}
 
-                            {/* Search Section (Restored) */}
                             <div className="mt-4 pt-4 border-t border-white/10 relative">
                                 <div className="flex gap-2">
                                     <input
@@ -296,7 +311,6 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                                     </button>
                                 </div>
 
-                                {/* Search Results */}
                                 {searchResults.length > 0 && (
                                     <div className="absolute bottom-full left-0 right-0 mb-2 bg-zinc-900 border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 max-h-[250px] overflow-y-auto">
                                         <div className="flex items-center justify-between p-2 bg-black/50 border-b border-white/5">
@@ -325,7 +339,6 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                                 )}
                             </div>
 
-                            {/* Playlist Mini View */}
                             <div className="mt-4 pt-4 border-t border-white/10">
                                 <div className="text-xs font-bold text-white mb-2 ml-1">Up Next</div>
                                 <div className="max-h-[150px] overflow-y-auto space-y-1">
