@@ -57,6 +57,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
     const [currentMumma, setCurrentMumma] = useState<boolean>(false);
     const [currentBabyBoy, setCurrentBabyBoy] = useState<boolean>(false);
     const [currentBabyGirl, setCurrentBabyGirl] = useState<boolean>(false);
+    const [activeAnimation, setActiveAnimation] = useState<string | null>(null);
     const [isSecretMode, setIsSecretMode] = useState(false);
     const [secretUnlockTime, setSecretUnlockTime] = useState<string>("20:00");
     const [jarNotes, setJarNotes] = useState<any[]>([]);
@@ -379,6 +380,13 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
             setTimeout(() => setCurrentBabyBoy(false), 5000);
         });
 
+        ["goodmorning", "goodafternoon", "goodevening", "goodnight"].forEach(type => {
+            channel.bind(type, () => {
+                setActiveAnimation(type);
+                setTimeout(() => setActiveAnimation(null), 5000);
+            });
+        });
+
         channel.bind("new-lovenote", (note: any) => {
             setLoveNotes(prev => [note, ...prev]);
         });
@@ -595,6 +603,20 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
         });
     };
 
+    const sendGreeting = async (type: string) => {
+        const sorted = ["nasywa", activeChat].sort();
+        const chatKey = `${sorted[0]}-${sorted[1]}`;
+
+        setActiveAnimation(type);
+        setTimeout(() => setActiveAnimation(null), 5000);
+
+        await fetch("/api/chat/animation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chatKey, type })
+        });
+    };
+
     const handleAddLoveNote = async (text: string) => {
         const res = await fetch("/api/lovenotes", {
             method: "POST",
@@ -668,6 +690,13 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
         if (text.toLowerCase().includes("baby boy") || text.toLowerCase().includes("babyboy")) {
             sendBabyBoy();
         }
+
+        // Trigger Greetings
+        const lowerText = text.toLowerCase();
+        if (lowerText.includes("good morning")) sendGreeting("goodmorning");
+        else if (lowerText.includes("good afternoon")) sendGreeting("goodafternoon");
+        else if (lowerText.includes("good evening")) sendGreeting("goodevening");
+        else if (lowerText.includes("good night")) sendGreeting("goodnight");
 
         // 2. Persist to message store INSTANTLY (without translation)
         fetch("/api/messages", {
@@ -1633,6 +1662,45 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                             >
                                 <span className="text-4xl lg:text-6xl font-black text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] bg-black/30 px-8 py-4 rounded-3xl backdrop-blur-md">
                                     Baby Boy... 💙
+                                </span>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {activeAnimation && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.5 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+                    >
+                        <div className="relative text-center">
+                            <motion.div
+                                animate={{
+                                    y: [0, -20, 0],
+                                    scale: [1, 1.1, 1],
+                                    rotate: [0, -5, 5, 0]
+                                }}
+                                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                            >
+                                <span className="text-[100px] lg:text-[200px] leading-none drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">
+                                    {activeAnimation === 'goodmorning' && '☀️'}
+                                    {activeAnimation === 'goodafternoon' && '🌤️'}
+                                    {activeAnimation === 'goodevening' && '🌇'}
+                                    {activeAnimation === 'goodnight' && '🌙'}
+                                </span>
+                            </motion.div>
+                            <motion.div
+                                initial={{ opacity: 0, y: 50 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="absolute inset-x-0 -bottom-20 text-center"
+                            >
+                                <span className="text-4xl lg:text-6xl font-black text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] bg-black/30 px-8 py-4 rounded-3xl backdrop-blur-md whitespace-nowrap">
+                                    {activeAnimation === 'goodmorning' && 'Good Morning, Love! ☀️'}
+                                    {activeAnimation === 'goodafternoon' && 'Good Afternoon, Love! 🌤️'}
+                                    {activeAnimation === 'goodevening' && 'Good Evening, Love! 🌇'}
+                                    {activeAnimation === 'goodnight' && 'Good Night, Love! 🌙'}
                                 </span>
                             </motion.div>
                         </div>
