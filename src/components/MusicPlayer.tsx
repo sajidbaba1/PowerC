@@ -111,18 +111,37 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
         broadcastState({ index: nextIndex });
     };
 
+    // Capture global interaction for browser autoplay policy
+    useEffect(() => {
+        const handleInteraction = () => {
+            setHasInteracted(true);
+            // Once interacted, we can remove the listeners
+            window.removeEventListener('click', handleInteraction);
+            window.removeEventListener('keydown', handleInteraction);
+            window.removeEventListener('touchstart', handleInteraction);
+        };
+        window.addEventListener('click', handleInteraction);
+        window.addEventListener('keydown', handleInteraction);
+        window.addEventListener('touchstart', handleInteraction);
+        return () => {
+            window.removeEventListener('click', handleInteraction);
+            window.removeEventListener('keydown', handleInteraction);
+            window.removeEventListener('touchstart', handleInteraction);
+        };
+    }, []);
+
     const audioRef = useRef<HTMLAudioElement>(null);
 
     // Handle Native Audio Playback
     useEffect(() => {
         if (!audioRef.current) return;
 
-        if (isPlaying && hasInteracted) {
+        if (isPlaying) {
+            // Even if not interacted, we try to play. If it fails, hasInteracted listener will catch the next click.
             const playPromise = audioRef.current.play();
             if (playPromise !== undefined) {
                 playPromise.catch((error: any) => {
-                    console.error("Playback failed (likely browser policy):", error);
-                    // If it fails, we keep hasInteracted so user can try clicking again?
+                    console.log("🎵 Autoplay blocked, waiting for next user interaction...");
                 });
             }
         } else {
@@ -152,27 +171,7 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
             />
 
             <div className="fixed bottom-24 left-4 z-[9999]">
-                {!hasInteracted ? (
-                    // If Admin started music but user hasn't interacted, show "Join Vibe"
-                    <button
-                        onClick={handleStart}
-                        className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2 transition-all text-sm"
-                    >
-                        <Play className="w-4 h-4 fill-current" />
-                        {isPlaying ? "Join Vibe 🎵" : "Start Vibes 🎵"}
-                    </button>
-                ) : !isPlaying ? (
-                    // Only Admin can "Start" from scratch
-                    userRole === 'admin' ? (
-                        <button
-                            onClick={handleStart}
-                            className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2 transition-all text-sm"
-                        >
-                            <Play className="w-4 h-4 fill-current" />
-                            Start Vibes 🎵
-                        </button>
-                    ) : null
-                ) : (
+                {isPlaying && (
                     <div className="flex items-center gap-2 bg-zinc-900/90 border border-pink-500/30 backdrop-blur-md p-2 rounded-full shadow-2xl hover:scale-105 transition-all">
                         <div className="flex items-center gap-2 px-2 max-w-[140px]">
                             <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse shrink-0" />
@@ -189,6 +188,16 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                             </button>
                         )}
                     </div>
+                )}
+
+                {!isPlaying && userRole === 'admin' && (
+                    <button
+                        onClick={handleStart}
+                        className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2 transition-all text-sm"
+                    >
+                        <Play className="w-4 h-4 fill-current" />
+                        Start Vibes 🎵
+                    </button>
                 )}
             </div>
         </>
