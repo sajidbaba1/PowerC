@@ -8,7 +8,13 @@ interface BackgroundEffectsProps {
 }
 
 export default function BackgroundEffects({ effect }: BackgroundEffectsProps) {
-    if (effect === "none") return null;
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted || effect === "none") return null;
 
     const getParticles = () => {
         const count = 30; // Number of particles
