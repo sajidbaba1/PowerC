@@ -115,9 +115,31 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
         fetch(`/api/chat/music?chatKey=${chatKey}`)
             .then(res => res.json())
             .then(data => {
-                // Only overwrite if DB has data, otherwise keep our local shuffle
                 if (data.playlist && data.playlist.length > 0) {
-                    setPlaylist(data.playlist);
+                    // Migration: Check for old default songs (ids 1-5) and replace with Local Songs
+                    const hasOldSongs = data.playlist.some((s: Song) => ["1", "2", "3", "4", "5"].includes(s.id));
+
+                    if (hasOldSongs) {
+                        console.log("Migrating to Local Playlist...");
+                        const shuffled = [...LOCAL_SONGS].sort(() => Math.random() - 0.5);
+                        setPlaylist(shuffled);
+                        // Save this new list to DB immediately
+                        // We can't use broadcastState here easily due to closure/scope, so we restart cleaner
+                        // Actually, we can just let the state settle and user interaction will save it, 
+                        // or explicit call:
+                        fetch("/api/chat/music", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                chatKey,
+                                playlist: shuffled,
+                                index: 0,
+                                isPlaying: false
+                            })
+                        });
+                    } else {
+                        setPlaylist(data.playlist);
+                    }
                 }
             })
             .catch(e => console.error("Failed to load playlist", e));
