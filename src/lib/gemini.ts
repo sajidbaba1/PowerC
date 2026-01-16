@@ -51,7 +51,8 @@ export async function getGeminiModel() {
     if (!apiKey) throw new Error("No Gemini API keys found");
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    // Use stable model names: gemini-1.5-flash or gemini-1.5-pro or gemini-2.0-flash
+    return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 }
 
 export async function translateAndAnalyze(text: string, sourceLang: string, targetLang: string) {
@@ -98,7 +99,7 @@ export async function translateAndAnalyze(text: string, sourceLang: string, targ
             throw new Error("AI Safety filters blocked the response. Try again with different wording.");
         }
 
-        console.log("Raw Gemini Response:", jsonText);
+        console.log("Raw Gemini Response received");
 
         // Robust JSON extraction
         const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
@@ -127,14 +128,13 @@ export async function translateAndAnalyze(text: string, sourceLang: string, targ
             };
         }
     } catch (error: any) {
-        console.error("Gemini API error detailed:", error);
+        console.error("Gemini API error detailed:", error.message || error);
         // Return a graceful failure object that matches the expected structure
+        // Do NOT add error messages to wordBreakdown as it pollutes the user's vocabulary list
         return {
             translation: text,
-            hindiTranslation: "Gemini Error",
-            wordBreakdown: [
-                { word: "Error", [targetLang.toLowerCase()]: "Error", meaning: (error.message || "Unknown API error").substring(0, 50) }
-            ]
+            hindiTranslation: "AI Logic Offline",
+            wordBreakdown: []
         };
     }
 }
