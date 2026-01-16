@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Music, Play, Pause, SkipForward, Trash2, Volume2, Minimize2 } from 'lucide-react';
+import { Music, Play, Pause, SkipForward, Trash2, Volume2, Minimize2, Search, PlusCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Dynamic import for ReactPlayer to avoid SSR issues
@@ -35,9 +35,10 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
     const [isPlaying, setIsPlaying] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const [newUrl, setNewUrl] = useState("");
-    const [newTitle, setNewTitle] = useState("");
     const [newEffect, setNewEffect] = useState<EffectType>("none");
     const [volume, setVolume] = useState(0.5);
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => setMounted(true), []);
@@ -51,13 +52,12 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
             const sorted = ["sajid", "nasywa"].sort();
             chatKey = `${sorted[0]}-${sorted[1]}`;
         } else {
-            chatKey = activeChat; // Fallback
+            chatKey = activeChat;
         }
 
         const channel = pusherClient.subscribe(chatKey);
 
         channel.bind("music-update", (data: any) => {
-            // Only update if data is present and DIFFERENT to avoid loops
             if (data.playlist !== undefined) setPlaylist(data.playlist);
             if (data.index !== undefined && data.index !== currentIndex) setCurrentIndex(data.index);
             if (data.isPlaying !== undefined && data.isPlaying !== isPlaying) setIsPlaying(data.isPlaying);
@@ -77,7 +77,6 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
     }, [currentIndex, isPlaying, playlist, onEffectChange, currentEffect]);
 
     const broadcastState = async (updates: Partial<{ playlist: Song[], index: number, isPlaying: boolean }>) => {
-        // Optimistic update locally
         if (updates.playlist !== undefined) setPlaylist(updates.playlist);
         if (updates.index !== undefined) setCurrentIndex(updates.index);
         if (updates.isPlaying !== undefined) setIsPlaying(updates.isPlaying);
@@ -107,23 +106,70 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
         broadcastState({ index: nextIndex });
     };
 
-    const handleAddSong = async () => {
+    const handleDelete = (id: string) => {
+        const newPlaylist = playlist.filter(s => s.id !== id);
+        broadcastState({ playlist: newPlaylist });
+    };
+
+    const handleSearchOrAdd = async () => {
         if (!newUrl) return;
+        setIsSearching(true);
+        setSearchResults([]);
+
+        // URL Detection
+        if (newUrl.includes("youtube.com") || newUrl.includes("youtu.be")) {
+            let title = `Song ${playlist.length + 1}`;
+
+            // Try fetching title
+            try {
+                let videoId = "";
+                if (newUrl.includes("v=")) videoId = newUrl.split("v=")[1].split("&")[0];
+                else if (newUrl.includes("youtu.be/")) videoId = newUrl.split("youtu.be/")[1];
+
+                if (videoId) {
+                    const res = await fetch(`/api/youtube?videoId=${videoId}`);
+                    const data = await res.json();
+                    if (data.title) title = data.title;
+                }
+            } catch (e) { console.error(e); }
+
+            const song: Song = {
+                id: Date.now().toString(),
+                url: newUrl,
+                title,
+                effect: newEffect
+            };
+
+            const newPlaylist = [...playlist, song];
+            setNewUrl("");
+            broadcastState({ playlist: newPlaylist });
+            setIsSearching(false);
+            return;
+        }
+
+        // Search
+        try {
+            const res = await fetch(`/api/youtube?query=${encodeURIComponent(newUrl)}`);
+            const data = await res.json();
+            if (data.items) {
+                setSearchResults(data.items);
+            }
+        } catch (e) {
+            console.error("Search failed", e);
+        }
+        setIsSearching(false);
+    };
+
+    const addSearchResult = (video: any) => {
         const song: Song = {
             id: Date.now().toString(),
-            url: newUrl,
-            title: newTitle || `Song ${playlist.length + 1}`,
+            url: video.url,
+            title: video.title,
             effect: newEffect
         };
         const newPlaylist = [...playlist, song];
         setNewUrl("");
-        setNewTitle("");
-
-        broadcastState({ playlist: newPlaylist });
-    };
-
-    const handleDelete = (id: string) => {
-        const newPlaylist = playlist.filter(s => s.id !== id);
+        setSearchResults([]);
         broadcastState({ playlist: newPlaylist });
     };
 
@@ -169,7 +215,7 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                             initial={{ scale: 0.8, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.8, opacity: 0, y: 20 }}
-                            className="bg-black/80 glass border border-white/10 backdrop-blur-xl rounded-3xl p-4 w-[350px] shadow-2xl"
+                            className="bg-black/80 glass border border-white/10 backdrop-blur-xl rounded-3xl p-4 w-[350px] shadow-2xl relative"
                         >
                             <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-2">
                                 <div className="flex items-center gap-2">
@@ -211,20 +257,41 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                                 <div className="text-white/50 text-center py-4 text-sm">No songs in playlist</div>
                             )}
 
-                            {/* Add Song Form */}
-                            <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
-                                <input
-                                    placeholder="YouTube Link"
-                                    value={newUrl}
-                                    onChange={(e) => setNewUrl(e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-pink-500"
-                                />
-                                <input
-                                    placeholder="Song Title (Optional)"
-                                    value={newTitle}
-                                    onChange={(e) => setNewTitle(e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-pink-500"
-                                />
+                            {/* Search / Add Section */}
+                            <div className="mt-4 pt-4 border-t border-white/10 space-y-2 relative">
+                                <div className="flex gap-2">
+                                    <input
+                                        placeholder="Link or Search Song..."
+                                        value={newUrl}
+                                        onChange={(e) => setNewUrl(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSearchOrAdd()}
+                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-pink-500"
+                                    />
+                                </div>
+
+                                {/* Search Results Overlay */}
+                                {searchResults.length > 0 && (
+                                    <div className="absolute bottom-full left-0 right-0 mb-2 bg-zinc-900 border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 max-h-[250px] overflow-y-auto">
+                                        <div className="flex items-center justify-between p-2 bg-black/50 border-b border-white/5">
+                                            <span className="text-[10px] uppercase font-bold text-muted-foreground">Results</span>
+                                            <button onClick={() => setSearchResults([])}><X className="w-3 h-3 text-white/50 hover:text-white" /></button>
+                                        </div>
+                                        {searchResults.map((video) => (
+                                            <div
+                                                key={video.id}
+                                                onClick={() => addSearchResult(video)}
+                                                className="flex items-center gap-2 p-2 hover:bg-white/10 cursor-pointer border-b border-white/5 last:border-0"
+                                            >
+                                                <img src={video.thumbnails?.default?.url} className="w-10 h-8 object-cover rounded" />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-xs text-white font-medium truncate">{video.title}</div>
+                                                </div>
+                                                <PlusCircle className="w-4 h-4 text-pink-500" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
                                 <div className="flex items-center gap-2">
                                     <select
                                         value={newEffect}
@@ -237,10 +304,11 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                                         <option value="rain">🌧️ Rain (Calm)</option>
                                     </select>
                                     <button
-                                        onClick={handleAddSong}
-                                        className="flex-1 bg-pink-500 hover:bg-pink-600 text-white rounded-lg py-1.5 text-xs font-bold"
+                                        onClick={handleSearchOrAdd}
+                                        disabled={isSearching}
+                                        className="flex-1 bg-pink-500 hover:bg-pink-600 text-white rounded-lg py-1.5 text-xs font-bold disabled:opacity-50"
                                     >
-                                        Add
+                                        {isSearching ? '...' : (newUrl.includes('http') ? 'Add' : 'Search')}
                                     </button>
                                 </div>
                             </div>
