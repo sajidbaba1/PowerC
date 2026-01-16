@@ -171,7 +171,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
     ];
 
     return (
-        <div className="flex h-screen bg-background overflow-hidden relative">
+        <div className="flex h-[100dvh] bg-background overflow-hidden relative">
             {/* Mobile Overlay */}
             {(showSidebar || showWordBucket) && (
                 <div
@@ -268,7 +268,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                     </button>
                 </header>
 
-                <div className="flex-1 overflow-y-auto p-3 lg:p-6 space-y-3 lg:space-y-4">
+                <div className="flex-1 overflow-y-auto p-3 lg:p-6 space-y-3 lg:space-y-4 pb-24 lg:pb-6">
                     {messages[activeChat].length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
                             <MessageSquare className="w-12 h-12 mb-4 opacity-20" />
@@ -311,7 +311,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                     <div ref={messagesEndRef} />
                 </div>
 
-                <div className="p-3 lg:p-6 lg:pt-0 shrink-0">
+                <div className="fixed lg:relative bottom-0 left-0 right-0 lg:bottom-auto lg:left-auto lg:right-auto p-3 lg:p-6 lg:pt-0 shrink-0 bg-background z-40">
                     <div className="glass border border-white/10 rounded-2xl p-2 flex items-center gap-2">
                         <input
                             type="text"
@@ -400,7 +400,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                             alert("Failed to send email");
                                         }
                                     }}
-                                    className="w-full px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-all"
+                                    className="w-full px-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-all"
                                 >
                                     Email My Word List
                                 </button>
