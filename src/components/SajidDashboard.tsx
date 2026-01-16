@@ -1472,10 +1472,10 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                         if (!userEmail || learnedWords.length === 0) return;
                                         try {
                                             const content = learnedWords.map(w => `
-            < div style = "margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1)" >
-                                                    <strong style="font-size: 16px;">${w.word}</strong><br>
-                                                    <span style="color: #818cf8;">${w.indonesian}</span><br>
-                                                    <em style="font-size: 12px; color: #94a3b8;">${w.meaning}</em>
+                                                <div style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.03); border-left: 4px solid #818cf8; border-radius: 8px;">
+                                                    <div style="font-size: 18px; font-weight: bold; color: #ffffff; margin-bottom: 4px;">${w.word}</div>
+                                                    <div style="font-size: 14px; color: #818cf8; font-weight: 500; margin-bottom: 8px;">${w.indonesian}</div>
+                                                    <div style="font-size: 13px; color: #94a3b8; font-style: italic; line-height: 1.4;">${w.meaning}</div>
                                                 </div>
                                             `).join('');
 
