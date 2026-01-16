@@ -46,7 +46,24 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const isTypingRef = useRef(false);
     const [showRocket, setShowRocket] = useState(false);
+    const [chatWallpaper, setChatWallpaper] = useState<string | null>(null);
 
+    useEffect(() => {
+        const savedWallpaper = localStorage.getItem(`chatWallpaper_sajid_${activeChat}`);
+        setChatWallpaper(savedWallpaper);
+    }, [activeChat]);
+
+    const handleWallpaperUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64 = reader.result as string;
+            setChatWallpaper(base64);
+            localStorage.setItem(`chatWallpaper_sajid_${activeChat}`, base64);
+        };
+        reader.readAsDataURL(file);
+    };
 
     useEffect(() => {
         const fetchProfiles = async () => {
@@ -599,8 +616,16 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                     </div>
                 </header>
 
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-3 lg:p-6 space-y-3 lg:space-y-4 pb-24 lg:pb-6">
+                {/* Messages Container */}
+                <div
+                    className="flex-1 overflow-y-auto p-3 lg:p-6 space-y-3 lg:space-y-4 pb-24 lg:pb-6 relative"
+                    style={{
+                        backgroundImage: chatWallpaper ? `url(${chatWallpaper})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                    }}
+                >
+                    {chatWallpaper && <div className="absolute inset-0 bg-background/60 pointer-events-none" />}
                     {messages[activeChat].length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
                             <MessageSquare className="w-12 h-12 mb-4 opacity-20" />
@@ -1003,6 +1028,28 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                                 placeholder="Your name"
                                                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/10 transition-all font-medium"
                                             />
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-2 block">Chat Wallpaper</label>
+                                            <div className="flex gap-2">
+                                                <label className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 transition-all rounded-2xl py-3 cursor-pointer">
+                                                    <input type="file" className="hidden" accept="image/*" onChange={handleWallpaperUpload} />
+                                                    <ImageIcon className="w-4 h-4" />
+                                                    <span className="text-xs font-semibold">Choose Wallpaper</span>
+                                                </label>
+                                                {chatWallpaper && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setChatWallpaper(null);
+                                                            localStorage.removeItem(`chatWallpaper_sajid_${activeChat}`);
+                                                        }}
+                                                        className="px-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl transition-all"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
