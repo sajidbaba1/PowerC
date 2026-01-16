@@ -5,7 +5,7 @@ import { Music, Play, Pause, SkipForward, Trash2, Volume2, Minimize2 } from 'luc
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Dynamic import for ReactPlayer to avoid SSR issues
-const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
+const ReactPlayer = dynamic(() => import('react-player'), { ssr: false }) as any;
 
 export type EffectType = "snow" | "hearts" | "rain" | "none";
 
@@ -24,7 +24,13 @@ interface MusicPlayerProps {
 }
 
 export default function MusicPlayer({ activeChat, pusherClient, currentEffect, onEffectChange }: MusicPlayerProps) {
-    const [playlist, setPlaylist] = useState<Song[]>([]);
+    const [playlist, setPlaylist] = useState<Song[]>([
+        { id: "1", url: "https://youtu.be/xq01EtpC1jc", title: "Night Changes", effect: "snow" },
+        { id: "2", url: "https://youtu.be/_uxvtB7iLlA", title: "Perfect", effect: "hearts" },
+        { id: "3", url: "https://youtu.be/6fUMMBjLkQw", title: "Dandelions", effect: "rain" },
+        { id: "4", url: "https://youtu.be/cYzy0e0rPPQ", title: "Until I Found You", effect: "hearts" },
+        { id: "5", url: "https://youtu.be/PA5-dSV32YM", title: "At My Worst", effect: "snow" },
+    ]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
