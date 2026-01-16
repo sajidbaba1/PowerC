@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload, Rocket } from "lucide-react";
+import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload, Rocket, Check, CheckCheck } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import confetti from "canvas-confetti";
@@ -42,6 +42,9 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
     const [profiles, setProfiles] = useState<Record<string, any>>({});
     const [fireworkText, setFireworkText] = useState<string | null>(null);
     const lastFireworkId = useRef<string | null>(null);
+    const [isOtherTyping, setIsOtherTyping] = useState(false);
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isTypingRef = useRef(false);
 
 
     useEffect(() => {
@@ -247,10 +250,80 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             setMessages(prev => ({ ...prev, [activeChat]: [] }));
         });
 
+        channel.bind("typing", (data: { user: string, isTyping: boolean }) => {
+            if (data.user !== "sajid") {
+                setIsOtherTyping(data.isTyping);
+            }
+        });
+
+        channel.bind("messages-seen", (data: { messageIds: string[] }) => {
+            setMessages((prev) => {
+                const chatMessages = prev[activeChat] || [];
+                return {
+                    ...prev,
+                    [activeChat]: chatMessages.map(m =>
+                        data.messageIds.includes(m.id) ? { ...m, status: "seen" } : m
+                    )
+                };
+            });
+        });
+
         return () => {
             pusher.unsubscribe(chatKey);
         };
     }, [activeChat]);
+
+    // Mark messages as seen when they arrive or when activeChat changes
+    useEffect(() => {
+        const unseenIds = (messages[activeChat] || [])
+            .filter(m => m.sender !== "sajid" && m.status !== "seen")
+            .map(m => m.id);
+
+        if (unseenIds.length > 0) {
+            const sorted = ["sajid", activeChat].sort();
+            const chatKey = `${sorted[0]}-${sorted[1]}`;
+            fetch("/api/messages/read", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messageIds: unseenIds, chatKey })
+            });
+
+            // Local update for immediate feedback
+            setMessages(prev => ({
+                ...prev,
+                [activeChat]: prev[activeChat].map(m =>
+                    unseenIds.includes(m.id) ? { ...m, status: "seen" } : m
+                )
+            }));
+        }
+    }, [messages[activeChat], activeChat]);
+
+    const handleSearchInput = (val: string) => {
+        setInputValue(val);
+
+        const sorted = ["sajid", activeChat].sort();
+        const chatKey = `${sorted[0]}-${sorted[1]}`;
+
+        if (!isTypingRef.current) {
+            isTypingRef.current = true;
+            fetch("/api/chat/typing", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chatKey, user: "sajid", isTyping: true })
+            });
+        }
+
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+        typingTimeoutRef.current = setTimeout(() => {
+            isTypingRef.current = false;
+            fetch("/api/chat/typing", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chatKey, user: "sajid", isTyping: false })
+            });
+        }, 2000);
+    };
 
     const triggerFirework = (text: string) => {
         setFireworkText(text);
@@ -579,6 +652,17 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                                 <span className="text-[9px] text-muted-foreground ml-1">Translating...</span>
                                             </div>
                                         )}
+                                        {msg.sender === "sajid" && (
+                                            <div className="flex justify-end mt-1">
+                                                {msg.status === "seen" ? (
+                                                    <CheckCheck className="w-3 h-3 text-blue-400" />
+                                                ) : msg.status === "sent" ? (
+                                                    <CheckCheck className="w-3 h-3 text-muted-foreground/50" />
+                                                ) : (
+                                                    <Check className="w-3 h-3 text-muted-foreground/50" />
+                                                )}
+                                            </div>
+                                        )}
                                         {msg.translation && (
                                             <div className="mt-2 pt-2 border-t border-white/5">
                                                 <p className="text-xs text-indigo-300 italic">{msg.translation}</p>
@@ -589,6 +673,20 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                 </div>
                             </motion.div>
                         ))
+                    )}
+                    {isOtherTyping && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-center gap-2 px-4 py-2"
+                        >
+                            <div className="flex gap-1">
+                                <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
+                                <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
+                                <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
+                            </div>
+                            <span className="text-xs text-muted-foreground italic">Nasywa is typing...</span>
+                        </motion.div>
                     )}
                     <div ref={messagesEndRef} />
                 </div>
@@ -655,7 +753,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                 ref={textareaRef}
                                 value={inputValue}
                                 onChange={(e) => {
-                                    setInputValue(e.target.value);
+                                    handleSearchInput(e.target.value);
                                     // Auto-resize textarea
                                     e.target.style.height = '40px';
                                     e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px';
