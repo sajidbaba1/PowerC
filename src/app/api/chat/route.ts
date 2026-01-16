@@ -41,14 +41,16 @@ export async function POST(req: Request) {
         return NextResponse.json(result);
 
     } catch (error: any) {
-        console.error("CRITICAL API ERROR:", error);
+        const rawError = error.message || "Unknown server error";
+        const sanitizedError = rawError.replace('[GoogleGenerativeAI Error]', 'AI Error');
+        console.error("CRITICAL API ERROR:", rawError);
 
         // Ensure we return JSON, not HTML
         return NextResponse.json({
             translation: "System Error",
             hindiTranslation: "सिस्टम त्रुटि",
             wordBreakdown: [],
-            error: error.message || "Unknown server error",
+            error: sanitizedError,
             stack: process.env.NODE_ENV === "development" ? error.stack : undefined
         }, { status: 500 });
     }

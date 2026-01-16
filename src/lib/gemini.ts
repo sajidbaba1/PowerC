@@ -128,12 +128,15 @@ export async function translateAndAnalyze(text: string, sourceLang: string, targ
             };
         }
     } catch (error: any) {
-        console.error("Gemini API error detailed:", error.message || error);
+        const rawError = error.message || 'Unknown Error';
+        const sanitizedError = rawError.replace('[GoogleGenerativeAI Error]', 'AI Error');
+        console.error("Gemini API error detailed:", rawError);
+
         // Return a graceful failure object that matches the expected structure
         // Do NOT add error messages to wordBreakdown as it pollutes the user's vocabulary list
         return {
             translation: text,
-            hindiTranslation: `AI Logic Offline: ${error.message || 'Unknown Error'}`,
+            hindiTranslation: `AI Error: ${sanitizedError}`,
             wordBreakdown: []
         };
     }
