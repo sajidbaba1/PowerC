@@ -156,33 +156,38 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
                     // If Admin started music but user hasn't interacted, show "Join Vibe"
                     <button
                         onClick={handleStart}
-                        className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2 transition-all"
+                        className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2 transition-all text-sm"
                     >
-                        <Play className="w-5 h-5 fill-current" />
-                        {isPlaying ? "Join the Vibe 🎵" : "Start Vibes 🎵"}
+                        <Play className="w-4 h-4 fill-current" />
+                        {isPlaying ? "Join Vibe 🎵" : "Start Vibes 🎵"}
                     </button>
                 ) : !isPlaying ? (
                     // Only Admin can "Start" from scratch
                     userRole === 'admin' ? (
                         <button
                             onClick={handleStart}
-                            className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2 transition-all"
+                            className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2 transition-all text-sm"
                         >
-                            <Play className="w-5 h-5 fill-current" />
+                            <Play className="w-4 h-4 fill-current" />
                             Start Vibes 🎵
                         </button>
                     ) : null
                 ) : (
                     <div className="flex items-center gap-2 bg-zinc-900/90 border border-pink-500/30 backdrop-blur-md p-2 rounded-full shadow-2xl hover:scale-105 transition-all">
-                        <div className="px-2 max-w-[150px] truncate text-xs text-white font-medium">
-                            {LOCAL_SONGS[currentIndex]?.title}
+                        <div className="flex items-center gap-2 px-2 max-w-[140px]">
+                            <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse shrink-0" />
+                            <div className="truncate text-[10px] text-white font-bold uppercase tracking-wider">
+                                {LOCAL_SONGS[currentIndex]?.title}
+                            </div>
                         </div>
-                        <button onClick={() => setIsMuted(!isMuted)} className="p-2 text-white/80 hover:text-white">
-                            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                        <button onClick={() => setIsMuted(!isMuted)} className="p-1.5 text-white/80 hover:text-white transition-colors">
+                            {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
                         </button>
-                        <button onClick={handleNext} className="p-2 text-white/80 hover:text-white">
-                            <SkipForward className="w-4 h-4 fill-current" />
-                        </button>
+                        {userRole === 'admin' && (
+                            <button onClick={handleNext} className="p-1.5 text-white/80 hover:text-white transition-colors border-l border-white/10 ml-1">
+                                <SkipForward className="w-3.5 h-3.5 fill-current" />
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

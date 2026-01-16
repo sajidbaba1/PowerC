@@ -30,7 +30,7 @@ export default function SlideshowBackground({ isPlaying }: { isPlaying: boolean 
     return (
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
             {/* Dark Overlay for text readability */}
-            <div className="absolute inset-0 bg-black/70 z-10 backdrop-blur-[2px]" />
+            <div className="absolute inset-0 bg-black/70 z-10" />
 
             <AnimatePresence mode="popLayout">
                 <motion.img
