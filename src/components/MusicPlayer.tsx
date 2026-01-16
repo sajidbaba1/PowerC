@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Play, Pause, Volume2, VolumeX, SkipForward } from 'lucide-react';
 
@@ -132,33 +132,45 @@ export default function MusicPlayer({ activeChat, pusherClient, currentEffect, o
         broadcastState({ index: nextIndex });
     };
 
+    const audioRef = useRef<HTMLAudioElement>(null);
+
+    // Handle Native Audio Playback
+    useEffect(() => {
+        if (!audioRef.current) return;
+
+        if (isPlaying && hasInteracted) {
+            const playPromise = audioRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch((error: any) => {
+                    console.error("Playback failed:", error);
+                });
+            }
+        } else {
+            audioRef.current.pause();
+        }
+    }, [isPlaying, hasInteracted, currentIndex, playlist]);
+
+    // Update volume
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.volume = isMuted ? 0 : 1;
+        }
+    }, [isMuted]);
+
     if (!mounted) return null;
 
     return (
         <>
-            {/* UI: Hidden but rendered for the browser to allow audio */}
-            <div className="fixed -left-[9999px] top-0 overflow-hidden pointer-events-none">
-                <ReactPlayer
-                    key={playlist[currentIndex]?.url}
-                    url={playlist[currentIndex]?.url}
-                    playing={isPlaying && hasInteracted}
-                    volume={isMuted ? 0 : 1}
-                    muted={false}
-                    onEnded={handleNext}
-                    onReady={() => console.log("🎵 Player Ready")}
-                    onStart={() => console.log("🎵 Playback Started")}
-                    onError={(e: any) => console.error("🎵 Audio Error:", e)}
-                    config={{
-                        file: {
-                            forceAudio: true,
-                            attributes: {
-                                preload: "auto",
-                                crossOrigin: "anonymous"
-                            }
-                        }
-                    }}
-                />
-            </div>
+            {/* Native Audio Element for high reliability */}
+            <audio
+                ref={audioRef}
+                src={playlist[currentIndex]?.url}
+                onEnded={handleNext}
+                onPlay={() => console.log("🎵 Native Playback Started")}
+                onError={(e) => console.error("🎵 Native Audio Error:", e)}
+                preload="auto"
+                style={{ display: 'none' }}
+            />
 
             {/* UI: Simple "Start" Button or Minimal Controls */}
             <div className="fixed bottom-24 left-4 z-[9999]">
