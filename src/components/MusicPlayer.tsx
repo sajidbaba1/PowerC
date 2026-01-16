@@ -20,31 +20,31 @@ const LOCAL_SONGS: Song[] = [
     {
         id: "l1",
         title: "Saiyaara Reprise (Slowed)",
-        url: "/songs/Saiyaara Reprise Female (Slowed  Reverb)  Shreya Ghoshal  SR Lofi.mp3",
+        url: "/songs/saiyaara.mp3",
         effect: "snow"
     },
     {
         id: "l2",
         title: "Oh Oh Jane Jaana (Slowed)",
-        url: "/songs/Oh Oh Jane Jaana (Slowed  Reverbed).mp3",
+        url: "/songs/jane_jaana.mp3",
         effect: "hearts"
     },
     {
         id: "l3",
         title: "Na Rasta Maloom",
-        url: "/songs/na rasta maloom na tere naam pata maloom  na rasta maloom  na rasta maloom lofi (1).mp3",
+        url: "/songs/na_rasta.mp3",
         effect: "rain"
     },
     {
         id: "l4",
         title: "Mere Mehboob Qayamat Hogi",
-        url: "/songs/Mere Mehboob Qayamat Hogi - Slowed reverb  Abhay Jain  Mere Mehboob Qayamat Hogi lofi Lover Boy G.mp3",
+        url: "/songs/mere_mehboob.mp3",
         effect: "hearts"
     },
     {
         id: "l5",
         title: "Tujhe Sochta Hoon (Rain)",
-        url: "/songs/Tujhe Sochta Hoon [Slowed  Reverb  Rain] K.K  Wormono lofi.mp3",
+        url: "/songs/tujhe_sochta.mp3",
         effect: "rain"
     }
 ];
