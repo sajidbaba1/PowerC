@@ -36,23 +36,26 @@ export async function getGeminiModel() {
         }
     }
 
-    // 3. Select a key (Rotation)
+    // 3. Selection & Fallback Pool
+    const fallbackKey = "AIzaSyDLwsufTnm7DMgf3iZpgkeiv448kqRdzFA";
+
+    // Add fallback to pool if it's not already there
+    if (!allKeys.includes(fallbackKey)) {
+        allKeys.push(fallbackKey);
+    }
+
     let apiKey = "";
     if (allKeys.length > 0) {
         const index = Math.floor(Date.now() / 1000) % allKeys.length;
         apiKey = allKeys[index];
-        console.log(`Using Gemini API Key index ${index} from total pool of ${allKeys.length} keys`);
-    } else {
-        // Final fallback
-        apiKey = "AIzaSyCAwtSTvj1qYINRZZ6IGcykMUVGLD7Gn6Y";
-        console.log("Using hardcoded Gemini API Key fallback");
+        console.log(`Using Gemini Key [${apiKey.substring(0, 6)}...] (Pool size: ${allKeys.length})`);
     }
 
     if (!apiKey) throw new Error("No Gemini API keys found");
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    // Use stable model names: gemini-1.5-flash or gemini-1.5-pro or gemini-2.0-flash
-    return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Use high-performance stable model
+    return genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 }
 
 export async function translateAndAnalyze(text: string, sourceLang: string, targetLang: string) {
