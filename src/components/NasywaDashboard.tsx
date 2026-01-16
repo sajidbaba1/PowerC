@@ -531,7 +531,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                             </motion.div>
                         )}
 
-                        <div className="glass border border-white/10 rounded-2xl p-2 flex items-center gap-2">
+                        <div className="glass border border-white/10 rounded-2xl p-2 flex items-end gap-2">
                             <input
                                 type="file"
                                 ref={fileInputRef}
@@ -562,8 +562,8 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                 onChange={(e) => {
                                     setInputValue(e.target.value);
                                     // Auto-resize textarea
-                                    e.target.style.height = 'auto';
-                                    e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+                                    e.target.style.height = '40px';
+                                    e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px';
                                 }}
                                 onKeyDown={(e) => {
                                     if (e.key === "Enter" && !e.shiftKey) {
@@ -572,9 +572,9 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                     }
                                 }}
                                 placeholder={`Message ${activeChat}... (Shift+Enter for new line)`}
-                                className="flex-1 bg-transparent border-none outline-none text-sm px-2 lg:px-4 min-w-0 resize-none overflow-y-auto"
+                                className="flex-1 bg-transparent border-none outline-none text-sm px-2 lg:px-4 min-w-0 resize-none overflow-y-auto leading-relaxed"
                                 rows={1}
-                                style={{ maxHeight: '200px' }}
+                                style={{ minHeight: '40px', maxHeight: '150px' }}
                             />
                             <button
                                 onClick={startRecording}
