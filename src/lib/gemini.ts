@@ -52,7 +52,7 @@ export async function getGeminiModel() {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     // Use stable model names: gemini-1.5-flash or gemini-1.5-pro or gemini-2.0-flash
-    return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 }
 
 export async function translateAndAnalyze(text: string, sourceLang: string, targetLang: string) {
@@ -129,7 +129,8 @@ export async function translateAndAnalyze(text: string, sourceLang: string, targ
         }
     } catch (error: any) {
         const rawError = error.message || 'Unknown Error';
-        const sanitizedError = rawError.replace('[GoogleGenerativeAI Error]', 'AI Error');
+        // Use regex for global replacement
+        const sanitizedError = rawError.replace(/\[GoogleGenerativeAI Error\]/g, 'AI Error');
         console.error("Gemini API error detailed:", rawError);
 
         // Return a graceful failure object that matches the expected structure
