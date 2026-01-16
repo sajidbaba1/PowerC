@@ -35,6 +35,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
     const [profiles, setProfiles] = useState<Record<string, any>>({});
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         const fetchProfiles = async () => {
@@ -239,6 +240,9 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
             [activeChat]: [...prev[activeChat], userMessage]
         }));
         setInputValue("");
+        if (textareaRef.current) {
+            textareaRef.current.style.height = '40px';
+        }
 
         // 2. Persist to message store INSTANTLY (without translation)
         fetch("/api/messages", {
@@ -492,9 +496,11 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                                 <span className="text-[9px] text-muted-foreground ml-1">Translating...</span>
                                             </div>
                                         )}
-                                        {msg.translation && (
+                                        {(msg.hindiTranslation || msg.translation) && (
                                             <div className="mt-2 pt-2 border-t border-white/5">
-                                                <p className="text-xs text-indigo-300 italic">{msg.translation}</p>
+                                                <p className="text-xs text-indigo-300 italic">
+                                                    {msg.hindiTranslation || msg.translation}
+                                                </p>
                                             </div>
                                         )}
                                     </div>
@@ -558,6 +564,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                 <Palette className="w-5 h-5 text-muted-foreground" />
                             </button>
                             <textarea
+                                ref={textareaRef}
                                 value={inputValue}
                                 onChange={(e) => {
                                     setInputValue(e.target.value);

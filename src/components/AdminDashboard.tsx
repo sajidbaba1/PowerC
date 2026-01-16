@@ -336,6 +336,33 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                                             {k.status}
                                         </div>
                                         <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        const res = await fetch("/api/translate", {
+                                                            method: "POST",
+                                                            headers: { "Content-Type": "application/json" },
+                                                            body: JSON.stringify({
+                                                                text: "Hello",
+                                                                targetLang: "hi",
+                                                                apiKey: k.key
+                                                            })
+                                                        });
+                                                        const data = await res.json();
+                                                        if (data.translation || data.hindiTranslation) {
+                                                            alert(`✅ API Key Working!\nTest: "Hello" → "${data.translation || data.hindiTranslation}"`);
+                                                        } else {
+                                                            alert("❌ API Key Failed: " + (data.error || "Unknown error"));
+                                                        }
+                                                    } catch (e: any) {
+                                                        alert("❌ Test Failed: " + e.message);
+                                                    }
+                                                }}
+                                                className="p-1.5 hover:bg-green-500/10 rounded-lg transition-colors group"
+                                                title="Test API Key"
+                                            >
+                                                <Activity className="w-4 h-4 text-green-500" />
+                                            </button>
                                             <button className="p-1.5 hover:bg-muted rounded-lg transition-colors">
                                                 <RotateCcw className="w-4 h-4" />
                                             </button>

@@ -35,6 +35,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
     const [profile, setProfile] = useState<{ name: string, avatarUrl: string | null } | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const [profiles, setProfiles] = useState<Record<string, any>>({});
 
@@ -247,6 +248,9 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             [activeChat]: [...prev[activeChat], userMessage]
         }));
         setInputValue("");
+        if (textareaRef.current) {
+            textareaRef.current.style.height = '40px';
+        }
 
         // 2. Persist to message store INSTANTLY (without translation)
         fetch("/api/messages", {
@@ -569,6 +573,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                 <Palette className="w-5 h-5 text-muted-foreground" />
                             </button>
                             <textarea
+                                ref={textareaRef}
                                 value={inputValue}
                                 onChange={(e) => {
                                     setInputValue(e.target.value);
