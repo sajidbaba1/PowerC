@@ -568,13 +568,24 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                             >
                                 <Palette className="w-5 h-5 text-muted-foreground" />
                             </button>
-                            <input
-                                type="text"
+                            <textarea
                                 value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                                placeholder={`Message ${activeChat}...`}
-                                className="flex-1 bg-transparent border-none outline-none text-sm px-2 lg:px-4 min-w-0"
+                                onChange={(e) => {
+                                    setInputValue(e.target.value);
+                                    // Auto-resize textarea
+                                    e.target.style.height = 'auto';
+                                    e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSend();
+                                    }
+                                }}
+                                placeholder={`Message ${activeChat}... (Shift+Enter for new line)`}
+                                className="flex-1 bg-transparent border-none outline-none text-sm px-2 lg:px-4 min-w-0 resize-none overflow-y-auto"
+                                rows={1}
+                                style={{ maxHeight: '200px' }}
                             />
                             <button
                                 onClick={startRecording}
