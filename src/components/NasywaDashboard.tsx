@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import confetti from "canvas-confetti";
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -36,6 +37,9 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [fireworkText, setFireworkText] = useState<string | null>(null);
+    const lastFireworkId = useRef<string | null>(null);
+
 
     useEffect(() => {
         const fetchProfiles = async () => {
@@ -190,6 +194,13 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                 const res = await fetch(`/api/messages?user1=nasywa&user2=${activeChat}`);
                 const data = await res.json();
                 if (Array.isArray(data)) {
+                    // Check for new fireworks
+                    const latestFirework = [...data].reverse().find(m => m.type === "heart_firework");
+                    if (latestFirework && latestFirework.id !== lastFireworkId.current) {
+                        lastFireworkId.current = latestFirework.id;
+                        triggerFirework(latestFirework.text);
+                    }
+
                     setMessages((prev) => {
                         const localMessages = prev[activeChat] || [];
                         // Create a map of ALL messages by ID to prevent duplicates
@@ -220,6 +231,55 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
         const interval = setInterval(fetchMessages, 2000);
         return () => clearInterval(interval);
     }, [activeChat]);
+
+    const triggerFirework = (text: string) => {
+        setFireworkText(text);
+        const duration = 5 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
+
+        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+        const interval: any = setInterval(function () {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+        }, 250);
+
+        setTimeout(() => setFireworkText(null), 6000);
+    };
+
+    const sendHeartFirework = async () => {
+        const text = "I love you Sajid ❤️";
+        const message = {
+            id: `firework-${Date.now()}`,
+            text: text,
+            sender: "nasywa",
+            type: "heart_firework",
+            timestamp: new Date().toLocaleTimeString(),
+            status: "sent"
+        };
+
+        // Trigger locally immediately
+        lastFireworkId.current = message.id;
+        triggerFirework(text);
+
+        await fetch("/api/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                user1: "nasywa",
+                user2: "sajid",
+                message: message
+            })
+        });
+    };
 
     const handleSend = async (textOverride?: string, isSticker = false) => {
         const text = textOverride || inputValue;
@@ -563,6 +623,13 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                             >
                                 <Palette className="w-5 h-5 text-muted-foreground" />
                             </button>
+                            <button
+                                onClick={sendHeartFirework}
+                                className="p-2 hover:bg-red-500/10 rounded-xl transition-colors shrink-0 group"
+                                title="Send Love Firework"
+                            >
+                                <Heart className="w-5 h-5 text-red-500 group-hover:scale-125 transition-transform fill-current" />
+                            </button>
                             <textarea
                                 ref={textareaRef}
                                 value={inputValue}
@@ -809,6 +876,22 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                             </button>
                         </motion.div>
                     </div>
+                )}
+            </AnimatePresence>
+
+            {/* Firework Text Overlay */}
+            <AnimatePresence>
+                {fireworkText && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.5, y: 100 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 1.5, y: -100 }}
+                        className="fixed inset-0 z-[10001] flex items-center justify-center pointer-events-none px-4"
+                    >
+                        <h1 className="text-4xl lg:text-7xl font-black text-white text-center drop-shadow-[0_0_30px_rgba(244,63,94,1)] drop-shadow-[0_0_60px_rgba(244,63,94,0.5)] bg-clip-text">
+                            {fireworkText}
+                        </h1>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>

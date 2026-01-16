@@ -13,6 +13,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
+    "canvas-confetti": "^1.9.4",
     "cloudinary": "^2.8.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.26.2",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20.19.30",
     "@types/nodemailer": "^7.0.5",
     "@types/pg": "^8.16.0",
