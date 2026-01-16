@@ -40,6 +40,12 @@ const LOCAL_SONGS: Song[] = [
         title: "Mere Mehboob Qayamat Hogi",
         url: "/songs/Mere Mehboob Qayamat Hogi - Slowed reverb  Abhay Jain  Mere Mehboob Qayamat Hogi lofi Lover Boy G.mp3",
         effect: "hearts"
+    },
+    {
+        id: "l5",
+        title: "Tujhe Sochta Hoon (Rain)",
+        url: "/songs/Tujhe Sochta Hoon [Slowed  Reverb  Rain] K.K  Wormono lofi.mp3",
+        effect: "rain"
     }
 ];
 
