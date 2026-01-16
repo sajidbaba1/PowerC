@@ -383,12 +383,25 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                     onClick={async () => {
                                         if (!userEmail || learnedWords.length === 0) return;
                                         try {
-                                            await fetch("/api/send-words", {
+                                            const content = learnedWords.map(w => `
+                                                <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1)">
+                                                    <strong style="font-size: 16px;">${w.word}</strong><br>
+                                                    <span style="color: #818cf8;">${w.indonesian}</span><br>
+                                                    <em style="font-size: 12px; color: #94a3b8;">${w.meaning}</em>
+                                                </div>
+                                            `).join('');
+
+                                            const res = await fetch("/api/email/send", {
                                                 method: "POST",
                                                 headers: { "Content-Type": "application/json" },
-                                                body: JSON.stringify({ email: userEmail, words: learnedWords, user: "Sajid" })
+                                                body: JSON.stringify({
+                                                    to: userEmail,
+                                                    userName: "Sajid",
+                                                    content: content
+                                                })
                                             });
-                                            alert("Word list sent to your email!");
+                                            if (res.ok) alert("Word list sent to your email!");
+                                            else throw new Error("Failed");
                                         } catch (e) {
                                             alert("Failed to send email");
                                         }
