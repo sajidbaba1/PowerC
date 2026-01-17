@@ -79,6 +79,8 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
     const [replyingTo, setReplyingTo] = useState<any>(null);
     const [showReactionsFor, setShowReactionsFor] = useState<string | null>(null);
     const [activeThreads, setActiveThreads] = useState<Record<string, any[]>>({});
+    const [activeMessageActions, setActiveMessageActions] = useState<string | null>(null);
+    const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
     const isUnlocked = (msg: any) => {
         if (msg.type !== "secret" || msg.sender === "nasywa") return true;
@@ -1082,6 +1084,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                 {/* Messages Container */}
                 <div
                     className="flex-1 overflow-y-auto p-3 lg:p-6 space-y-3 lg:space-y-4 pb-24 lg:pb-6 relative"
+                    onClick={() => setActiveMessageActions(null)}
                     style={{
                         backgroundImage: chatWallpaper ? `url(${chatWallpaper})` : 'none',
                         backgroundSize: 'cover',
@@ -1118,10 +1121,24 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                 <div className={cn("flex flex-col gap-1 relative", msg.sender === "nasywa" ? "items-end" : "items-start")}>
                                     <div
                                         className={cn(
-                                            "p-3 lg:p-4 rounded-2xl glass transition-all relative group/msg",
+                                            "p-3 lg:p-4 rounded-2xl glass transition-all relative group/msg cursor-pointer lg:cursor-default",
                                             msg.sender === "nasywa" ? "bg-primary/20 rounded-tr-none" : "bg-muted/50 rounded-tl-none",
-                                            msg.isPinned && "border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.1)]"
+                                            msg.isPinned && "border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.1)]",
+                                            activeMessageActions === msg.id && "ring-2 ring-primary/50"
                                         )}
+                                        onTouchStart={() => {
+                                            if (longPressTimer.current) clearTimeout(longPressTimer.current);
+                                            longPressTimer.current = setTimeout(() => {
+                                                setActiveMessageActions(msg.id);
+                                                if ('vibrate' in navigator) navigator.vibrate(50);
+                                            }, 500);
+                                        }}
+                                        onTouchEnd={() => {
+                                            if (longPressTimer.current) clearTimeout(longPressTimer.current);
+                                        }}
+                                        onContextMenu={(e) => {
+                                            if (window.innerWidth < 1024) e.preventDefault();
+                                        }}
                                     >
                                         {msg.parentId && (
                                             <div className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1">
@@ -1135,17 +1152,20 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                             </div>
                                         )}
 
-                                        {/* Action Menu (Hover on desktop, always visible on mobile) */}
+                                        {/* Action Menu (Long press on mobile, Hover on desktop) */}
                                         <div className={cn(
-                                            "absolute bottom-full mb-2 flex gap-1 bg-card/95 backdrop-blur-md p-1.5 rounded-xl border border-white/10 transition-all z-10",
-                                            "opacity-100 lg:opacity-0 lg:group-hover/msg:opacity-100",
-                                            "scale-90 lg:scale-100",
+                                            "absolute bottom-full mb-2 flex gap-1 bg-card/95 backdrop-blur-md p-1.5 rounded-xl border border-white/10 transition-all z-[100]",
+                                            activeMessageActions === msg.id
+                                                ? "opacity-100 scale-100 translate-y-0"
+                                                : "opacity-0 scale-90 translate-y-2 pointer-events-none lg:pointer-events-auto lg:group-hover/msg:opacity-100 lg:group-hover/msg:scale-100 lg:group-hover/msg:translate-y-0",
                                             msg.sender === "nasywa" ? "right-0" : "left-0"
                                         )}>
                                             {["❤️", "😂", "😮", "🔥", "😢"].map(emoji => (
                                                 <button
                                                     key={emoji}
-                                                    onClick={async () => {
+                                                    onClick={async (e) => {
+                                                        e.stopPropagation();
+                                                        setActiveMessageActions(null);
                                                         await fetch("/api/messages/react", {
                                                             method: "POST",
                                                             headers: { "Content-Type": "application/json" },
@@ -1158,11 +1178,20 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                                 </button>
                                             ))}
                                             <div className="w-[1px] bg-white/10 mx-1" />
-                                            <button onClick={() => setReplyingTo(msg)} className="p-1.5 hover:text-primary active:text-primary transition-colors">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setActiveMessageActions(null);
+                                                    setReplyingTo(msg);
+                                                }}
+                                                className="p-1.5 hover:text-primary active:text-primary transition-colors"
+                                            >
                                                 <RotateCcw className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
                                             </button>
                                             <button
-                                                onClick={async () => {
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    setActiveMessageActions(null);
                                                     await fetch("/api/messages/pin", {
                                                         method: "POST",
                                                         headers: { "Content-Type": "application/json" },
