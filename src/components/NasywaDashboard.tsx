@@ -394,7 +394,10 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
         });
 
         channel.bind("new-lovenote", (note: any) => {
-            setLoveNotes(prev => [note, ...prev]);
+            setLoveNotes(prev => {
+                if (prev.some(n => n.id === note.id)) return prev;
+                return [note, ...prev];
+            });
         });
 
         channel.bind("delete-lovenote", (data: { id: string }) => {
@@ -402,7 +405,17 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
         });
 
         channel.bind("new-milestone", (milestone: any) => {
-            setMilestones(prev => [...prev, milestone].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+            setMilestones(prev => {
+                if (prev.some(m => m.id === milestone.id)) return prev;
+                return [...prev, milestone].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            });
+        });
+
+        channel.bind("new-jar-note", (note: any) => {
+            setJarNotes(prev => {
+                if (prev.some(n => n.id === note.id)) return prev;
+                return [note, ...prev];
+            });
         });
 
         channel.bind("messages-seen", (data: { messageIds: string[] }) => {
