@@ -1636,12 +1636,10 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             </main >
 
             {/* Word Bucket */}
-            < aside className={
-                cn(
-                    "fixed lg:relative inset-y-0 right-0 z-50 w-full sm:w-96 bg-background/95 backdrop-blur-2xl border-l border-border flex flex-col transition-transform duration-300",
-                    showWordBucket ? "translate-x-0" : "translate-x-full lg:translate-x-0"
-                )
-            } >
+            <aside className={cn(
+                "fixed lg:relative inset-y-0 right-0 z-50 w-full lg:w-96 bg-background/95 backdrop-blur-2xl border-l border-border flex flex-col transition-transform duration-300",
+                showWordBucket ? "translate-x-0" : "translate-x-full lg:translate-x-0"
+            )}>
                 <div className="p-4 lg:p-6 border-b border-border shrink-0">
                     <div className="flex items-center justify-between mb-4">
                         <div>
@@ -1683,21 +1681,14 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                     onClick={async () => {
                                         if (!userEmail || learnedWords.length === 0) return;
                                         try {
-                                            const content = learnedWords.map(w => `
-                                                <div style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.03); border-left: 4px solid #818cf8; border-radius: 8px;">
-                                                    <div style="font-size: 18px; font-weight: bold; color: #ffffff; margin-bottom: 4px;">${w.word}</div>
-                                                    <div style="font-size: 14px; color: #818cf8; font-weight: 500; margin-bottom: 8px;">${w.indonesian}</div>
-                                                    <div style="font-size: 13px; color: #94a3b8; font-style: italic; line-height: 1.4;">${w.meaning}</div>
-                                                </div>
-                                            `).join('');
-
-                                            const res = await fetch("/api/email/send", {
+                                            const res = await fetch("/api/send-words", {
                                                 method: "POST",
                                                 headers: { "Content-Type": "application/json" },
                                                 body: JSON.stringify({
-                                                    to: userEmail,
-                                                    userName: "Sajid",
-                                                    content: content
+                                                    email: userEmail,
+                                                    words: learnedWords,
+                                                    user: "Sajid",
+                                                    targetLang: "Indonesian"
                                                 })
                                             });
                                             if (res.ok) alert("Word list sent to your email!");
@@ -1706,15 +1697,14 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                             alert("Failed to send email");
                                         }
                                     }}
-                                    className="w-full px-3 py-2 bg-rose-500 text-white rounded-lg text-sm font-medium hover:bg-rose-600 transition-all"
+                                    className="w-full px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-all"
                                 >
                                     Email My Word List
                                 </button>
-                            </motion.div >
-                        )
-                        }
-                    </AnimatePresence >
-                </div >
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
 
                 <div className="flex-1 overflow-y-auto p-3 lg:p-4 space-y-2">
                     {learnedWords.length === 0 ? (
