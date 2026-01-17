@@ -53,7 +53,7 @@ export async function getGeminiModel() {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     // Standard stable model
-    return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 }
 
 export async function translateAndAnalyze(text: string, sourceLang: string, targetLang: string) {
