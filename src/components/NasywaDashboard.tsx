@@ -643,7 +643,10 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
             body: JSON.stringify({ content: text, sender: "nasywa" })
         });
         const note = await res.json();
-        setLoveNotes(prev => [note, ...prev]);
+        setLoveNotes(prev => {
+            if (prev.some(n => n.id === note.id)) return prev;
+            return [note, ...prev];
+        });
     };
 
     const handleDeleteLoveNote = async (id: string) => {
@@ -662,7 +665,10 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
             body: JSON.stringify(data)
         });
         const milestone = await res.json();
-        setMilestones(prev => [...prev, milestone].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+        setMilestones(prev => {
+            if (prev.some(m => m.id === milestone.id)) return prev;
+            return [...prev, milestone].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        });
     };
 
     const handleAddJarNote = async (content: string) => {
@@ -672,7 +678,10 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
             body: JSON.stringify({ content, author: "nasywa" })
         });
         const note = await res.json();
-        setJarNotes(prev => [note, ...prev]);
+        setJarNotes(prev => {
+            if (prev.some(n => n.id === note.id)) return prev;
+            return [note, ...prev];
+        });
     };
 
     const handleSend = async (textOverride?: string, isSticker = false) => {

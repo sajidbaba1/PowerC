@@ -727,7 +727,10 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             body: JSON.stringify({ content: text, sender: "sajid" })
         });
         const note = await res.json();
-        setLoveNotes(prev => [note, ...prev]);
+        setLoveNotes(prev => {
+            if (prev.some(n => n.id === note.id)) return prev;
+            return [note, ...prev];
+        });
     };
 
     const handleDeleteLoveNote = async (id: string) => {
@@ -746,7 +749,10 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             body: JSON.stringify({ content, author: "sajid" })
         });
         const note = await res.json();
-        setJarNotes(prev => [note, ...prev]);
+        setJarNotes(prev => {
+            if (prev.some(n => n.id === note.id)) return prev;
+            return [note, ...prev];
+        });
         setShowGratitudePrompt(false);
         localStorage.setItem("lastGratitudePrompt", new Date().toLocaleDateString());
     };
@@ -758,7 +764,10 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             body: JSON.stringify(data)
         });
         const milestone = await res.json();
-        setMilestones(prev => [...prev, milestone].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+        setMilestones(prev => {
+            if (prev.some(m => m.id === milestone.id)) return prev;
+            return [...prev, milestone].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        });
     };
 
     const handleSend = async (textOverride?: string, isSticker = false) => {
