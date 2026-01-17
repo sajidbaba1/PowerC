@@ -1245,9 +1245,11 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                                 </div>
                                             )}
 
-                                            {/* Action Menu (Hover) */}
+                                            {/* Action Menu (Hover on desktop, always visible on mobile) */}
                                             <div className={cn(
-                                                "absolute bottom-full mb-2 flex gap-1 bg-card/90 backdrop-blur-md p-1 rounded-xl border border-white/10 opacity-0 group-hover/msg:opacity-100 transition-opacity z-10",
+                                                "absolute bottom-full mb-2 flex gap-1 bg-card/95 backdrop-blur-md p-1.5 rounded-xl border border-white/10 transition-all z-10",
+                                                "opacity-100 lg:opacity-0 lg:group-hover/msg:opacity-100",
+                                                "scale-90 lg:scale-100",
                                                 msg.sender === "sajid" ? "right-0" : "left-0"
                                             )}>
                                                 {["❤️", "😂", "😮", "🔥", "😢"].map(emoji => (
@@ -1260,14 +1262,14 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                                                 body: JSON.stringify({ messageId: msg.id, emoji, user: "sajid", chatKey: `${["sajid", activeChat].sort()[0]}-${["sajid", activeChat].sort()[1]}` })
                                                             });
                                                         }}
-                                                        className="hover:scale-125 transition-transform px-1"
+                                                        className="hover:scale-125 active:scale-110 transition-transform px-1 text-base lg:text-sm"
                                                     >
                                                         {emoji}
                                                     </button>
                                                 ))}
                                                 <div className="w-[1px] bg-white/10 mx-1" />
-                                                <button onClick={() => setReplyingTo(msg)} className="p-1 hover:text-primary transition-colors">
-                                                    <RotateCcw className="w-3.5 h-3.5" />
+                                                <button onClick={() => setReplyingTo(msg)} className="p-1.5 hover:text-primary active:text-primary transition-colors">
+                                                    <RotateCcw className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
                                                 </button>
                                                 <button
                                                     onClick={async () => {
@@ -1277,9 +1279,9 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                                             body: JSON.stringify({ messageId: msg.id, isPinned: !msg.isPinned, chatKey: `${["sajid", activeChat].sort()[0]}-${["sajid", activeChat].sort()[1]}` })
                                                         });
                                                     }}
-                                                    className={cn("p-1 transition-colors", msg.isPinned ? "text-amber-500" : "hover:text-amber-500")}
+                                                    className={cn("p-1.5 transition-colors", msg.isPinned ? "text-amber-500" : "hover:text-amber-500 active:text-amber-500")}
                                                 >
-                                                    <MapPin className="w-3.5 h-3.5" />
+                                                    <MapPin className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
                                                 </button>
                                             </div>
 
