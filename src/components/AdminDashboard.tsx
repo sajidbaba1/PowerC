@@ -543,7 +543,7 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                                 <DbDiagnostic />
                             </div>
 
-                            <div className="p-8 rounded-3xl bg-rose-500/5 border border-rose-500/10">
+                            <div className="p-8 rounded-3xl bg-pink-500/5 border border-pink-500/10">
                                 <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                                     <Zap className="w-5 h-5 text-rose-500" />
                                     System Performance
@@ -567,6 +567,14 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="p-8 rounded-3xl bg-blue-500/5 border border-blue-500/10 col-span-1 md:col-span-2">
+                                <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                                    <MessageSquare className="w-5 h-5 text-blue-500" />
+                                    Translation Test (AI Checker)
+                                </h2>
+                                <AITester />
                             </div>
                         </div>
 
@@ -1042,6 +1050,77 @@ function DbDiagnostic() {
                     {status.messageCount !== undefined && <p>Total Messages: {status.messageCount}</p>}
                     {status.error && <p className="mt-2">Error: {status.error}</p>}
                     {!status.hasDbUrl && <p className="mt-2 text-yellow-500">Warning: No DATABASE_URL found in Environment!</p>}
+                </div>
+            )}
+        </div>
+    );
+}
+
+function AITester() {
+    const [testInput, setTestInput] = useState("Hello, how are you?");
+    const [result, setResult] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+
+    const testTranslation = async () => {
+        setLoading(true);
+        setResult(null);
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text: testInput,
+                    sourceLang: "English",
+                    targetLang: "Indonesian"
+                })
+            });
+            const data = await res.json();
+            setResult(data);
+        } catch (e: any) {
+            setResult({ error: e.message });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-4">
+            <div className="flex gap-2">
+                <input
+                    type="text"
+                    value={testInput}
+                    onChange={(e) => setTestInput(e.target.value)}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder="Enter text to test..."
+                />
+                <button
+                    onClick={testTranslation}
+                    disabled={loading}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                    {loading ? "Testing..." : "Test AI Translation"}
+                </button>
+            </div>
+            {result && (
+                <div className={cn(
+                    "p-4 rounded-xl text-xs font-mono break-all",
+                    result.error ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"
+                )}>
+                    {result.error ? (
+                        <div className="space-y-1">
+                            <p className="font-bold text-rose-500">❌ Translation Failed</p>
+                            <p>Error: {result.error}</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            <p className="font-bold text-green-500 mb-2">✅ Translation Successful</p>
+                            <div className="grid grid-cols-1 gap-2 border-t border-white/10 pt-2">
+                                <p><span className="text-muted-foreground">Original:</span> {testInput}</p>
+                                <p><span className="text-muted-foreground">Indonesian:</span> {result.translation}</p>
+                                {result.hindiTranslation && <p><span className="text-muted-foreground">Hindi:</span> {result.hindiTranslation}</p>}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
