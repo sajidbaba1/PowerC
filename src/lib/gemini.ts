@@ -1,12 +1,13 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getPrisma } from "./db";
 
-export async function getGeminiModel() {
+export async function getAllGeminiKeys() {
     let allKeys: string[] = [];
 
     // 1. Collect from Env keys
-    const envKeys = process.env.GEMINI_API_KEYS?.split(",") || [];
-    allKeys = [...allKeys, ...envKeys.map(k => k.trim()).filter(Boolean)];
+    const envKeysRaw = process.env.GEMINI_API_KEYS || "";
+    const envKeys = envKeysRaw.split(",").map(k => k.trim()).filter(Boolean);
+    allKeys = [...allKeys, ...envKeys];
 
     // 2. Collect from DB (with fallback/timeout)
     const dbUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
@@ -15,10 +16,9 @@ export async function getGeminiModel() {
 
     if (hasDb) {
         try {
-            console.log("Fetching additional keys from DB...");
             const prisma = getPrisma();
             const timeout = new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error("DB Timeout")), 3000)
+                setTimeout(() => reject(new Error("DB Timeout")), 1500)
             );
 
             const dbKeys = await Promise.race([
@@ -36,80 +36,70 @@ export async function getGeminiModel() {
         }
     }
 
-    // 3. Select a key (Random Distribution)
-    let apiKey = "";
+    // Shuffle keys to distribute load
     if (allKeys.length > 0) {
-        // Use Math.random() instead of time-based rotation to ensure concurrent requests 
-        // in the same second get distributed across different keys
-        const index = Math.floor(Math.random() * allKeys.length);
-        apiKey = allKeys[index];
-        console.log(`Using Gemini API Key index ${index} from total pool of ${allKeys.length} keys`);
-    } else {
-        // Final fallback
-        apiKey = "AIzaSyDq06z7FCqFVaMYonmiEqImQvRoj_VJTQE";
-        console.log("Using hardcoded Gemini API Key fallback");
+        return allKeys.sort(() => Math.random() - 0.5);
     }
 
-    if (!apiKey) throw new Error("No Gemini API keys found");
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    // Use the model version specified by the user
-    return genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Final fallback
+    return ["AIzaSyDq06z7FCqFVaMYonmiEqImQvRoj_VJTQE"];
 }
 
 export async function translateAndAnalyze(text: string, sourceLang: string, targetLang: string) {
-    try {
-        console.log(`Starting translation: "${text}" from ${sourceLang} to ${targetLang}`);
-        const model = await getGeminiModel();
+    const keys = await getAllGeminiKeys();
+    let lastError: any = null;
 
-        const isHindiTarget = targetLang.toLowerCase() === "hindi";
-        const prompt = `
-      You are a language learning assistant for the "Power Couple" app, a bridge between an Indian and an Indonesian user.
-      
-      Original Text: "${text}"
-      Source Language: ${sourceLang}
-      Target Language: ${targetLang}
-      
-      Task:
-      1. Translate the text to ${targetLang}.
-      ${isHindiTarget ? 'IMPORTANT: For Hindi, use Romanized Hindi (English Script). Example: "Aap kaise hain?" instead of "आप कैसे हैं?".' : ''}
-      ${isHindiTarget ? '' : '2. Provide a Hindi translation as well (as a bridge language).'}
-      3. Provide a detailed word-by-word breakdown. For each word in the original text, provide:
-         - "word": the original word
-         - "${targetLang.toLowerCase()}": its translation in ${targetLang} (Use Romanized script for Hindi)
-         - "meaning": a concise English explanation
-      
-      Return ONLY a strict JSON object:
-      {
-        "translation": "The ${targetLang} translation",
-        ${isHindiTarget ? '' : '"hindiTranslation": "The Hindi translation",'}
-        "wordBreakdown": [
-          { "word": "...", "${targetLang.toLowerCase()}": "...", "meaning": "..." }
-        ]
-      }
-    `;
+    console.log(`Starting translation attempt with pool of ${keys.length} keys`);
 
-        console.log("Sending prompt to Gemini...");
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-
-        let jsonText = "";
+    for (let i = 0; i < keys.length; i++) {
+        const apiKey = keys[i];
         try {
-            jsonText = response.text().trim();
-        } catch (e) {
-            console.error("Gemini response.text() failed (may be safety blocked):", e);
-            throw new Error("AI Safety filters blocked the response. Try again with different wording.");
-        }
+            console.log(`Attempt ${i + 1}/${keys.length} using key: ${apiKey.substring(0, 8)}...`);
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-        console.log("Raw Gemini Response:", jsonText);
+            const isHindiTarget = targetLang.toLowerCase() === "hindi";
+            const prompt = `
+          You are a language learning assistant for the "Power Couple" app, a bridge between an Indian and an Indonesian user.
+          
+          Original Text: "${text}"
+          Source Language: ${sourceLang}
+          Target Language: ${targetLang}
+          
+          Task:
+          1. Translate the text to ${targetLang}.
+          ${isHindiTarget ? 'IMPORTANT: For Hindi, use Romanized Hindi (English Script). Example: "Aap kaise hain?" instead of "आप कैसे हैं?".' : ''}
+          ${isHindiTarget ? '' : '2. Provide a Hindi translation as well (as a bridge language).'}
+          3. Provide a detailed word-by-word breakdown. For each word in the original text, provide:
+             - "word": the original word
+             - "${targetLang.toLowerCase()}": its translation in ${targetLang} (Use Romanized script for Hindi)
+             - "meaning": a concise English explanation
+          
+          Return ONLY a strict JSON object:
+          {
+            "translation": "The ${targetLang} translation",
+            ${isHindiTarget ? '' : '"hindiTranslation": "The Hindi translation",'}
+            "wordBreakdown": [
+              { "word": "...", "${targetLang.toLowerCase()}": "...", "meaning": "..." }
+            ]
+          }
+        `;
 
-        // Robust JSON extraction
-        const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            jsonText = jsonMatch[0];
-        }
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
 
-        try {
+            let jsonText = "";
+            try {
+                jsonText = response.text().trim();
+            } catch (e) {
+                console.error(`Key ${i} failed. Error: response.text() failed (may be safety blocked):`, e);
+                throw e;
+            }
+
+            // Robust JSON extraction
+            const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) jsonText = jsonMatch[0];
+
             const parsed = JSON.parse(jsonText);
             const langKey = targetLang.toLowerCase();
 
@@ -120,24 +110,27 @@ export async function translateAndAnalyze(text: string, sourceLang: string, targ
                     [langKey]: item[langKey] || item.translation || item[targetLang] || "N/A"
                 }));
             }
+
+            console.log(`✅ Success with key ${i + 1}`);
             return parsed;
-        } catch (e) {
-            console.error("Failed to parse Gemini response as JSON:", jsonText);
-            return {
-                translation: text,
-                hindiTranslation: "अनुवाद त्रुटि",
-                wordBreakdown: []
-            };
+
+        } catch (error: any) {
+            lastError = error;
+            console.error(`❌ Key ${i + 1} failed:`, error.message?.substring(0, 100));
+            // Continue to next key if it's a quota or temporary error
+            if (i < keys.length - 1) {
+                console.log("Retrying with next key...");
+                continue;
+            }
         }
-    } catch (error: any) {
-        console.error("Gemini API error detailed:", error);
-        // Return a graceful failure object that matches the expected structure
-        return {
-            translation: text,
-            hindiTranslation: "Gemini Error",
-            wordBreakdown: [
-                { word: "Error", [targetLang.toLowerCase()]: "Error", meaning: (error.message || "Unknown API error").substring(0, 50) }
-            ]
-        };
     }
+
+    // If we reach here, all keys failed
+    return {
+        translation: text,
+        hindiTranslation: "Gemini Error",
+        wordBreakdown: [
+            { word: "Error", [targetLang.toLowerCase()]: "Error", meaning: (lastError?.message || "All keys exhausted").substring(0, 50) }
+        ]
+    };
 }

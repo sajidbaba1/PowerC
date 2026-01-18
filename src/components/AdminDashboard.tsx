@@ -1075,7 +1075,14 @@ function AITester() {
                 })
             });
             const data = await res.json();
-            setResult(data);
+
+            // Check for graceful failure reported by our lib
+            if (data.hindiTranslation === "Gemini Error" || data.translation === testInput && data.wordBreakdown?.some((w: any) => w.word === "Error")) {
+                const errorMsg = data.wordBreakdown?.find((w: any) => w.word === "Error")?.meaning || "Unknown AI Error";
+                setResult({ error: errorMsg });
+            } else {
+                setResult(data);
+            }
         } catch (e: any) {
             setResult({ error: e.message });
         } finally {
