@@ -13,7 +13,11 @@ const IMAGES = [
     "/slideshow/7.jpg",
     "/slideshow/8.jpg",
     "https://res.cloudinary.com/dd431rll2/image/upload/v1768751651/power-couple-slideshow/childhood-1.jpg",
-    "https://res.cloudinary.com/dd431rll2/image/upload/v1768751652/power-couple-slideshow/childhood-2.jpg"
+    "https://res.cloudinary.com/dd431rll2/image/upload/v1768751652/power-couple-slideshow/childhood-2.jpg",
+    "https://res.cloudinary.com/dd431rll2/image/upload/v1768751720/power-couple-slideshow/memory-1.jpg",
+    "https://res.cloudinary.com/dd431rll2/image/upload/v1768751722/power-couple-slideshow/memory-2.jpg",
+    "https://res.cloudinary.com/dd431rll2/image/upload/v1768751723/power-couple-slideshow/memory-3.jpg",
+    "https://res.cloudinary.com/dd431rll2/image/upload/v1768751725/power-couple-slideshow/memory-4.jpg"
 ];
 
 export default function SlideshowBackground({ isPlaying }: { isPlaying: boolean }) {
