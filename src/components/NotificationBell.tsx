@@ -114,18 +114,22 @@ export default function NotificationBell({ userRole, pusherClient, onNotificatio
             <AnimatePresence>
                 {isOpen && (
                     <>
+                        {/* Blur Backdrop */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 z-[110]"
+                            className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[100]"
                         />
+
+                        {/* Notification Panel */}
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                            className="absolute left-0 mt-3 w-72 sm:w-80 bg-card border border-white/10 rounded-[1.5rem] shadow-2xl z-[120] overflow-hidden flex flex-col max-h-[400px]"
+                            initial={{ opacity: 0, scale: 0.3, originX: 1, originY: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.3, originX: 1, originY: 0 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            className="absolute right-0 mt-3 w-72 sm:w-80 bg-card border border-white/10 rounded-[1.5rem] shadow-2xl z-[110] overflow-hidden flex flex-col max-h-[400px]"
                         >
                             <div className="p-4 border-b border-white/5 bg-white/5 flex items-center justify-between">
                                 <h3 className="font-bold text-sm">Notifications</h3>
