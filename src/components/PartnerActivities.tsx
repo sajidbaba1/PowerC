@@ -325,9 +325,9 @@ export default function PartnerActivities({ isOpen, onClose, userRole, pusherCli
                         </AnimatePresence>
 
                         {/* Main Content Area */}
-                        <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
-                            {/* Left Pane: New activity input */}
-                            <div className="w-full md:w-80 p-6 lg:p-8 border-b md:border-b-0 md:border-r border-white/5 space-y-6 shrink-0 bg-white/[0.02]">
+                        <div className="flex-1 overflow-hidden flex flex-col-reverse md:flex-row">
+                            {/* Left Pane: New activity input - appears at bottom on mobile */}
+                            <div className="w-full md:w-80 p-4 md:p-6 lg:p-8 border-t md:border-t-0 md:border-r border-white/5 space-y-4 md:space-y-6 shrink-0 bg-white/[0.02] max-h-[40vh] md:max-h-none overflow-y-auto">
                                 <div className="space-y-4">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">New Pulse</label>
                                     <div className="relative">
@@ -335,17 +335,17 @@ export default function PartnerActivities({ isOpen, onClose, userRole, pusherCli
                                             value={newActivityText}
                                             onChange={(e) => setNewActivityText(e.target.value)}
                                             placeholder="What's happening?"
-                                            className="w-full bg-muted/20 border border-white/10 rounded-3xl p-5 min-h-[160px] text-sm font-medium resize-none outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground/50 transition-all"
+                                            className="w-full bg-muted/20 border border-white/10 rounded-3xl p-4 md:p-5 min-h-[120px] md:min-h-[160px] text-sm font-medium resize-none outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground/50 transition-all"
                                         />
-                                        <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                                        <div className="absolute bottom-3 md:bottom-4 right-3 md:right-4 flex items-center gap-2">
                                             <button
                                                 onClick={() => fileInputRef.current?.click()}
                                                 className={cn(
-                                                    "p-3 rounded-2xl transition-all",
+                                                    "p-2 md:p-3 rounded-2xl transition-all",
                                                     selectedImage ? "bg-green-500/20 text-green-400" : "bg-white/5 text-muted-foreground hover:bg-white/10"
                                                 )}
                                             >
-                                                <Camera className="w-5 h-5" />
+                                                <Camera className="w-4 h-4 md:w-5 md:h-5" />
                                             </button>
                                         </div>
                                     </div>
@@ -376,7 +376,7 @@ export default function PartnerActivities({ isOpen, onClose, userRole, pusherCli
                                     <button
                                         onClick={handleAddActivity}
                                         disabled={!newActivityText.trim() || isSubmitting}
-                                        className="w-full h-14 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all flex items-center justify-center gap-2"
+                                        className="w-full h-12 md:h-14 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all flex items-center justify-center gap-2"
                                     >
                                         {isSubmitting ? (
                                             <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-white rounded-full animate-spin" />
