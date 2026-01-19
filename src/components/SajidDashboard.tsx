@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload, Rocket, Check, CheckCheck, Ghost, Flame, Coffee, HeartOff, MapPin, Calendar, Lock, Unlock, Play, Pause, Music, Stars, Layout, Plus, RotateCcw, ChevronRight, ChevronDown } from "lucide-react";
+import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload, Rocket, Check, CheckCheck, Ghost, Flame, Coffee, HeartOff, MapPin, Calendar, Lock, Unlock, Play, Pause, Music, Stars, Layout, Plus, RotateCcw, ChevronRight, ChevronDown, RefreshCw } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import confetti from "canvas-confetti";
@@ -1046,6 +1046,13 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         <div className="flex gap-1">
                             <button onClick={() => setShowSettings(true)} className="p-2 hover:bg-muted rounded-lg transition-colors">
                                 <Settings className="w-4 h-4 lg:w-5 lg:h-5 text-muted-foreground" />
+                            </button>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="p-2 hover:bg-muted rounded-lg transition-colors"
+                                title="Refresh App"
+                            >
+                                <RefreshCw className="w-4 h-4 lg:w-5 lg:h-5 text-muted-foreground" />
                             </button>
                             <button onClick={onLogout} className="p-2 hover:bg-muted rounded-lg transition-colors">
                                 <LogOut className="w-4 h-4 lg:w-5 lg:h-5 text-muted-foreground" />
