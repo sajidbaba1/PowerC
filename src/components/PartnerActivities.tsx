@@ -406,7 +406,7 @@ export default function PartnerActivities({ isOpen, onClose, userRole, pusherCli
                                                                         : "bg-white/[0.03] border-white/10 group-hover:bg-white/[0.05] group-hover:border-white/20 shadow-xl shadow-black/20"
                                                                 )}>
                                                                     <p className={cn(
-                                                                        "text-sm md:text-base lg:text-lg font-semibold leading-relaxed tracking-tight break-words",
+                                                                        "text-sm md:text-base lg:text-lg font-semibold leading-relaxed tracking-tight break-words select-text",
                                                                         activity.status === "completed" && "text-muted-foreground line-through decoration-primary/30"
                                                                     )}>
                                                                         {activity.text}

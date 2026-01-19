@@ -1,0 +1,22 @@
+{
+    "name": "Power Couple",
+    "short_name": "Power Couple",
+    "description": "The ultimate dashboard for Sajid and Nasywa",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0a0a0a",
+    "theme_color": "#7c3aed",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

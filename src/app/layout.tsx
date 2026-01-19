@@ -16,6 +16,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Power Couple | Multilingual WhatsApp Bridge",
   description: "Seamlessly connect Indian and Indonesian communities with real-time translation and word breakdown.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Power Couple",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false, // Prevents zooming like a native app
+  },
 };
 
 export default function RootLayout({
