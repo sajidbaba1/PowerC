@@ -314,7 +314,7 @@ export default function PartnerActivities({ isOpen, onClose, userRole, pusherCli
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: -20 }}
-                                        className="h-full overflow-y-auto p-6 lg:p-10 flex flex-col items-center justify-center max-w-2xl mx-auto"
+                                        className="h-full overflow-y-auto overflow-x-hidden p-6 lg:p-10 flex flex-col items-center justify-center max-w-2xl mx-auto"
                                     >
                                         <div className="w-full space-y-8">
                                             <div className="text-center space-y-2">
@@ -339,7 +339,7 @@ export default function PartnerActivities({ isOpen, onClose, userRole, pusherCli
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: 20 }}
                                         ref={scrollRef}
-                                        className="h-full overflow-y-auto p-4 lg:p-10 space-y-12 bg-gradient-to-b from-transparent to-white/[0.01]"
+                                        className="h-full overflow-y-auto overflow-x-hidden p-4 lg:p-10 space-y-12 bg-gradient-to-b from-transparent to-white/[0.01]"
                                     >
                                         {isLoading ? (
                                             <div className="h-full flex flex-col items-center justify-center gap-4">
