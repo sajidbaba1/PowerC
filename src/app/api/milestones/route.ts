@@ -16,7 +16,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
     try {
-        const { title, date, type } = await req.json();
+        const { title, date, type, sender } = await req.json();
         const prisma = getPrisma();
 
         const milestone = await prisma.milestone.create({
@@ -30,6 +30,18 @@ export async function POST(req: Request) {
         const sorted = ["sajid", "nasywa"].sort();
         const chatKey = `${sorted[0]}-${sorted[1]}`;
         await pusherServer.trigger(chatKey, "new-milestone", milestone);
+
+        // Notify partner
+        if (sender) {
+            const partnerName = sender === "sajid" ? "Sajid" : "Nasywa";
+            await pusherServer.trigger(chatKey, "partner-notification", {
+                type: "milestone",
+                title: "New Milestone",
+                message: `${partnerName} added a new milestone to your journey!`,
+                sender: sender,
+                createdAt: new Date().toISOString()
+            });
+        }
 
         return NextResponse.json(milestone);
     } catch (error: any) {

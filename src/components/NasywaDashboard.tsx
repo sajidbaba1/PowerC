@@ -13,6 +13,7 @@ import MusicPlayer from './MusicPlayer';
 import BackgroundEffects, { EffectType } from './BackgroundEffects';
 import SlideshowBackground from './SlideshowBackground';
 import PartnerActivities from './PartnerActivities';
+import NotificationBell from './NotificationBell';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -731,7 +732,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
         const res = await fetch("/api/milestones", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ ...data, sender: "nasywa" })
         });
         const milestone = await res.json();
         setMilestones(prev => {
@@ -1054,6 +1055,28 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                             <h2 className="font-semibold text-sm lg:text-base capitalize truncate">{profiles[activeChat]?.name || activeChat}</h2>
                             <p className="text-[10px] lg:text-xs text-green-500">Online</p>
                         </div>
+                        <NotificationBell
+                            userRole="nasywa"
+                            pusherClient={pusher}
+                            onNotificationClick={(n) => {
+                                switch (n.type) {
+                                    case "activity":
+                                    case "reaction":
+                                    case "comment":
+                                        setShowActivities(true);
+                                        break;
+                                    case "lovenote":
+                                        setShowLoveWall(true);
+                                        break;
+                                    case "milestone":
+                                        setShowMilestones(true);
+                                        break;
+                                    case "jar":
+                                        setShowJar(true);
+                                        break;
+                                }
+                            }}
+                        />
                     </div>
 
                     <div className="flex-1 flex justify-center px-4 overflow-hidden">

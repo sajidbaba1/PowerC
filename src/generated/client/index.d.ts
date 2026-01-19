@@ -14579,6 +14579,8 @@ export namespace Prisma {
   export type ActivityMinAggregateOutputType = {
     id: string | null
     text: string | null
+    translation: string | null
+    hindiTranslation: string | null
     imageUrl: string | null
     sender: string | null
     status: string | null
@@ -14590,6 +14592,8 @@ export namespace Prisma {
   export type ActivityMaxAggregateOutputType = {
     id: string | null
     text: string | null
+    translation: string | null
+    hindiTranslation: string | null
     imageUrl: string | null
     sender: string | null
     status: string | null
@@ -14601,6 +14605,9 @@ export namespace Prisma {
   export type ActivityCountAggregateOutputType = {
     id: number
     text: number
+    translation: number
+    hindiTranslation: number
+    wordBreakdown: number
     imageUrl: number
     sender: number
     status: number
@@ -14615,6 +14622,8 @@ export namespace Prisma {
   export type ActivityMinAggregateInputType = {
     id?: true
     text?: true
+    translation?: true
+    hindiTranslation?: true
     imageUrl?: true
     sender?: true
     status?: true
@@ -14626,6 +14635,8 @@ export namespace Prisma {
   export type ActivityMaxAggregateInputType = {
     id?: true
     text?: true
+    translation?: true
+    hindiTranslation?: true
     imageUrl?: true
     sender?: true
     status?: true
@@ -14637,6 +14648,9 @@ export namespace Prisma {
   export type ActivityCountAggregateInputType = {
     id?: true
     text?: true
+    translation?: true
+    hindiTranslation?: true
+    wordBreakdown?: true
     imageUrl?: true
     sender?: true
     status?: true
@@ -14722,6 +14736,9 @@ export namespace Prisma {
   export type ActivityGroupByOutputType = {
     id: string
     text: string
+    translation: string | null
+    hindiTranslation: string | null
+    wordBreakdown: JsonValue | null
     imageUrl: string | null
     sender: string
     status: string
@@ -14751,6 +14768,9 @@ export namespace Prisma {
   export type ActivitySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     text?: boolean
+    translation?: boolean
+    hindiTranslation?: boolean
+    wordBreakdown?: boolean
     imageUrl?: boolean
     sender?: boolean
     status?: boolean
@@ -14765,6 +14785,9 @@ export namespace Prisma {
   export type ActivitySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     text?: boolean
+    translation?: boolean
+    hindiTranslation?: boolean
+    wordBreakdown?: boolean
     imageUrl?: boolean
     sender?: boolean
     status?: boolean
@@ -14777,6 +14800,9 @@ export namespace Prisma {
   export type ActivitySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     text?: boolean
+    translation?: boolean
+    hindiTranslation?: boolean
+    wordBreakdown?: boolean
     imageUrl?: boolean
     sender?: boolean
     status?: boolean
@@ -14789,6 +14815,9 @@ export namespace Prisma {
   export type ActivitySelectScalar = {
     id?: boolean
     text?: boolean
+    translation?: boolean
+    hindiTranslation?: boolean
+    wordBreakdown?: boolean
     imageUrl?: boolean
     sender?: boolean
     status?: boolean
@@ -14798,7 +14827,7 @@ export namespace Prisma {
     reactions?: boolean
   }
 
-  export type ActivityOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "text" | "imageUrl" | "sender" | "status" | "date" | "createdAt" | "updatedAt" | "reactions", ExtArgs["result"]["activity"]>
+  export type ActivityOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "text" | "translation" | "hindiTranslation" | "wordBreakdown" | "imageUrl" | "sender" | "status" | "date" | "createdAt" | "updatedAt" | "reactions", ExtArgs["result"]["activity"]>
   export type ActivityInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     comments?: boolean | Activity$commentsArgs<ExtArgs>
     _count?: boolean | ActivityCountOutputTypeDefaultArgs<ExtArgs>
@@ -14814,6 +14843,9 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       text: string
+      translation: string | null
+      hindiTranslation: string | null
+      wordBreakdown: Prisma.JsonValue | null
       imageUrl: string | null
       sender: string
       status: string
@@ -15247,6 +15279,9 @@ export namespace Prisma {
   interface ActivityFieldRefs {
     readonly id: FieldRef<"Activity", 'String'>
     readonly text: FieldRef<"Activity", 'String'>
+    readonly translation: FieldRef<"Activity", 'String'>
+    readonly hindiTranslation: FieldRef<"Activity", 'String'>
+    readonly wordBreakdown: FieldRef<"Activity", 'Json'>
     readonly imageUrl: FieldRef<"Activity", 'String'>
     readonly sender: FieldRef<"Activity", 'String'>
     readonly status: FieldRef<"Activity", 'String'>
@@ -16920,6 +16955,9 @@ export namespace Prisma {
   export const ActivityScalarFieldEnum: {
     id: 'id',
     text: 'text',
+    translation: 'translation',
+    hindiTranslation: 'hindiTranslation',
+    wordBreakdown: 'wordBreakdown',
     imageUrl: 'imageUrl',
     sender: 'sender',
     status: 'status',
@@ -17854,6 +17892,9 @@ export namespace Prisma {
     NOT?: ActivityWhereInput | ActivityWhereInput[]
     id?: StringFilter<"Activity"> | string
     text?: StringFilter<"Activity"> | string
+    translation?: StringNullableFilter<"Activity"> | string | null
+    hindiTranslation?: StringNullableFilter<"Activity"> | string | null
+    wordBreakdown?: JsonNullableFilter<"Activity">
     imageUrl?: StringNullableFilter<"Activity"> | string | null
     sender?: StringFilter<"Activity"> | string
     status?: StringFilter<"Activity"> | string
@@ -17867,6 +17908,9 @@ export namespace Prisma {
   export type ActivityOrderByWithRelationInput = {
     id?: SortOrder
     text?: SortOrder
+    translation?: SortOrderInput | SortOrder
+    hindiTranslation?: SortOrderInput | SortOrder
+    wordBreakdown?: SortOrderInput | SortOrder
     imageUrl?: SortOrderInput | SortOrder
     sender?: SortOrder
     status?: SortOrder
@@ -17883,6 +17927,9 @@ export namespace Prisma {
     OR?: ActivityWhereInput[]
     NOT?: ActivityWhereInput | ActivityWhereInput[]
     text?: StringFilter<"Activity"> | string
+    translation?: StringNullableFilter<"Activity"> | string | null
+    hindiTranslation?: StringNullableFilter<"Activity"> | string | null
+    wordBreakdown?: JsonNullableFilter<"Activity">
     imageUrl?: StringNullableFilter<"Activity"> | string | null
     sender?: StringFilter<"Activity"> | string
     status?: StringFilter<"Activity"> | string
@@ -17896,6 +17943,9 @@ export namespace Prisma {
   export type ActivityOrderByWithAggregationInput = {
     id?: SortOrder
     text?: SortOrder
+    translation?: SortOrderInput | SortOrder
+    hindiTranslation?: SortOrderInput | SortOrder
+    wordBreakdown?: SortOrderInput | SortOrder
     imageUrl?: SortOrderInput | SortOrder
     sender?: SortOrder
     status?: SortOrder
@@ -17914,6 +17964,9 @@ export namespace Prisma {
     NOT?: ActivityScalarWhereWithAggregatesInput | ActivityScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Activity"> | string
     text?: StringWithAggregatesFilter<"Activity"> | string
+    translation?: StringNullableWithAggregatesFilter<"Activity"> | string | null
+    hindiTranslation?: StringNullableWithAggregatesFilter<"Activity"> | string | null
+    wordBreakdown?: JsonNullableWithAggregatesFilter<"Activity">
     imageUrl?: StringNullableWithAggregatesFilter<"Activity"> | string | null
     sender?: StringWithAggregatesFilter<"Activity"> | string
     status?: StringWithAggregatesFilter<"Activity"> | string
@@ -18856,6 +18909,9 @@ export namespace Prisma {
   export type ActivityCreateInput = {
     id?: string
     text: string
+    translation?: string | null
+    hindiTranslation?: string | null
+    wordBreakdown?: NullableJsonNullValueInput | InputJsonValue
     imageUrl?: string | null
     sender: string
     status?: string
@@ -18869,6 +18925,9 @@ export namespace Prisma {
   export type ActivityUncheckedCreateInput = {
     id?: string
     text: string
+    translation?: string | null
+    hindiTranslation?: string | null
+    wordBreakdown?: NullableJsonNullValueInput | InputJsonValue
     imageUrl?: string | null
     sender: string
     status?: string
@@ -18882,6 +18941,9 @@ export namespace Prisma {
   export type ActivityUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    translation?: NullableStringFieldUpdateOperationsInput | string | null
+    hindiTranslation?: NullableStringFieldUpdateOperationsInput | string | null
+    wordBreakdown?: NullableJsonNullValueInput | InputJsonValue
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -18895,6 +18957,9 @@ export namespace Prisma {
   export type ActivityUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    translation?: NullableStringFieldUpdateOperationsInput | string | null
+    hindiTranslation?: NullableStringFieldUpdateOperationsInput | string | null
+    wordBreakdown?: NullableJsonNullValueInput | InputJsonValue
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -18908,6 +18973,9 @@ export namespace Prisma {
   export type ActivityCreateManyInput = {
     id?: string
     text: string
+    translation?: string | null
+    hindiTranslation?: string | null
+    wordBreakdown?: NullableJsonNullValueInput | InputJsonValue
     imageUrl?: string | null
     sender: string
     status?: string
@@ -18920,6 +18988,9 @@ export namespace Prisma {
   export type ActivityUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    translation?: NullableStringFieldUpdateOperationsInput | string | null
+    hindiTranslation?: NullableStringFieldUpdateOperationsInput | string | null
+    wordBreakdown?: NullableJsonNullValueInput | InputJsonValue
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -18932,6 +19003,9 @@ export namespace Prisma {
   export type ActivityUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    translation?: NullableStringFieldUpdateOperationsInput | string | null
+    hindiTranslation?: NullableStringFieldUpdateOperationsInput | string | null
+    wordBreakdown?: NullableJsonNullValueInput | InputJsonValue
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -19690,6 +19764,9 @@ export namespace Prisma {
   export type ActivityCountOrderByAggregateInput = {
     id?: SortOrder
     text?: SortOrder
+    translation?: SortOrder
+    hindiTranslation?: SortOrder
+    wordBreakdown?: SortOrder
     imageUrl?: SortOrder
     sender?: SortOrder
     status?: SortOrder
@@ -19702,6 +19779,8 @@ export namespace Prisma {
   export type ActivityMaxOrderByAggregateInput = {
     id?: SortOrder
     text?: SortOrder
+    translation?: SortOrder
+    hindiTranslation?: SortOrder
     imageUrl?: SortOrder
     sender?: SortOrder
     status?: SortOrder
@@ -19713,6 +19792,8 @@ export namespace Prisma {
   export type ActivityMinOrderByAggregateInput = {
     id?: SortOrder
     text?: SortOrder
+    translation?: SortOrder
+    hindiTranslation?: SortOrder
     imageUrl?: SortOrder
     sender?: SortOrder
     status?: SortOrder
@@ -20144,6 +20225,9 @@ export namespace Prisma {
   export type ActivityCreateWithoutCommentsInput = {
     id?: string
     text: string
+    translation?: string | null
+    hindiTranslation?: string | null
+    wordBreakdown?: NullableJsonNullValueInput | InputJsonValue
     imageUrl?: string | null
     sender: string
     status?: string
@@ -20156,6 +20240,9 @@ export namespace Prisma {
   export type ActivityUncheckedCreateWithoutCommentsInput = {
     id?: string
     text: string
+    translation?: string | null
+    hindiTranslation?: string | null
+    wordBreakdown?: NullableJsonNullValueInput | InputJsonValue
     imageUrl?: string | null
     sender: string
     status?: string
@@ -20184,6 +20271,9 @@ export namespace Prisma {
   export type ActivityUpdateWithoutCommentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    translation?: NullableStringFieldUpdateOperationsInput | string | null
+    hindiTranslation?: NullableStringFieldUpdateOperationsInput | string | null
+    wordBreakdown?: NullableJsonNullValueInput | InputJsonValue
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -20196,6 +20286,9 @@ export namespace Prisma {
   export type ActivityUncheckedUpdateWithoutCommentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    translation?: NullableStringFieldUpdateOperationsInput | string | null
+    hindiTranslation?: NullableStringFieldUpdateOperationsInput | string | null
+    wordBreakdown?: NullableJsonNullValueInput | InputJsonValue
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     sender?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string

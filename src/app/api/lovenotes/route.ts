@@ -34,6 +34,16 @@ export async function POST(req: Request) {
         const chatKey = `${sorted[0]}-${sorted[1]}`;
         await pusherServer.trigger(chatKey, "new-lovenote", note);
 
+        // Notify partner
+        const partnerName = sender === "sajid" ? "Sajid" : "Nasywa";
+        await pusherServer.trigger(chatKey, "partner-notification", {
+            type: "lovenote",
+            title: "New Love Note",
+            message: `${partnerName} posted a new note on the Love Wall!`,
+            sender: sender,
+            createdAt: new Date().toISOString()
+        });
+
         return NextResponse.json(note);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });

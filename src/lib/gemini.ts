@@ -40,15 +40,12 @@ export async function getAllGeminiKeys() {
     const fallbackKeys = [
         "AIzaSyBB-6mYf0Abf3DcwgeXkTPzuyKPPpS7vIk",
         "AIzaSyAcJBvHv2lkEmjRSCby30uxMzL0BQOlzUI",
-        "AIzaSyCeIjzNfwSOJ1aqtIjd8s7zvrCEpA67Ha8",
-        "AIzaSyBB-6mYf0Abf3DcwgeXkTPzuyKPPpS7vIk ",
-        "AIzaSyBB-6mYf0Abf3DcwgeXkTPzuyKPPpS7vIk",
-        "AIzaSyBB-6mYf0Abf3DcwgeXkTPzuyKPPpS7vIk"
+        "AIzaSyCeIjzNfwSOJ1aqtIjd8s7zvrCEpA67Ha8"
     ];
     allKeys = [...allKeys, ...fallbackKeys];
 
     // Remove duplicates and Shuffle
-    const uniqueKeys = Array.from(new Set(allKeys.filter(Boolean)));
+    const uniqueKeys = Array.from(new Set(allKeys.map(k => k.trim()).filter(Boolean)));
     return uniqueKeys.sort(() => Math.random() - 0.5);
 }
 
@@ -63,7 +60,7 @@ export async function translateAndAnalyze(text: string, sourceLang: string, targ
         try {
             console.log(`Attempt ${i + 1}/${keys.length} using key: ${apiKey.substring(0, 8)}...`);
             const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
             const isHindiTarget = targetLang.toLowerCase() === "hindi";
             const prompt = `

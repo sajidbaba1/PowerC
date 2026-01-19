@@ -13,6 +13,7 @@ import MusicPlayer from './MusicPlayer';
 import BackgroundEffects, { EffectType } from './BackgroundEffects';
 import SlideshowBackground from './SlideshowBackground';
 import PartnerActivities from './PartnerActivities';
+import NotificationBell from './NotificationBell';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -831,7 +832,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
         const res = await fetch("/api/milestones", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ ...data, sender: "sajid" })
         });
         const milestone = await res.json();
         setMilestones(prev => {
@@ -1151,18 +1152,33 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         </div>
                         <div className="min-w-0">
                             <h2 className="font-semibold text-sm lg:text-base capitalize truncate">{profiles[activeChat]?.name || activeChat}</h2>
-                            <div className="flex items-center gap-2">
-                                <p className="text-[10px] lg:text-xs text-green-500 flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                                    Online
-                                </p>
-                                {profiles[activeChat]?.mood && (
-                                    <span className="text-[10px] lg:text-xs text-muted-foreground flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded-full border border-white/10 uppercase tracking-tighter">
-                                        is feeling {profiles[activeChat].mood}
-                                    </span>
-                                )}
-                            </div>
+                            <p className="text-[10px] lg:text-xs text-green-500 flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                Online
+                            </p>
                         </div>
+                        <NotificationBell
+                            userRole="sajid"
+                            pusherClient={pusher}
+                            onNotificationClick={(n) => {
+                                switch (n.type) {
+                                    case "activity":
+                                    case "reaction":
+                                    case "comment":
+                                        setShowActivities(true);
+                                        break;
+                                    case "lovenote":
+                                        setShowLoveWall(true);
+                                        break;
+                                    case "milestone":
+                                        setShowMilestones(true);
+                                        break;
+                                    case "jar":
+                                        setShowJar(true);
+                                        break;
+                                }
+                            }}
+                        />
                     </div>
 
                     <div className="flex-1 flex justify-center px-4 overflow-hidden">

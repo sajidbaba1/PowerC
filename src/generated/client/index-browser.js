@@ -248,6 +248,9 @@ exports.Prisma.PlaylistSongScalarFieldEnum = {
 exports.Prisma.ActivityScalarFieldEnum = {
   id: 'id',
   text: 'text',
+  translation: 'translation',
+  hindiTranslation: 'hindiTranslation',
+  wordBreakdown: 'wordBreakdown',
   imageUrl: 'imageUrl',
   sender: 'sender',
   status: 'status',

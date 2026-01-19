@@ -135,16 +135,19 @@ model PlaylistSong {
   createdAt DateTime @default(now())
 }
 model Activity {
-  id          String   @id @default(cuid())
-  text        String   @db.Text
-  imageUrl    String?  @db.Text
-  sender      String   // 'sajid' or 'nasywa'
-  status      String   @default("pending") // "pending", "completed"
-  date        String   // Format: YYYY-MM-DD
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  comments    ActivityComment[]
-  reactions   Json?    // Array of { emoji, user }
+  id               String   @id @default(cuid())
+  text             String   @db.Text
+  translation      String?  @db.Text
+  hindiTranslation String?  @db.Text
+  wordBreakdown    Json?    // Array of { word, translation, meaning }
+  imageUrl         String?  @db.Text
+  sender           String   // 'sajid' or 'nasywa'
+  status           String   @default("pending") // "pending", "completed"
+  date             String   // Format: YYYY-MM-DD
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  comments         ActivityComment[]
+  reactions        Json?    // Array of { emoji, user }
 }
 
 model ActivityComment {

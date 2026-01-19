@@ -27,6 +27,16 @@ export async function POST(req: Request) {
         const chatKey = `${sorted[0]}-${sorted[1]}`;
         await pusherServer.trigger(chatKey, "new-jar-note", note);
 
+        // Notify partner
+        const partnerName = author === "sajid" ? "Sajid" : "Nasywa";
+        await pusherServer.trigger(chatKey, "partner-notification", {
+            type: "jar",
+            title: "New Jar Note",
+            message: `${partnerName} added a happy memory to the Love Jar!`,
+            sender: author,
+            createdAt: new Date().toISOString()
+        });
+
         return NextResponse.json(note);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
