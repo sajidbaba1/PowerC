@@ -57,12 +57,11 @@ export default function PartnerActivities({ isOpen, onClose, userRole, pusherCli
     const [isLoading, setIsLoading] = useState(false);
     const [newActivityText, setNewActivityText] = useState("");
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const [searchDate, setSearchDate] = useState(new Date().toISOString().split('T')[0]);
-    const [showHistory, setShowHistory] = useState(false);
     const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
     const [commentText, setCommentText] = useState("");
     const [activeTab, setActiveTab] = useState<"feed" | "new">("feed");
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [searchDate, setSearchDate] = useState(new Date().toISOString().split('T')[0]);
+    const [showHistory, setShowHistory] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const partnerRole = userRole === "sajid" ? "nasywa" : "sajid";
@@ -115,99 +114,21 @@ export default function PartnerActivities({ isOpen, onClose, userRole, pusherCli
         }
     };
 
-    const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
 
-        // Compress image before setting state
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target?.result as string;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 800;
-                const MAX_HEIGHT = 800;
-                let width = img.width;
-                let height = img.height;
+    // Removed handleImageUpload and handleAddActivity from here as they moved to child component
 
-                if (width > height) {
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
-                } else {
-                    if (height > MAX_HEIGHT) {
-                        width *= MAX_HEIGHT / height;
-                        height = MAX_HEIGHT;
-                    }
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx?.drawImage(img, 0, 0, width, height);
-
-                // Compress to JPEG with 0.7 quality
-                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-                setSelectedImage(compressedBase64);
-            };
-        };
+    const handleNewActivity = useCallback((activity: Activity) => {
+        setActivities(prev => [activity, ...prev]);
     }, []);
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const handleOptimisticRollback = useCallback((tempId: string) => {
+        setActivities(prev => prev.filter(a => a.id !== tempId));
+    }, []);
 
-    const handleAddActivity = useCallback(async () => {
-        if (!newActivityText.trim() || isSubmitting) return;
+    const handleUpdateActivity = useCallback((updatedActivity: Activity) => {
+        setActivities(prev => prev.map(a => a.id === updatedActivity.id ? updatedActivity : a));
+    }, []);
 
-        setIsSubmitting(true);
-        const tempId = `temp-${Date.now()}`;
-        const optimisticActivity: Activity = {
-            id: tempId,
-            text: newActivityText,
-            imageUrl: selectedImage || undefined,
-            sender: userRole,
-            status: "pending",
-            date: searchDate,
-            createdAt: new Date().toISOString(),
-            reactions: [],
-            comments: []
-        };
-
-        // Optimistically add to list
-        setActivities(prev => [optimisticActivity, ...prev]);
-        const originalText = newActivityText;
-        const originalImage = selectedImage;
-        setNewActivityText("");
-        setSelectedImage(null);
-
-        try {
-            const res = await fetch("/api/activities", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    text: originalText,
-                    imageUrl: originalImage,
-                    sender: userRole
-                })
-            });
-
-            if (!res.ok) throw new Error("Failed to add activity");
-
-            const savedActivity = await res.json();
-            // Replace optimistic activity with saved one
-            setActivities(prev => prev.map(a => a.id === tempId ? savedActivity : a));
-        } catch (e: any) {
-            console.error("Failed to add activity:", e);
-            // Rollback optimistic update
-            setActivities(prev => prev.filter(a => a.id !== tempId));
-            setNewActivityText(originalText);
-            setSelectedImage(originalImage);
-        } finally {
-            setIsSubmitting(false);
-        }
-    }, [newActivityText, selectedImage, isSubmitting, userRole, searchDate]);
 
     const handleToggleStatus = async (activity: Activity) => {
         if (activity.sender !== userRole) return; // Only owner can complete
@@ -401,69 +322,13 @@ export default function PartnerActivities({ isOpen, onClose, userRole, pusherCli
                                                 <p className="text-sm text-muted-foreground">Show {partnerName} what you're up to right now.</p>
                                             </div>
 
-                                            <div className="space-y-4">
-                                                <div className="relative group">
-                                                    <textarea
-                                                        value={newActivityText}
-                                                        onChange={(e) => setNewActivityText(e.target.value)}
-                                                        placeholder="Write your heart out..."
-                                                        className="w-full bg-white/[0.03] border border-white/10 rounded-[2rem] p-5 md:p-8 min-h-[150px] text-sm md:text-base font-medium resize-none outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground/30 transition-colors shadow-inner"
-                                                        style={{ willChange: 'contents' }}
-                                                    />
-                                                    <div className="absolute bottom-6 right-6 flex items-center gap-3">
-                                                        <input
-                                                            type="file"
-                                                            ref={fileInputRef}
-                                                            className="hidden"
-                                                            accept="image/*"
-                                                            onChange={handleImageUpload}
-                                                        />
-                                                        <button
-                                                            onClick={() => fileInputRef.current?.click()}
-                                                            className={cn(
-                                                                "h-14 w-14 rounded-2xl transition-all shadow-xl flex items-center justify-center",
-                                                                selectedImage ? "bg-green-500/20 text-green-400 border border-green-500/30" : "bg-white/5 text-muted-foreground hover:bg-white/10 border border-white/10"
-                                                            )}
-                                                            title="Add Image"
-                                                        >
-                                                            <Camera className="w-6 h-6" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                {selectedImage && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, scale: 0.9 }}
-                                                        animate={{ opacity: 1, scale: 1 }}
-                                                        className="relative w-full rounded-[2rem] overflow-hidden border border-white/10 group shadow-2xl bg-black/20 min-h-[200px] flex items-center justify-center"
-                                                    >
-                                                        <img src={selectedImage} alt="Preview" className="w-full h-auto object-contain" style={{ maxHeight: '400px' }} />
-                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                            <button
-                                                                onClick={() => setSelectedImage(null)}
-                                                                className="h-14 w-14 rounded-full bg-red-500 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
-                                                            >
-                                                                <X className="w-6 h-6" />
-                                                            </button>
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-
-                                                <button
-                                                    onClick={handleAddActivity}
-                                                    disabled={isSubmitting || !newActivityText.trim()}
-                                                    className="w-full h-16 bg-gradient-to-r from-primary to-pink-500 text-white rounded-[2rem] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none flex items-center justify-center gap-3"
-                                                >
-                                                    {isSubmitting ? (
-                                                        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                    ) : (
-                                                        <>
-                                                            <Send className="w-5 h-5" />
-                                                            Publish Pulse
-                                                        </>
-                                                    )}
-                                                </button>
-                                            </div>
+                                            <ActivityInput
+                                                userRole={userRole}
+                                                searchDate={searchDate}
+                                                onNewActivity={handleNewActivity}
+                                                onOptimisticRollback={handleOptimisticRollback}
+                                                onUpdateActivity={handleUpdateActivity}
+                                            />
                                         </div>
                                     </motion.div>
                                 ) : (
@@ -674,3 +539,180 @@ export default function PartnerActivities({ isOpen, onClose, userRole, pusherCli
         </AnimatePresence>
     );
 }
+
+const ActivityInput = ({
+    userRole,
+    searchDate,
+    onNewActivity,
+    onOptimisticRollback,
+    onUpdateActivity
+}: {
+    userRole: string;
+    searchDate: string;
+    onNewActivity: (a: Activity) => void;
+    onOptimisticRollback: (id: string) => void;
+    onUpdateActivity: (a: Activity) => void;
+}) => {
+    const [newActivityText, setNewActivityText] = useState("");
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Compress image before setting state
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800;
+                const MAX_HEIGHT = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+
+                // Compress to JPEG with 0.7 quality
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                setSelectedImage(compressedBase64);
+            };
+        };
+    }, []);
+
+    const handleAddActivity = useCallback(async () => {
+        if (!newActivityText.trim() || isSubmitting) return;
+
+        setIsSubmitting(true);
+        const tempId = `temp-${Date.now()}`;
+        const optimisticActivity: Activity = {
+            id: tempId,
+            text: newActivityText,
+            imageUrl: selectedImage || undefined,
+            sender: userRole,
+            status: "pending",
+            date: searchDate,
+            createdAt: new Date().toISOString(),
+            reactions: [],
+            comments: []
+        };
+
+        // Optimistically add to list
+        onNewActivity(optimisticActivity);
+        const originalText = newActivityText;
+        const originalImage = selectedImage;
+        setNewActivityText("");
+        setSelectedImage(null);
+
+        try {
+            const res = await fetch("/api/activities", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text: originalText,
+                    imageUrl: originalImage,
+                    sender: userRole
+                })
+            });
+
+            if (!res.ok) throw new Error("Failed to add activity");
+
+            const savedActivity = await res.json();
+            // Replace optimistic activity with saved one
+            onUpdateActivity(savedActivity);
+        } catch (e: any) {
+            console.error("Failed to add activity:", e);
+            // Rollback optimistic update
+            onOptimisticRollback(tempId);
+            setNewActivityText(originalText);
+            setSelectedImage(originalImage);
+        } finally {
+            setIsSubmitting(false);
+        }
+    }, [newActivityText, selectedImage, isSubmitting, userRole, searchDate, onNewActivity, onUpdateActivity, onOptimisticRollback]);
+
+    return (
+        <div className="space-y-4">
+            <div className="relative group">
+                <textarea
+                    value={newActivityText}
+                    onChange={(e) => setNewActivityText(e.target.value)}
+                    placeholder="Write your heart out..."
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-[2rem] p-5 md:p-8 min-h-[150px] text-sm md:text-base font-medium resize-none outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground/30 transition-colors shadow-inner"
+                    style={{ willChange: 'contents' }}
+                />
+                <div className="absolute bottom-6 right-6 flex items-center gap-3">
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                    />
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className={cn(
+                            "h-14 w-14 rounded-2xl transition-all shadow-xl flex items-center justify-center",
+                            selectedImage ? "bg-green-500/20 text-green-400 border border-green-500/30" : "bg-white/5 text-muted-foreground hover:bg-white/10 border border-white/10"
+                        )}
+                        title="Add Image"
+                    >
+                        <Camera className="w-6 h-6" />
+                    </button>
+                </div>
+            </div>
+
+            {selectedImage && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative w-full rounded-[2rem] overflow-hidden border border-white/10 group shadow-2xl bg-black/20 min-h-[200px] flex items-center justify-center"
+                >
+                    <img src={selectedImage} alt="Preview" className="w-full h-auto object-contain" style={{ maxHeight: '400px' }} />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <button
+                            onClick={() => setSelectedImage(null)}
+                            className="h-14 w-14 rounded-full bg-red-500 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
+                </motion.div>
+            )}
+
+            <button
+                onClick={handleAddActivity}
+                disabled={isSubmitting || !newActivityText.trim()}
+                className="w-full h-16 bg-gradient-to-r from-primary to-pink-500 text-white rounded-[2rem] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none flex items-center justify-center gap-3"
+            >
+                {isSubmitting ? (
+                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                    <>
+                        <Send className="w-5 h-5" />
+                        Publish Pulse
+                    </>
+                )}
+            </button>
+        </div>
+    );
+};
