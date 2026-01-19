@@ -1075,7 +1075,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
 
             {/* Main Chat */}
             <main className="flex-1 flex flex-col min-w-0">
-                <header className="h-14 lg:h-16 border-b border-border flex items-center justify-between px-3 lg:px-6 bg-card/30 backdrop-blur-md shrink-0 z-[60]">
+                <header className="h-14 lg:h-16 sticky top-0 border-b border-border flex items-center justify-between px-3 lg:px-6 bg-card/30 backdrop-blur-md shrink-0 z-[60]">
                     <div className="flex items-center gap-2 lg:gap-3 min-w-0">
                         <button
                             onClick={() => setShowSidebar(!showSidebar)}
