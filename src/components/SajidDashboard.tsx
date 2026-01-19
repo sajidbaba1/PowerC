@@ -1024,7 +1024,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                     if (info.offset.x < -50) setShowSidebar(false);
                 }}
                 className={cn(
-                    "fixed lg:relative inset-y-0 left-0 z-50 w-72 lg:w-80 border-r border-border bg-card/95 backdrop-blur-xl flex flex-col transition-transform duration-300",
+                    "fixed lg:relative inset-y-0 left-0 z-[100] w-72 lg:w-80 border-r border-border bg-card/95 backdrop-blur-xl flex flex-col transition-transform duration-300",
                     showSidebar ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
                 )}
             >
