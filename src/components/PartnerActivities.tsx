@@ -616,20 +616,20 @@ const ActivityCard = memo(({ activity, userRole, onReact, onComment }: {
                 {/* Content */}
                 <div className="space-y-6">
                     <div className="relative">
-                        <Quote className="absolute -left-2 -top-2 w-8 h-8 text-primary/10 rotate-180" />
-                        <p className="text-lg md:text-xl font-medium text-white leading-relaxed pl-6">
+                        <Quote className="absolute -left-2 -top-2 w-6 h-6 text-primary/10 rotate-180" />
+                        <p className="text-sm md:text-base font-medium text-white leading-relaxed pl-4">
                             {activity.text}
                         </p>
                     </div>
 
                     {activity.imageUrl && (
-                        <div className="relative aspect-[16/9] w-full rounded-[2rem] overflow-hidden ring-1 ring-white/10 shadow-2xl group/img">
+                        <div className="relative w-full rounded-[2rem] overflow-hidden ring-1 ring-white/10 shadow-2xl group/img bg-black/20">
                             <img
                                 src={activity.imageUrl}
                                 alt="Activity"
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110"
+                                className="w-full h-auto object-contain max-h-[500px] transition-transform duration-700 group-hover/img:scale-105"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity pointer-events-none" />
                         </div>
                     )}
                 </div>
