@@ -355,6 +355,7 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
             ...vibeSettings,
             ...updates,
             chatKey,
+            playlist: dynamicSongs,
             // Convert 0-100 to 0-1 for the player
             sajidVolume: (updates.sajidVolume !== undefined ? updates.sajidVolume : vibeSettings.sajidVolume) / 100,
             nasywaVolume: (updates.nasywaVolume !== undefined ? updates.nasywaVolume : vibeSettings.nasywaVolume) / 100,
@@ -588,6 +589,7 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                             currentEffect={backgroundEffect}
                             onEffectChange={setBackgroundEffect}
                             onPlayingChange={handlePlayingChange}
+                            externalDynamicSongs={dynamicSongs}
                             userRole="admin"
                             inline={true}
                         />

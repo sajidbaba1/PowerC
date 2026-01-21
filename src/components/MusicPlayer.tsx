@@ -23,6 +23,7 @@ interface MusicPlayerProps {
     userRole?: string;
     inline?: boolean;
     className?: string;
+    externalDynamicSongs?: Song[];
 }
 
 function MusicPlayerComponent({
@@ -33,7 +34,8 @@ function MusicPlayerComponent({
     onPlayingChange,
     userRole,
     inline,
-    className
+    className,
+    externalDynamicSongs = []
 }: MusicPlayerProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -44,7 +46,7 @@ function MusicPlayerComponent({
     const [mounted, setMounted] = useState(false);
     const [dynamicSongs, setDynamicSongs] = useState<Song[]>([]);
 
-    const allSongs = [...LOCAL_SONGS, ...dynamicSongs];
+    const allSongs = [...LOCAL_SONGS, ...(externalDynamicSongs.length > 0 ? externalDynamicSongs : dynamicSongs)];
 
     useEffect(() => {
         setMounted(true);
@@ -78,7 +80,9 @@ function MusicPlayerComponent({
 
         const channel = pusherClient.subscribe(chatKey);
         channel.bind("music-update", (data: any) => {
-            console.log("🎵 Remote Music Update:", data);
+            if (data.playlist && Array.isArray(data.playlist)) {
+                setDynamicSongs(data.playlist);
+            }
             if (data.index !== undefined) {
                 setCurrentIndex(data.index);
             }
