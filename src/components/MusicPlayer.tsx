@@ -42,8 +42,24 @@ function MusicPlayerComponent({
     const [volume, setVolume] = useState(1);
     const [manualEffect, setManualEffect] = useState<EffectType | null>(null);
     const [mounted, setMounted] = useState(false);
+    const [dynamicSongs, setDynamicSongs] = useState<Song[]>([]);
 
-    useEffect(() => setMounted(true), []);
+    const allSongs = [...LOCAL_SONGS, ...dynamicSongs];
+
+    useEffect(() => {
+        setMounted(true);
+        fetchDynamicSongs();
+    }, []);
+
+    const fetchDynamicSongs = async () => {
+        try {
+            const res = await fetch("/api/admin/songs");
+            const data = await res.json();
+            setDynamicSongs(Array.isArray(data) ? data : []);
+        } catch (e) {
+            console.error("Failed to fetch dynamic songs", e);
+        }
+    };
 
     // Report state changes to parent (fixes slideshow bug)
     useEffect(() => {
@@ -89,11 +105,11 @@ function MusicPlayerComponent({
 
     // Apply Effect when song changes - ONLY if no manual override
     useEffect(() => {
-        const song = LOCAL_SONGS[currentIndex];
+        const song = allSongs[currentIndex];
         if (song && isPlaying && !manualEffect) {
             onEffectChange(song.effect);
         }
-    }, [currentIndex, isPlaying, onEffectChange, manualEffect]);
+    }, [currentIndex, isPlaying, onEffectChange, manualEffect, allSongs]);
 
     const broadcastState = async (updates: Partial<{ index: number, isPlaying: boolean, effect?: string }>) => {
         if (updates.index !== undefined) {
@@ -112,7 +128,7 @@ function MusicPlayerComponent({
                 chatKey,
                 index: updates.index !== undefined ? updates.index : currentIndex,
                 isPlaying: updates.isPlaying !== undefined ? updates.isPlaying : isPlaying,
-                effect: updates.effect || (updates.index !== undefined ? LOCAL_SONGS[updates.index].effect : undefined),
+                effect: updates.effect || (updates.index !== undefined ? allSongs[updates.index]?.effect : undefined),
                 playlist: []
             })
         });
@@ -124,7 +140,7 @@ function MusicPlayerComponent({
     };
 
     const handleNext = () => {
-        const nextIndex = (currentIndex + 1) % LOCAL_SONGS.length;
+        const nextIndex = (currentIndex + 1) % allSongs.length;
         broadcastState({ index: nextIndex });
     };
 
@@ -179,7 +195,7 @@ function MusicPlayerComponent({
         <React.Fragment>
             <audio
                 ref={audioRef}
-                src={LOCAL_SONGS[currentIndex]?.url}
+                src={allSongs[currentIndex]?.url}
                 onEnded={handleNext}
                 onPlay={() => console.log("🎵 Native Playback Started")}
                 onError={(e) => console.error("🎵 Native Audio Error:", e)}
@@ -196,7 +212,7 @@ function MusicPlayerComponent({
                         <div className="flex items-center gap-2 px-2 max-w-[120px]">
                             <div className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse shrink-0" />
                             <div className="truncate text-[9px] text-white/90 font-bold uppercase tracking-wider">
-                                {LOCAL_SONGS[currentIndex]?.title}
+                                {allSongs[currentIndex]?.title}
                             </div>
                         </div>
                         <button onClick={() => setIsMuted(!isMuted)} className="p-1 text-white/60 hover:text-white transition-colors">

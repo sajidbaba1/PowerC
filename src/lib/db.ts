@@ -2,8 +2,9 @@ import { PrismaClient } from "../generated/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
-// Force fresh client in dev to avoid stale model issues
-let cachedClient: PrismaClient | null = null;
+const globalForPrisma = globalThis as unknown as {
+    prisma: PrismaClient | undefined;
+};
 
 export const getPrisma = (): PrismaClient => {
     const url = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
@@ -23,27 +24,14 @@ export const getPrisma = (): PrismaClient => {
         return createProxy("prisma") as unknown as PrismaClient;
     }
 
-    // In development, always create fresh client to pick up schema changes
-    if (process.env.NODE_ENV === "development") {
+    if (!globalForPrisma.prisma) {
         const pool = new Pool({ connectionString: url });
         const adapter = new PrismaPg(pool);
-        const client = new PrismaClient({
+        globalForPrisma.prisma = new PrismaClient({
             adapter,
-            log: ["error", "warn"],
-        });
-        console.log("🔧 DEV: Fresh Prisma client created with models:", Object.keys(client).filter(k => !k.startsWith("_") && !k.startsWith("$")));
-        return client;
-    }
-
-    // Production: use cached client
-    if (!cachedClient) {
-        const pool = new Pool({ connectionString: url });
-        const adapter = new PrismaPg(pool);
-        cachedClient = new PrismaClient({
-            adapter,
-            log: ["error"],
+            log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
         });
     }
 
-    return cachedClient;
+    return globalForPrisma.prisma;
 };

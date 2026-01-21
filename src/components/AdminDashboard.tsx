@@ -64,7 +64,13 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
     const [adminMessages, setAdminMessages] = useState<Record<string, any[]>>({ sajid: [], nasywa: [] });
     const [adminInputValue, setAdminInputValue] = useState("");
     const [isTyping, setIsTyping] = useState(false);
+    const [dynamicSongs, setDynamicSongs] = useState<any[]>([]);
+    const [isUploadingSong, setIsUploadingSong] = useState(false);
+    const [songUploadData, setSongUploadData] = useState({ title: "", effect: "none" as EffectType });
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const allSongs = [...LOCAL_SONGS, ...dynamicSongs];
 
     // Memoized callback to prevent infinite loops in MusicPlayer
     const handlePlayingChange = useCallback((isPlaying: boolean) => {
@@ -75,6 +81,7 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
         fetchKeys();
         fetchLoginHistory();
         fetchGlobalSettings();
+        fetchSongs();
         const savedTheme = localStorage.getItem('power-couple-theme');
         if (savedTheme) {
             // Palette logic if needed
@@ -245,6 +252,68 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
         } catch (e) {
             console.error(e);
             alert("Error deleting key");
+        }
+    };
+
+    const fetchSongs = async () => {
+        try {
+            const res = await fetch("/api/admin/songs");
+            const data = await res.json();
+            setDynamicSongs(Array.isArray(data) ? data : []);
+        } catch (e) {
+            console.error("Failed to fetch songs", e);
+        }
+    };
+
+    const handleUploadSong = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const file = fileInputRef.current?.files?.[0];
+        if (!file || !songUploadData.title) {
+            alert("Please provide a title and select an MP3 file");
+            return;
+        }
+
+        setIsUploadingSong(true);
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("title", songUploadData.title);
+        formData.append("effect", songUploadData.effect);
+
+        try {
+            const res = await fetch("/api/admin/songs", {
+                method: "POST",
+                body: formData,
+            });
+            if (res.ok) {
+                alert("Song uploaded successfully!");
+                setSongUploadData({ title: "", effect: "none" });
+                if (fileInputRef.current) fileInputRef.current.value = "";
+                fetchSongs();
+            } else {
+                const data = await res.json();
+                alert(`Upload failed: ${data.error}`);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error uploading song");
+        } finally {
+            setIsUploadingSong(false);
+        }
+    };
+
+    const handleDeleteSong = async (id: string) => {
+        if (!confirm("Delete this song?")) return;
+        try {
+            const res = await fetch("/api/admin/songs", {
+                method: "DELETE",
+                body: JSON.stringify({ id }),
+                headers: { "Content-Type": "application/json" }
+            });
+            if (res.ok) {
+                fetchSongs();
+            }
+        } catch (e) {
+            console.error(e);
         }
     };
 
@@ -985,25 +1054,93 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
 
                             {/* Song Selection */}
                             <div className="pt-8 border-t border-white/10">
-                                <h2 className="text-lg font-bold flex items-center gap-2 mb-6">
-                                    <Music className="w-5 h-5 text-indigo-400" />
-                                    Song Master
-                                </h2>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {LOCAL_SONGS.map((song, idx) => (
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                                    <h2 className="text-lg font-bold flex items-center gap-2">
+                                        <Music className="w-5 h-5 text-indigo-400" />
+                                        Song Master
+                                    </h2>
+
+                                    {/* Upload Form Inline */}
+                                    <form onSubmit={handleUploadSong} className="flex flex-wrap gap-2 items-end">
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase px-1">Title</p>
+                                            <input
+                                                type="text"
+                                                placeholder="Song Title"
+                                                value={songUploadData.title}
+                                                onChange={e => setSongUploadData(prev => ({ ...prev, title: e.target.value }))}
+                                                className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-pink-500 w-32"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase px-1">Effect</p>
+                                            <select
+                                                value={songUploadData.effect}
+                                                onChange={e => setSongUploadData(prev => ({ ...prev, effect: e.target.value as EffectType }))}
+                                                className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-pink-500 w-32"
+                                            >
+                                                <option value="none">None</option>
+                                                <option value="snow">Snow</option>
+                                                <option value="hearts">Hearts</option>
+                                                <option value="rain">Rain</option>
+                                                <option value="stars">Stars</option>
+                                                <option value="sparkles">Sparkles</option>
+                                                <option value="butterflies">Butterflies</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase px-1">MP3 File</p>
+                                            <input
+                                                type="file"
+                                                accept="audio/mp3,audio/mpeg"
+                                                ref={fileInputRef}
+                                                className="hidden"
+                                                onChange={() => { }} // Just to trigger state if needed
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => fileInputRef.current?.click()}
+                                                className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-white/10 transition-all font-medium"
+                                            >
+                                                <Plus className="w-3 h-3" /> Select File
+                                            </button>
+                                        </div>
                                         <button
-                                            key={song.id}
-                                            onClick={() => handleSetSong(idx)}
-                                            className={cn(
-                                                "p-4 rounded-2xl flex flex-col items-start gap-1 transition-all border text-left",
-                                                vibeSettings.currentIndex === idx && vibeSettings.isPlaying
-                                                    ? "bg-indigo-500/20 border-indigo-500 shadow-lg shadow-indigo-500/10"
-                                                    : "bg-white/5 border-white/5 hover:bg-white/10"
-                                            )}
+                                            type="submit"
+                                            disabled={isUploadingSong}
+                                            className="bg-indigo-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-600 transition-all disabled:opacity-50"
                                         >
-                                            <span className="font-bold text-sm truncate w-full">{song.title}</span>
-                                            <span className="text-[10px] uppercase font-black tracking-widest text-indigo-400">{song.effect} Effect</span>
+                                            {isUploadingSong ? "Uploading..." : "Upload Song"}
                                         </button>
+                                    </form>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {allSongs.map((song, idx) => (
+                                        <div key={song.id} className="relative group">
+                                            <button
+                                                onClick={() => handleSetSong(idx)}
+                                                className={cn(
+                                                    "w-full p-4 rounded-2xl flex flex-col items-start gap-1 transition-all border text-left",
+                                                    vibeSettings.currentIndex === idx && vibeSettings.isPlaying
+                                                        ? "bg-indigo-500/20 border-indigo-500 shadow-lg shadow-indigo-500/10"
+                                                        : "bg-white/5 border-white/5 hover:bg-white/10"
+                                                )}
+                                            >
+                                                <span className="font-bold text-sm truncate w-full">{song.title}</span>
+                                                <span className="text-[10px] uppercase font-black tracking-widest text-indigo-400">{song.effect} Effect</span>
+                                            </button>
+
+                                            {/* Delete button for dynamic songs only */}
+                                            {idx >= LOCAL_SONGS.length && (
+                                                <button
+                                                    onClick={() => handleDeleteSong(song.id)}
+                                                    className="absolute top-2 right-2 p-1.5 bg-destructive rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <Trash2 className="w-3 h-3 text-white" />
+                                                </button>
+                                            )}
+                                        </div>
                                     ))}
                                 </div>
                             </div>

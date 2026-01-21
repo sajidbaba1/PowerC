@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload, Rocket, Check, CheckCheck, Ghost, Flame, Coffee, HeartOff, MapPin, Calendar, Lock, Unlock, Play, Pause, Music, Stars, Layout, Plus, RotateCcw, ChevronRight, ChevronDown, RefreshCw } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
@@ -14,6 +14,7 @@ import BackgroundEffects, { EffectType } from './BackgroundEffects';
 import SlideshowBackground from './SlideshowBackground';
 import PartnerActivities from './PartnerActivities';
 import NotificationBell from './NotificationBell';
+import MessageBubble from './MessageBubble';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -85,6 +86,24 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
     const [activeMessageActions, setActiveMessageActions] = useState<string | null>(null);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [isScrolledUp, setIsScrolledUp] = useState(false);
+
+    const handleReact = useCallback(async (msgId: string, emoji: string) => {
+        setActiveMessageActions(null);
+        await fetch("/api/messages/react", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messageId: msgId, emoji, user: "nasywa", chatKey: `${["nasywa", activeChat].sort()[0]}-${["nasywa", activeChat].sort()[1]}` })
+        });
+    }, [activeChat]);
+
+    const handlePin = useCallback(async (msgId: string, isPinned: boolean) => {
+        setActiveMessageActions(null);
+        await fetch("/api/messages/pin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messageId: msgId, isPinned, chatKey: `${["nasywa", activeChat].sort()[0]}-${["nasywa", activeChat].sort()[1]}` })
+        });
+    }, [activeChat]);
 
     useEffect(() => {
         const container = messagesContainerRef.current;
@@ -1196,7 +1215,26 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                         </div>
                     ) : (() => {
                         const messageMap = new Map(messages[activeChat].map(m => [m.id, m]));
-                        return messages[activeChat].map((msg) => (
+                        return (
+                            <AnimatePresence mode="popLayout">
+                                {messages[activeChat].map((msg) => (
+                                    <MessageBubble
+                                        key={msg.id}
+                                        msg={msg}
+                                        userRole="nasywa"
+                                        activeChat={activeChat}
+                                        senderProfile={profiles[msg.sender]}
+                                        parentMessage={msg.parentId ? messageMap.get(msg.parentId) : undefined}
+                                        isActive={activeMessageActions === msg.id}
+                                        setActiveMessageActions={setActiveMessageActions}
+                                        setReplyingTo={setReplyingTo}
+                                        onReact={handleReact}
+                                        onPin={handlePin}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                        );
+                        /*
                             <motion.div
                                 key={msg.id}
                                 initial={{ opacity: 0, y: 20 }}
@@ -1255,7 +1293,6 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                             if (window.innerWidth < 1024) e.preventDefault();
                                         }}
                                     >
-                                        {/* Swipe Indicator (Hidden, only visible on drag) */}
                                         <motion.div
                                             className="absolute -left-10 top-1/2 -translate-y-1/2 opacity-0 group-drag:opacity-100"
                                             style={{ x: -20 }}
@@ -1269,7 +1306,6 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                             </div>
                                         )}
 
-                                        {/* Action Menu (Long press on mobile, Hover on desktop) */}
                                         <div className={cn(
                                             "absolute bottom-full mb-3 flex gap-1 bg-card/95 backdrop-blur-xl p-2 rounded-2xl border border-white/20 shadow-2xl transition-all z-[100]",
                                             activeMessageActions === msg.id
@@ -1339,7 +1375,6 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                             )}
                                         </div>
 
-                                        {/* Reactions Display */}
                                         {msg.reactions && (msg.reactions as any[]).length > 0 && (
                                             <div className="flex flex-wrap gap-1 mt-3">
                                                 {(msg.reactions as any[]).map((r, i) => (
@@ -1405,24 +1440,27 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                     <div className="flex items-center gap-2 px-2 mt-0.5 opacity-60">
                                         <span className="text-[10px] font-medium tracking-tight text-muted-foreground">{msg.timestamp}</span>
                                     </div>
-                                </div>
-                            </motion.div>
+                                </div >
+                            </motion.div >
                         ))
+                        */
                     })()}
-                    {isOtherTyping && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="flex items-center gap-2 px-4 py-2"
-                        >
-                            <div className="flex gap-1">
-                                <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
-                                <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
-                                <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
-                            </div>
-                            <span className="text-xs text-muted-foreground italic">Sajid is typing...</span>
-                        </motion.div>
-                    )}
+                    {
+                        isOtherTyping && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="flex items-center gap-2 px-4 py-2"
+                            >
+                                <div className="flex gap-1">
+                                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
+                                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
+                                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
+                                </div>
+                                <span className="text-xs text-muted-foreground italic">Sajid is typing...</span>
+                            </motion.div>
+                        )
+                    }
                     <div ref={messagesEndRef} />
 
                     {/* Scroll to Bottom Button */}
@@ -1439,13 +1477,15 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                             </motion.button>
                         )}
                     </AnimatePresence>
-                </div>
+                </div >
 
                 {/* Input */}
-                <div className={cn(
-                    "fixed lg:relative bottom-0 left-0 right-0 lg:bottom-auto lg:left-auto lg:right-auto p-3 lg:p-6 lg:pt-0 shrink-0 z-40 transition-all duration-300",
-                    isScrolledUp ? "bg-zinc-950 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/5" : "bg-background/80 backdrop-blur-sm"
-                )}>
+                < div className={
+                    cn(
+                        "fixed lg:relative bottom-0 left-0 right-0 lg:bottom-auto lg:left-auto lg:right-auto p-3 lg:p-6 lg:pt-0 shrink-0 z-40 transition-all duration-300",
+                        isScrolledUp ? "bg-zinc-950 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/5" : "bg-background/80 backdrop-blur-sm"
+                    )
+                } >
                     <div className="flex flex-col gap-2">
                         {replyingTo && (
                             <motion.div
@@ -1657,27 +1697,31 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                             </button>
                         </div>
                     </div>
-                </div>
+                </div >
 
                 {/* Drawing Overlay */}
                 <AnimatePresence>
-                    {isDrawing && (
-                        <DrawingOverlay
-                            onClose={() => setIsDrawing(false)}
-                            onSave={(img) => {
-                                handleImageUpload({ target: { files: [dataURLtoFile(img, 'heart.png')] } } as any);
-                                setIsDrawing(false);
-                            }}
-                        />
-                    )}
-                </AnimatePresence>
+                    {
+                        isDrawing && (
+                            <DrawingOverlay
+                                onClose={() => setIsDrawing(false)}
+                                onSave={(img) => {
+                                    handleImageUpload({ target: { files: [dataURLtoFile(img, 'heart.png')] } } as any);
+                                    setIsDrawing(false);
+                                }}
+                            />
+                        )
+                    }
+                </AnimatePresence >
             </main >
 
             {/* Word Bucket */}
-            <aside className={cn(
-                "fixed lg:relative inset-y-0 right-0 z-50 w-full lg:w-96 bg-background/95 backdrop-blur-2xl border-l border-border flex flex-col transition-transform duration-300",
-                showWordBucket ? "translate-x-0" : "translate-x-full lg:translate-x-0"
-            )}>
+            < aside className={
+                cn(
+                    "fixed lg:relative inset-y-0 right-0 z-50 w-full lg:w-96 bg-background/95 backdrop-blur-2xl border-l border-border flex flex-col transition-transform duration-300",
+                    showWordBucket ? "translate-x-0" : "translate-x-full lg:translate-x-0"
+                )
+            } >
                 <div className="p-4 lg:p-6 border-b border-border shrink-0">
                     <div className="flex items-center justify-between mb-4">
                         <div>
@@ -1886,195 +1930,207 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                         </div>
                     )
                 }
-            </AnimatePresence>
+            </AnimatePresence >
 
             {/* Fullscreen Animations: Hug & Kiss */}
             <AnimatePresence>
-                {currentHug && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.5 }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
-                    >
-                        <div className="relative">
-                            <motion.div
-                                animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
-                                transition={{ repeat: Infinity, duration: 2 }}
-                            >
-                                <Ghost className="w-64 h-64 text-blue-400 drop-shadow-[0_0_30px_rgba(96,165,250,0.5)]" />
-                            </motion.div>
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: -40 }}
-                                className="absolute inset-x-0 -bottom-10 text-center"
-                            >
-                                <span className="text-4xl font-black text-white drop-shadow-lg uppercase tracking-widest bg-black/20 px-4 py-2 rounded-2xl backdrop-blur-sm whitespace-nowrap">A Huge Hug! 🤗</span>
-                            </motion.div>
-                        </div>
-                    </motion.div>
-                )}
-
-                {currentKiss && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.5 }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
-                    >
-                        <div className="relative text-center">
-                            <motion.div
-                                animate={{ y: [0, -20, 0], scale: [1, 1.1, 1] }}
-                                transition={{ repeat: Infinity, duration: 1.5 }}
-                            >
-                                <Flame className="w-64 h-64 text-pink-500 drop-shadow-[0_0_30px_rgba(236,72,153,0.5)] fill-current mx-auto" />
-                            </motion.div>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <Heart className="w-32 h-32 text-white animate-ping opacity-50" />
+                {
+                    currentHug && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.5 }}
+                            className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+                        >
+                            <div className="relative">
+                                <motion.div
+                                    animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
+                                    transition={{ repeat: Infinity, duration: 2 }}
+                                >
+                                    <Ghost className="w-64 h-64 text-blue-400 drop-shadow-[0_0_30px_rgba(96,165,250,0.5)]" />
+                                </motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: -40 }}
+                                    className="absolute inset-x-0 -bottom-10 text-center"
+                                >
+                                    <span className="text-4xl font-black text-white drop-shadow-lg uppercase tracking-widest bg-black/20 px-4 py-2 rounded-2xl backdrop-blur-sm whitespace-nowrap">A Huge Hug! 🤗</span>
+                                </motion.div>
                             </div>
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: -40 }}
-                                className="absolute inset-x-0 -bottom-10 text-center"
-                            >
-                                <span className="text-4xl font-black text-white drop-shadow-lg uppercase tracking-widest bg-black/20 px-4 py-2 rounded-2xl backdrop-blur-sm whitespace-nowrap">Big Kiss! 💋</span>
-                            </motion.div>
-                        </div>
-                    </motion.div>
-                )}
+                        </motion.div>
+                    )
+                }
 
-                {currentMumma && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.5 }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
-                    >
-                        <div className="relative text-center">
-                            <motion.div
-                                animate={{
-                                    y: [0, -20, 0],
-                                    scale: [1, 1.1, 1],
-                                    rotate: [0, -5, 5, 0]
-                                }}
-                                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                            >
-                                <span className="text-[150px] lg:text-[300px] leading-none drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">🥺</span>
-                            </motion.div>
-                            <motion.div
-                                initial={{ opacity: 0, y: 50 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="absolute inset-x-0 -bottom-20 text-center"
-                            >
-                                <span className="text-4xl lg:text-6xl font-black text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] bg-black/30 px-8 py-4 rounded-3xl backdrop-blur-md">
-                                    Mumma...
-                                </span>
-                            </motion.div>
-                        </div>
-                    </motion.div>
-                )}
+                {
+                    currentKiss && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.5 }}
+                            className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+                        >
+                            <div className="relative text-center">
+                                <motion.div
+                                    animate={{ y: [0, -20, 0], scale: [1, 1.1, 1] }}
+                                    transition={{ repeat: Infinity, duration: 1.5 }}
+                                >
+                                    <Flame className="w-64 h-64 text-pink-500 drop-shadow-[0_0_30px_rgba(236,72,153,0.5)] fill-current mx-auto" />
+                                </motion.div>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <Heart className="w-32 h-32 text-white animate-ping opacity-50" />
+                                </div>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: -40 }}
+                                    className="absolute inset-x-0 -bottom-10 text-center"
+                                >
+                                    <span className="text-4xl font-black text-white drop-shadow-lg uppercase tracking-widest bg-black/20 px-4 py-2 rounded-2xl backdrop-blur-sm whitespace-nowrap">Big Kiss! 💋</span>
+                                </motion.div>
+                            </div>
+                        </motion.div>
+                    )
+                }
 
-                {currentBabyGirl && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.5 }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
-                    >
-                        <div className="relative text-center">
-                            <motion.div
-                                animate={{
-                                    y: [0, -20, 0],
-                                    scale: [1, 1.1, 1],
-                                    rotate: [0, 5, -5, 0]
-                                }}
-                                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                            >
-                                <span className="text-[150px] lg:text-[300px] leading-none drop-shadow-[0_0_50px_rgba(236,72,153,0.5)]">👸</span>
-                            </motion.div>
-                            <motion.div
-                                initial={{ opacity: 0, y: 50 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="absolute inset-x-0 -bottom-20 text-center"
-                            >
-                                <span className="text-4xl lg:text-6xl font-black text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] bg-black/30 px-8 py-4 rounded-3xl backdrop-blur-md">
-                                    Baby Girl... ❤️
-                                </span>
-                            </motion.div>
-                        </div>
-                    </motion.div>
-                )}
+                {
+                    currentMumma && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.5 }}
+                            className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+                        >
+                            <div className="relative text-center">
+                                <motion.div
+                                    animate={{
+                                        y: [0, -20, 0],
+                                        scale: [1, 1.1, 1],
+                                        rotate: [0, -5, 5, 0]
+                                    }}
+                                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                >
+                                    <span className="text-[150px] lg:text-[300px] leading-none drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">🥺</span>
+                                </motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 50 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="absolute inset-x-0 -bottom-20 text-center"
+                                >
+                                    <span className="text-4xl lg:text-6xl font-black text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] bg-black/30 px-8 py-4 rounded-3xl backdrop-blur-md">
+                                        Mumma...
+                                    </span>
+                                </motion.div>
+                            </div>
+                        </motion.div>
+                    )
+                }
 
-                {currentBabyBoy && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.5 }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
-                    >
-                        <div className="relative text-center">
-                            <motion.div
-                                animate={{
-                                    y: [0, -20, 0],
-                                    scale: [1, 1.1, 1],
-                                    rotate: [0, -5, 5, 0]
-                                }}
-                                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                            >
-                                <span className="text-[150px] lg:text-[300px] leading-none drop-shadow-[0_0_50px_rgba(59,130,246,0.5)]">👶</span>
-                            </motion.div>
-                            <motion.div
-                                initial={{ opacity: 0, y: 50 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="absolute inset-x-0 -bottom-20 text-center"
-                            >
-                                <span className="text-4xl lg:text-6xl font-black text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] bg-black/30 px-8 py-4 rounded-3xl backdrop-blur-md">
-                                    Baby Boy... 💙
-                                </span>
-                            </motion.div>
-                        </div>
-                    </motion.div>
-                )}
+                {
+                    currentBabyGirl && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.5 }}
+                            className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+                        >
+                            <div className="relative text-center">
+                                <motion.div
+                                    animate={{
+                                        y: [0, -20, 0],
+                                        scale: [1, 1.1, 1],
+                                        rotate: [0, 5, -5, 0]
+                                    }}
+                                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                >
+                                    <span className="text-[150px] lg:text-[300px] leading-none drop-shadow-[0_0_50px_rgba(236,72,153,0.5)]">👸</span>
+                                </motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 50 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="absolute inset-x-0 -bottom-20 text-center"
+                                >
+                                    <span className="text-4xl lg:text-6xl font-black text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] bg-black/30 px-8 py-4 rounded-3xl backdrop-blur-md">
+                                        Baby Girl... ❤️
+                                    </span>
+                                </motion.div>
+                            </div>
+                        </motion.div>
+                    )
+                }
 
-                {activeAnimation && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.5 }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
-                    >
-                        <div className="relative text-center">
-                            <motion.div
-                                animate={{
-                                    y: [0, -20, 0],
-                                    scale: [1, 1.1, 1],
-                                    rotate: [0, -5, 5, 0]
-                                }}
-                                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                            >
-                                <span className="text-[100px] lg:text-[200px] leading-none drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">
-                                    {activeAnimation === 'goodmorning' && '☀️'}
-                                    {activeAnimation === 'goodafternoon' && '🌤️'}
-                                    {activeAnimation === 'goodevening' && '🌇'}
-                                    {activeAnimation === 'goodnight' && '🌙'}
-                                </span>
-                            </motion.div>
-                            <motion.div
-                                initial={{ opacity: 0, y: 50 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="absolute inset-x-0 -bottom-20 text-center"
-                            >
-                                <span className="text-4xl lg:text-6xl font-black text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] bg-black/30 px-8 py-4 rounded-3xl backdrop-blur-md whitespace-nowrap">
-                                    {activeAnimation === 'goodmorning' && 'Good Morning, Love! ☀️'}
-                                    {activeAnimation === 'goodafternoon' && 'Good Afternoon, Love! 🌤️'}
-                                    {activeAnimation === 'goodevening' && 'Good Evening, Love! 🌇'}
-                                    {activeAnimation === 'goodnight' && 'Good Night, Love! 🌙'}
-                                </span>
-                            </motion.div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                {
+                    currentBabyBoy && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.5 }}
+                            className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+                        >
+                            <div className="relative text-center">
+                                <motion.div
+                                    animate={{
+                                        y: [0, -20, 0],
+                                        scale: [1, 1.1, 1],
+                                        rotate: [0, -5, 5, 0]
+                                    }}
+                                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                >
+                                    <span className="text-[150px] lg:text-[300px] leading-none drop-shadow-[0_0_50px_rgba(59,130,246,0.5)]">👶</span>
+                                </motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 50 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="absolute inset-x-0 -bottom-20 text-center"
+                                >
+                                    <span className="text-4xl lg:text-6xl font-black text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] bg-black/30 px-8 py-4 rounded-3xl backdrop-blur-md">
+                                        Baby Boy... 💙
+                                    </span>
+                                </motion.div>
+                            </div>
+                        </motion.div>
+                    )
+                }
+
+                {
+                    activeAnimation && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.5 }}
+                            className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+                        >
+                            <div className="relative text-center">
+                                <motion.div
+                                    animate={{
+                                        y: [0, -20, 0],
+                                        scale: [1, 1.1, 1],
+                                        rotate: [0, -5, 5, 0]
+                                    }}
+                                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                >
+                                    <span className="text-[100px] lg:text-[200px] leading-none drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">
+                                        {activeAnimation === 'goodmorning' && '☀️'}
+                                        {activeAnimation === 'goodafternoon' && '🌤️'}
+                                        {activeAnimation === 'goodevening' && '🌇'}
+                                        {activeAnimation === 'goodnight' && '🌙'}
+                                    </span>
+                                </motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 50 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="absolute inset-x-0 -bottom-20 text-center"
+                                >
+                                    <span className="text-4xl lg:text-6xl font-black text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] bg-black/30 px-8 py-4 rounded-3xl backdrop-blur-md whitespace-nowrap">
+                                        {activeAnimation === 'goodmorning' && 'Good Morning, Love! ☀️'}
+                                        {activeAnimation === 'goodafternoon' && 'Good Afternoon, Love! 🌤️'}
+                                        {activeAnimation === 'goodevening' && 'Good Evening, Love! 🌇'}
+                                        {activeAnimation === 'goodnight' && 'Good Night, Love! 🌙'}
+                                    </span>
+                                </motion.div>
+                            </div>
+                        </motion.div>
+                    )
+                }
+            </AnimatePresence >
 
             {/* Firework Text & Rocket Overlay */}
             <AnimatePresence>
@@ -2103,50 +2159,60 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                         </div>
                     )
                 }
-            </AnimatePresence>
+            </AnimatePresence >
 
             {/* Love Features Overlays */}
             <AnimatePresence>
-                {showLoveWall && (
-                    <LoveWallOverlay
-                        notes={loveNotes}
-                        onClose={() => setShowLoveWall(false)}
-                        onAdd={handleAddLoveNote}
-                        onDelete={handleDeleteLoveNote}
-                        role="nasywa"
-                    />
-                )}
-                {showMilestones && (
-                    <MilestonesOverlay
-                        milestones={milestones}
-                        onClose={() => setShowMilestones(false)}
-                        onAdd={handleAddMilestone}
-                        role="nasywa"
-                    />
-                )}
-                {showJar && (
-                    <JarOverlay
-                        notes={jarNotes}
-                        onClose={() => setShowJar(false)}
-                        onAdd={handleAddJarNote}
-                        role="nasywa"
-                    />
-                )}
-                {showMap && (
-                    <InteractiveMap
-                        distance={distance}
-                        onClose={() => setShowMap(false)}
-                        myLocation={profiles.nasywa}
-                        partnerLocation={profiles.sajid}
-                        myRole="nasywa"
-                    />
-                )}
-                {showStreak && (
-                    <StreakOverlay
-                        onClose={() => setShowStreak(false)}
-                    />
-                )}
-            </AnimatePresence>
+                {
+                    showLoveWall && (
+                        <LoveWallOverlay
+                            notes={loveNotes}
+                            onClose={() => setShowLoveWall(false)}
+                            onAdd={handleAddLoveNote}
+                            onDelete={handleDeleteLoveNote}
+                            role="nasywa"
+                        />
+                    )
+                }
+                {
+                    showMilestones && (
+                        <MilestonesOverlay
+                            milestones={milestones}
+                            onClose={() => setShowMilestones(false)}
+                            onAdd={handleAddMilestone}
+                            role="nasywa"
+                        />
+                    )
+                }
+                {
+                    showJar && (
+                        <JarOverlay
+                            notes={jarNotes}
+                            onClose={() => setShowJar(false)}
+                            onAdd={handleAddJarNote}
+                            role="nasywa"
+                        />
+                    )
+                }
+                {
+                    showMap && (
+                        <InteractiveMap
+                            distance={distance}
+                            onClose={() => setShowMap(false)}
+                            myLocation={profiles.nasywa}
+                            partnerLocation={profiles.sajid}
+                            myRole="nasywa"
+                        />
+                    )
+                }
+                {
+                    showStreak && (
+                        <StreakOverlay
+                            onClose={() => setShowStreak(false)}
+                        />
+                    )
+                }
+            </AnimatePresence >
             <PartnerActivities
                 isOpen={showActivities}
                 onClose={() => setShowActivities(false)}

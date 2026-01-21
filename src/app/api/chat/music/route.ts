@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { pusherServer } from "@/lib/pusher";
 import { getPrisma } from "@/lib/db";
+import { kafka, KAFKA_TOPICS } from "@/lib/kafka";
 
 export async function GET(req: Request) {
     try {
@@ -59,6 +60,14 @@ export async function POST(req: Request) {
             playlist,
             index,
             isPlaying
+        });
+
+        // Log to Kafka (Asynchronous)
+        kafka.publish(KAFKA_TOPICS.VIBE_EVENTS, {
+            chatKey,
+            index,
+            isPlaying,
+            timestamp: new Date().toISOString()
         });
 
         return NextResponse.json({ success: true });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload, Rocket, Check, CheckCheck, Ghost, Flame, Coffee, HeartOff, MapPin, Calendar, Lock, Unlock, Play, Pause, Music, Stars, Layout, Plus, RotateCcw, ChevronRight, ChevronDown, RefreshCw } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
@@ -14,6 +14,7 @@ import BackgroundEffects, { EffectType } from './BackgroundEffects';
 import SlideshowBackground from './SlideshowBackground';
 import PartnerActivities from './PartnerActivities';
 import NotificationBell from './NotificationBell';
+import MessageBubble from './MessageBubble';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -87,6 +88,24 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
     const [replyingTo, setReplyingTo] = useState<any>(null);
     const [showReactionsFor, setShowReactionsFor] = useState<string | null>(null);
     const [activeThreads, setActiveThreads] = useState<Record<string, any[]>>({});
+
+    const handleReact = useCallback(async (msgId: string, emoji: string) => {
+        setActiveMessageActions(null);
+        await fetch("/api/messages/react", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messageId: msgId, emoji, user: "sajid", chatKey: `${["sajid", activeChat].sort()[0]}-${["sajid", activeChat].sort()[1]}` })
+        });
+    }, [activeChat]);
+
+    const handlePin = useCallback(async (msgId: string, isPinned: boolean) => {
+        setActiveMessageActions(null);
+        await fetch("/api/messages/pin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messageId: msgId, isPinned, chatKey: `${["sajid", activeChat].sort()[0]}-${["sajid", activeChat].sort()[1]}` })
+        });
+    }, [activeChat]);
 
     const isUnlocked = (msg: any) => {
         if (msg.type !== "secret" || msg.sender === "sajid") return true;
@@ -1281,222 +1300,29 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         ) : (
                             (() => {
                                 const messageMap = new Map(messages[activeChat].map(m => [m.id, m]));
-                                return messages[activeChat].map((msg) => (
-                                    <motion.div
-                                        key={msg.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0, x: 0 }}
-                                        drag="x"
-                                        dragConstraints={{ left: 0, right: 100 }}
-                                        dragElastic={0.4}
-                                        dragSnapToOrigin={true}
-                                        dragTransition={{ bounceStiffness: 600, bounceDamping: 25 }}
-                                        onDragEnd={(_, info) => {
-                                            if (info.offset.x > 50) {
-                                                setReplyingTo(msg);
-                                                if ('vibrate' in navigator) navigator.vibrate(20);
-                                            }
-                                        }}
-                                        className={cn(
-                                            "flex gap-3 max-w-[85%] lg:max-w-[75%]",
-                                            msg.sender === "sajid" ? "ml-auto flex-row-reverse" : "mr-auto flex-row"
-                                        )}
-                                    >
-                                        <div className={cn(
-                                            "w-8 h-8 rounded-xl shrink-0 flex items-center justify-center overflow-hidden border border-white/10 shadow-lg",
-                                            msg.sender === "sajid" ? "bg-gradient-to-br from-blue-500 to-indigo-600" : "bg-gradient-to-br from-pink-500 to-rose-600"
-                                        )}>
-                                            {profiles[msg.sender]?.avatarUrl ? (
-                                                <img src={profiles[msg.sender].avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <User className="w-4 h-4 text-white" />
-                                            )}
-                                        </div>
-                                        <div className={cn("flex flex-col gap-1 relative", msg.sender === "sajid" ? "items-end" : "items-start")}>
-                                            {msg.parentId && (
-                                                <div className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1 px-2">
-                                                    <RotateCcw className="w-2.5 h-2.5" />
-                                                    Replied to: {messageMap.get(msg.parentId)?.text?.substring(0, 20)}...
-                                                </div>
-                                            )}
-                                            <div
-                                                className={cn(
-                                                    "p-3 lg:p-4 rounded-2xl transition-all relative group/msg cursor-pointer lg:cursor-default",
-                                                    msg.sender === "sajid"
-                                                        ? "bg-gradient-to-br from-primary/30 to-primary/10 rounded-tr-none border border-primary/20 shadow-[0_4px_20px_rgba(59,130,246,0.1)] hover:border-primary/40"
-                                                        : "bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md rounded-tl-none border border-white/5 shadow-[0_4px_20px_rgba(0,0,0,0.2)] hover:border-white/20",
-                                                    msg.isPinned && "border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.2)]",
-                                                    activeMessageActions === msg.id && "ring-2 ring-primary/50"
-                                                )}
-                                                onTouchStart={() => {
-                                                    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-                                                    longPressTimer.current = setTimeout(() => {
-                                                        setActiveMessageActions(msg.id);
-                                                        if ('vibrate' in navigator) navigator.vibrate(50);
-                                                    }, 500);
-                                                }}
-                                                onTouchEnd={() => {
-                                                    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-                                                }}
-                                                onContextMenu={(e) => {
-                                                    if (window.innerWidth < 1024) e.preventDefault();
-                                                }}
-                                            >
-                                                {/* Swipe Indicator (Hidden, only visible on drag) */}
-                                                <motion.div
-                                                    className="absolute -left-10 top-1/2 -translate-y-1/2 opacity-0 group-drag:opacity-100"
-                                                    style={{ x: -20 }}
-                                                >
-                                                    <RotateCcw className="w-5 h-5 text-primary" />
-                                                </motion.div>
-
-                                                {msg.isPinned && (
-                                                    <div className="absolute -top-2 -left-2 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-lg border-2 border-background">
-                                                        <MapPin className="w-3 h-3 text-white" />
-                                                    </div>
-                                                )}
-
-                                                {/* Action Menu (Long press on mobile, Hover on desktop) */}
-                                                <div className={cn(
-                                                    "absolute bottom-full mb-3 flex gap-1 bg-card/95 backdrop-blur-xl p-2 rounded-2xl border border-white/20 shadow-2xl transition-all z-[100]",
-                                                    activeMessageActions === msg.id
-                                                        ? "opacity-100 scale-100 translate-y-0"
-                                                        : "opacity-0 scale-90 translate-y-2 pointer-events-none lg:pointer-events-auto lg:group-hover/msg:opacity-100 lg:group-hover/msg:scale-100 lg:group-hover/msg:translate-y-0",
-                                                    msg.sender === "sajid" ? "right-0" : "left-0"
-                                                )}>
-                                                    {["❤️", "😂", "😮", "🔥", "😢"].map(emoji => (
-                                                        <button
-                                                            key={emoji}
-                                                            onClick={async (e) => {
-                                                                e.stopPropagation();
-                                                                setActiveMessageActions(null);
-                                                                await fetch("/api/messages/react", {
-                                                                    method: "POST",
-                                                                    headers: { "Content-Type": "application/json" },
-                                                                    body: JSON.stringify({ messageId: msg.id, emoji, user: "sajid", chatKey: `${["sajid", activeChat].sort()[0]}-${["sajid", activeChat].sort()[1]}` })
-                                                                });
-                                                            }}
-                                                            className="hover:scale-150 active:scale-110 transition-transform px-1.5 text-lg lg:text-base outline-none"
-                                                        >
-                                                            {emoji}
-                                                        </button>
-                                                    ))}
-                                                    <div className="w-[1px] bg-white/10 mx-2" />
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setActiveMessageActions(null);
-                                                            setReplyingTo(msg);
-                                                        }}
-                                                        className="p-2 hover:text-primary hover:bg-white/5 rounded-lg active:scale-95 transition-all text-muted-foreground"
-                                                    >
-                                                        <RotateCcw className="w-4 h-4 lg:w-4 lg:h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={async (e) => {
-                                                            e.stopPropagation();
-                                                            setActiveMessageActions(null);
-                                                            await fetch("/api/messages/pin", {
-                                                                method: "POST",
-                                                                headers: { "Content-Type": "application/json" },
-                                                                body: JSON.stringify({ messageId: msg.id, isPinned: !msg.isPinned, chatKey: `${["sajid", activeChat].sort()[0]}-${["sajid", activeChat].sort()[1]}` })
-                                                            });
-                                                        }}
-                                                        className={cn("p-2 rounded-lg transition-all active:scale-95", msg.isPinned ? "text-amber-400 bg-amber-500/10" : "text-muted-foreground hover:text-amber-400 hover:bg-white/5")}
-                                                    >
-                                                        <MapPin className="w-4 h-4 lg:w-4 lg:h-4" />
-                                                    </button>
-                                                </div>
-
-                                                <div className="text-sm lg:text-[15px] break-words leading-relaxed font-medium">
-                                                    {msg.imageUrl ? (
-                                                        <img src={msg.imageUrl} alt="Sent" className="max-w-full rounded-xl mb-2 shadow-2xl border border-white/10 cursor-pointer transition-transform hover:scale-[1.02]" onClick={() => window.open(msg.imageUrl, '_blank')} />
-                                                    ) : msg.type === "sticker" ? (
-                                                        <div className="text-6xl my-2 drop-shadow-xl">{msg.text}</div>
-                                                    ) : msg.type === "secret" && !isUnlocked(msg) ? (
-                                                        <div className="flex flex-col items-center gap-2 py-6 px-10 opacity-70 select-none bg-black/20 rounded-xl border border-white/5 shadow-inner">
-                                                            <Lock className="w-10 h-10 animate-pulse text-amber-500" />
-                                                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-center">
-                                                                Encrypted<br />
-                                                                <span className="text-amber-500 font-display">T-{msg.unlockAt}</span>
-                                                            </p>
-                                                        </div>
-                                                    ) : (
-                                                        msg.text
-                                                    )}
-                                                </div>
-
-                                                {/* Reactions Display */}
-                                                {msg.reactions && (msg.reactions as any[]).length > 0 && (
-                                                    <div className="flex flex-wrap gap-1 mt-3">
-                                                        {(msg.reactions as any[]).map((r, i) => (
-                                                            <motion.span
-                                                                initial={{ scale: 0 }}
-                                                                animate={{ scale: 1 }}
-                                                                key={i}
-                                                                className="text-[11px] bg-white/10 backdrop-blur-md border border-white/10 px-2 py-1 rounded-full flex items-center gap-1 shadow-lg"
-                                                            >
-                                                                {r.emoji}
-                                                            </motion.span>
-                                                        ))}
-                                                    </div>
-                                                )}
-
-                                                {msg.status === "sending" && (
-                                                    <div className="mt-2 flex items-center gap-1.5 px-1">
-                                                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" />
-                                                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.2s]" />
-                                                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.4s]" />
-                                                        <span className="text-[10px] text-muted-foreground ml-1 font-bold">TRANSLATING...</span>
-                                                    </div>
-                                                )}
-
-                                                {msg.sender === "sajid" && (
-                                                    <div className="flex justify-end mt-1.5 opacity-50 group-hover/msg:opacity-100 transition-opacity">
-                                                        {msg.status === "seen" ? (
-                                                            <CheckCheck className="w-3.5 h-3.5 text-blue-400" />
-                                                        ) : msg.status === "sent" ? (
-                                                            <CheckCheck className="w-3.5 h-3.5 text-muted-foreground/50" />
-                                                        ) : (
-                                                            <Check className="w-3.5 h-3.5 text-muted-foreground/50" />
-                                                        )}
-                                                    </div>
-                                                )}
-
-                                                {msg.translation && (
-                                                    <div className="mt-3 pt-3 border-t border-white/5 group-hover/msg:border-white/10 transition-colors">
-                                                        <div className="flex items-center gap-1.5 mb-1.5">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                                            <span className="text-[10px] uppercase font-black tracking-widest text-emerald-400">Indonesian</span>
-                                                        </div>
-                                                        <p className="text-[13px] text-emerald-300/90 font-medium leading-relaxed italic">{msg.translation}</p>
-                                                        {msg.wordBreakdown && (msg.wordBreakdown as any[]).length > 0 && (
-                                                            <details className="mt-2 group/details">
-                                                                <summary className="text-[10px] text-muted-foreground cursor-pointer hover:text-white transition-all list-none flex items-center gap-1 font-bold uppercase tracking-tighter">
-                                                                    <ChevronRight className="w-3 h-3 group-open/details:rotate-90 transition-transform" />
-                                                                    Word breakdown
-                                                                </summary>
-                                                                <div className="mt-2 grid grid-cols-1 gap-1.5">
-                                                                    {(msg.wordBreakdown as any[]).slice(0, 5).map((w, i) => (
-                                                                        <div key={i} className="text-[10px] bg-emerald-500/5 border border-emerald-500/10 p-2 rounded-xl flex items-center justify-between group-hover/msg:border-emerald-500/20 transition-all">
-                                                                            <span className="font-black text-emerald-400">{w.word}</span>
-                                                                            <span className="text-emerald-300/70">{w.indonesian || w.translation}</span>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </details>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-2 px-2 mt-0.5 opacity-60">
-                                                <span className="text-[10px] font-medium tracking-tight text-muted-foreground">{msg.timestamp}</span>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                ))
-                            })())
+                                return (
+                                    <AnimatePresence mode="popLayout">
+                                        {messages[activeChat].map((msg) => (
+                                            <MessageBubble
+                                                key={msg.id}
+                                                msg={msg}
+                                                userRole="sajid"
+                                                activeChat={activeChat}
+                                                senderProfile={profiles[msg.sender]}
+                                                parentMessage={msg.parentId ? messageMap.get(msg.parentId) : undefined}
+                                                isActive={activeMessageActions === msg.id}
+                                                setActiveMessageActions={setActiveMessageActions}
+                                                setReplyingTo={setReplyingTo}
+                                                onReact={handleReact}
+                                                onPin={handlePin}
+                                            />
+                                        ))}
+                                    </AnimatePresence>
+                                );
+                            })()
+                        )
                     }
+
                     {
                         isOtherTyping && (
                             <motion.div
@@ -1529,13 +1355,15 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                             </motion.button>
                         )}
                     </AnimatePresence>
-                </div>
+                </div >
 
                 {/* Input */}
-                <div className={cn(
-                    "fixed lg:relative bottom-0 left-0 right-0 lg:bottom-auto lg:left-auto lg:right-auto p-3 lg:p-6 lg:pt-0 shrink-0 z-40 transition-all duration-300",
-                    isScrolledUp ? "bg-zinc-950 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/5" : "bg-background/80 backdrop-blur-sm"
-                )}>
+                < div className={
+                    cn(
+                        "fixed lg:relative bottom-0 left-0 right-0 lg:bottom-auto lg:left-auto lg:right-auto p-3 lg:p-6 lg:pt-0 shrink-0 z-40 transition-all duration-300",
+                        isScrolledUp ? "bg-zinc-950 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/5" : "bg-background/80 backdrop-blur-sm"
+                    )
+                } >
                     <div className="flex flex-col gap-2">
                         {replyingTo && (
                             <motion.div
@@ -1760,10 +1588,12 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             </main >
 
             {/* Word Bucket */}
-            <aside className={cn(
-                "fixed lg:relative inset-y-0 right-0 z-50 w-full lg:w-96 bg-background/95 backdrop-blur-2xl border-l border-border flex flex-col transition-transform duration-300",
-                showWordBucket ? "translate-x-0" : "translate-x-full lg:translate-x-0"
-            )}>
+            < aside className={
+                cn(
+                    "fixed lg:relative inset-y-0 right-0 z-50 w-full lg:w-96 bg-background/95 backdrop-blur-2xl border-l border-border flex flex-col transition-transform duration-300",
+                    showWordBucket ? "translate-x-0" : "translate-x-full lg:translate-x-0"
+                )
+            } >
                 <div className="p-4 lg:p-6 border-b border-border shrink-0">
                     <div className="flex items-center justify-between mb-4">
                         <div>
@@ -1975,7 +1805,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         </div>
                     )
                 }
-            </AnimatePresence>
+            </AnimatePresence >
 
             {/* Fullscreen Animations: Hug & Kiss */}
             <AnimatePresence>
@@ -2135,44 +1965,46 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                     )
                 }
 
-                {activeAnimation && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.5 }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
-                    >
-                        <div className="relative text-center">
-                            <motion.div
-                                animate={{
-                                    y: [0, -20, 0],
-                                    scale: [1, 1.1, 1],
-                                    rotate: [0, -5, 5, 0]
-                                }}
-                                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                            >
-                                <span className="text-[100px] lg:text-[200px] leading-none drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">
-                                    {activeAnimation === 'goodmorning' && '☀️'}
-                                    {activeAnimation === 'goodafternoon' && '🌤️'}
-                                    {activeAnimation === 'goodevening' && '🌇'}
-                                    {activeAnimation === 'goodnight' && '🌙'}
-                                </span>
-                            </motion.div>
-                            <motion.div
-                                initial={{ opacity: 0, y: 50 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="absolute inset-x-0 -bottom-20 text-center"
-                            >
-                                <span className="text-4xl lg:text-6xl font-black text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] bg-black/30 px-8 py-4 rounded-3xl backdrop-blur-md whitespace-nowrap">
-                                    {activeAnimation === 'goodmorning' && 'Good Morning, Love! ☀️'}
-                                    {activeAnimation === 'goodafternoon' && 'Good Afternoon, Love! 🌤️'}
-                                    {activeAnimation === 'goodevening' && 'Good Evening, Love! 🌇'}
-                                    {activeAnimation === 'goodnight' && 'Good Night, Love! 🌙'}
-                                </span>
-                            </motion.div>
-                        </div>
-                    </motion.div>
-                )}
+                {
+                    activeAnimation && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.5 }}
+                            className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+                        >
+                            <div className="relative text-center">
+                                <motion.div
+                                    animate={{
+                                        y: [0, -20, 0],
+                                        scale: [1, 1.1, 1],
+                                        rotate: [0, -5, 5, 0]
+                                    }}
+                                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                >
+                                    <span className="text-[100px] lg:text-[200px] leading-none drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">
+                                        {activeAnimation === 'goodmorning' && '☀️'}
+                                        {activeAnimation === 'goodafternoon' && '🌤️'}
+                                        {activeAnimation === 'goodevening' && '🌇'}
+                                        {activeAnimation === 'goodnight' && '🌙'}
+                                    </span>
+                                </motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 50 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="absolute inset-x-0 -bottom-20 text-center"
+                                >
+                                    <span className="text-4xl lg:text-6xl font-black text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] bg-black/30 px-8 py-4 rounded-3xl backdrop-blur-md whitespace-nowrap">
+                                        {activeAnimation === 'goodmorning' && 'Good Morning, Love! ☀️'}
+                                        {activeAnimation === 'goodafternoon' && 'Good Afternoon, Love! 🌤️'}
+                                        {activeAnimation === 'goodevening' && 'Good Evening, Love! 🌇'}
+                                        {activeAnimation === 'goodnight' && 'Good Night, Love! 🌙'}
+                                    </span>
+                                </motion.div>
+                            </div>
+                        </motion.div>
+                    )
+                }
             </AnimatePresence >
 
             {/* Firework Text & Rocket Overlay */}
@@ -2202,7 +2034,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         </div>
                     )
                 }
-            </AnimatePresence>
+            </AnimatePresence >
 
             {/* Love Features Overlays */}
             <AnimatePresence>
@@ -2255,14 +2087,14 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         />
                     )
                 }
-            </AnimatePresence>
+            </AnimatePresence >
             <PartnerActivities
                 isOpen={showActivities}
                 onClose={() => setShowActivities(false)}
                 userRole="sajid"
                 pusherClient={pusher}
             />
-        </div>
+        </div >
     );
 }
 

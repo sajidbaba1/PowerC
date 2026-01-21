@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
 import { pusherServer } from "@/lib/pusher";
 import { sendPushNotification } from "@/lib/notifications";
+import { kafka, KAFKA_TOPICS } from "@/lib/kafka";
 
 function getChatKey(user1: string, user2: string) {
     const sorted = [user1, user2].sort();
@@ -114,6 +115,13 @@ export async function POST(req: Request) {
                 '/'
             );
         }
+
+        // Log to Kafka (Asynchronous)
+        kafka.publish(KAFKA_TOPICS.MESSAGES, {
+            ...savedMessage,
+            operation: existingMessage ? "update" : "create",
+            timestamp: new Date().toISOString()
+        });
 
         console.log(`API POST: Success for ${message.id}`);
         return NextResponse.json({ success: true, message: savedMessage });
