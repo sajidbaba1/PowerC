@@ -375,10 +375,9 @@ export default function PartnerActivities({ isOpen, onClose, userRole, partnerNa
                             </AnimatePresence>
                         </div>
                     </motion.div>
-                </div >
-            )
-            }
-        </AnimatePresence >
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }
 

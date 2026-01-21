@@ -30,7 +30,9 @@ import {
     CloudRain,
     Zap,
     Music,
-    Send
+    Send,
+    CheckCircle2,
+    Info
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -507,6 +509,21 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                         </button>
                         <button
                             onClick={() => {
+                                setActiveTab("gemini-keys");
+                                setShowSidebar(false);
+                            }}
+                            className={cn(
+                                "w-full p-3 lg:p-4 rounded-2xl transition-all flex items-center gap-3",
+                                activeTab === "gemini-keys"
+                                    ? "bg-primary/10 border-2 border-primary"
+                                    : "glass border border-white/5 hover:border-white/20"
+                            )}
+                        >
+                            <Sparkles className="w-5 h-5" />
+                            <span className="font-semibold text-sm">Gemini Keys</span>
+                        </button>
+                        <button
+                            onClick={() => {
                                 setActiveTab("users");
                                 setShowSidebar(false);
                             }}
@@ -790,6 +807,10 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                             )}
                         </div>
                     </div>
+                )}
+
+                {activeTab === "gemini-keys" && (
+                    <GeminiKeysManager />
                 )}
 
                 {activeTab === "users" && (
@@ -1328,6 +1349,289 @@ function MediaGallery() {
                     No images shared yet.
                 </div>
             )}
+        </div>
+    );
+}
+
+function GeminiKeysManager() {
+    const [geminiKeys, setGeminiKeys] = useState<any[]>([]);
+    const [newKey, setNewKey] = useState("");
+    const [newKeyLabel, setNewKeyLabel] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [testingKeyId, setTestingKeyId] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetchGeminiKeys();
+    }, []);
+
+    const fetchGeminiKeys = async () => {
+        try {
+            const res = await fetch("/api/admin/gemini-keys");
+            if (res.ok) {
+                const data = await res.json();
+                setGeminiKeys(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch Gemini keys:", error);
+        }
+    };
+
+    const handleAddKey = async () => {
+        if (!newKey.trim()) {
+            toast.error("Please enter an API key");
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const res = await fetch("/api/admin/gemini-keys", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    key: newKey.trim(),
+                    label: newKeyLabel.trim() || `Key ${Date.now()}`
+                })
+            });
+
+            if (res.ok) {
+                const newKeyData = await res.json();
+                setGeminiKeys(prev => [newKeyData, ...prev]);
+                setNewKey("");
+                setNewKeyLabel("");
+                toast.success("✅ API key added and tested successfully!");
+            } else {
+                const error = await res.json();
+                toast.error(`❌ ${error.error || "Failed to add key"}`);
+            }
+        } catch (error: any) {
+            toast.error(`❌ Error: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleTestKey = async (keyId: string, apiKey: string) => {
+        setTestingKeyId(keyId);
+        try {
+            const res = await fetch("/api/admin/gemini-keys/test", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ keyId, key: apiKey })
+            });
+
+            const result = await res.json();
+
+            if (result.success) {
+                toast.success(`✅ Key test successful! Response time: ${result.responseTime || 0}ms`);
+                fetchGeminiKeys(); // Refresh to show updated test status
+            } else {
+                toast.error(`❌ Key test failed: ${result.error}`);
+                fetchGeminiKeys();
+            }
+        } catch (error: any) {
+            toast.error(`❌ Test error: ${error.message}`);
+        } finally {
+            setTestingKeyId(null);
+        }
+    };
+
+    const handleSetActive = async (keyId: string) => {
+        try {
+            const res = await fetch("/api/admin/gemini-keys", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: keyId, isActive: true })
+            });
+
+            if (res.ok) {
+                toast.success("✅ Active key updated!");
+                fetchGeminiKeys();
+            }
+        } catch (error: any) {
+            toast.error(`❌ Error: ${error.message}`);
+        }
+    };
+
+    const handleDeleteKey = async (keyId: string) => {
+        if (!confirm("Are you sure you want to delete this API key?")) return;
+
+        try {
+            const res = await fetch(`/api/admin/gemini-keys?id=${keyId}`, {
+                method: "DELETE"
+            });
+
+            if (res.ok) {
+                setGeminiKeys(prev => prev.filter(k => k.id !== keyId));
+                toast.success("🗑️ Key deleted successfully");
+            }
+        } catch (error: any) {
+            toast.error(`❌ Error: ${error.message}`);
+        }
+    };
+
+    return (
+        <div className="space-y-8">
+            <div>
+                <h1 className="text-3xl font-bold mb-2">Gemini API Keys</h1>
+                <p className="text-muted-foreground">
+                    Manage translation API keys with automatic testing and failover support
+                </p>
+            </div>
+
+            {/* Add New Key */}
+            <div className="p-6 rounded-2xl glass border border-white/10">
+                <h3 className="font-bold mb-4 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    Add New Gemini API Key
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                        type="text"
+                        placeholder="Label (optional, e.g., 'Production Key')"
+                        value={newKeyLabel}
+                        onChange={(e) => setNewKeyLabel(e.target.value)}
+                        className="px-4 py-3 bg-muted/50 border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <input
+                        type="text"
+                        placeholder="Paste AIzaSy... key here"
+                        value={newKey}
+                        onChange={(e) => setNewKey(e.target.value)}
+                        className="px-4 py-3 bg-muted/50 border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary font-mono"
+                    />
+                </div>
+                <button
+                    onClick={handleAddKey}
+                    disabled={isLoading || !newKey.trim()}
+                    className="mt-4 flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isLoading ? (
+                        <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            Testing & Adding...
+                        </>
+                    ) : (
+                        <>
+                            <Plus className="w-4 h-4" />
+                            Add & Test Key
+                        </>
+                    )}
+                </button>
+            </div>
+
+            {/* Keys List */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {geminiKeys.map((key) => (
+                    <div
+                        key={key.id}
+                        className={cn(
+                            "p-6 rounded-2xl glass border transition-all",
+                            key.isActive
+                                ? "border-green-500/50 bg-green-500/5"
+                                : "border-white/10 hover:border-white/20"
+                        )}
+                    >
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <h4 className="font-bold">{key.label || "Unlabeled Key"}</h4>
+                                    {key.isActive && (
+                                        <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-[10px] font-bold uppercase">
+                                            Active
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="font-mono text-xs text-muted-foreground truncate">
+                                    {key.key.substring(0, 20)}...{key.key.substring(key.key.length - 4)}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => handleDeleteKey(key.id)}
+                                className="p-2 hover:bg-destructive/10 rounded-lg transition-colors text-muted-foreground hover:text-destructive"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Status */}
+                        {key.lastTested && (
+                            <div className="mb-4 p-3 rounded-xl bg-muted/30 border border-white/5">
+                                <div className="flex items-center justify-between text-xs">
+                                    <span className="text-muted-foreground">Last Tested:</span>
+                                    <span>{new Date(key.lastTested).toLocaleString()}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-xs mt-1">
+                                    <span className="text-muted-foreground">Status:</span>
+                                    <span className={cn(
+                                        "font-bold",
+                                        key.testStatus === 'success' ? "text-green-500" : "text-red-500"
+                                    )}>
+                                        {key.testStatus === 'success' ? '✅ Working' : '❌ Failed'}
+                                    </span>
+                                </div>
+                                {key.errorMessage && (
+                                    <p className="text-xs text-destructive mt-2 font-mono">
+                                        {key.errorMessage}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => handleTestKey(key.id, key.key)}
+                                disabled={testingKeyId === key.id}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
+                            >
+                                {testingKeyId === key.id ? (
+                                    <>
+                                        <div className="w-3 h-3 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                                        Testing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Activity className="w-4 h-4" />
+                                        Test
+                                    </>
+                                )}
+                            </button>
+                            {!key.isActive && (
+                                <button
+                                    onClick={() => handleSetActive(key.id)}
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-500 rounded-xl text-sm font-medium transition-all"
+                                >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    Set Active
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                ))}
+
+                {geminiKeys.length === 0 && (
+                    <div className="col-span-full py-12 text-center text-muted-foreground border-2 border-dashed border-border rounded-3xl">
+                        <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                        <p className="font-bold mb-1">No Gemini API keys yet</p>
+                        <p className="text-sm">Add your first key above to enable translation features</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Info Box */}
+            <div className="p-6 rounded-2xl bg-blue-500/5 border border-blue-500/20">
+                <h4 className="font-bold text-blue-500 mb-2 flex items-center gap-2">
+                    <Info className="w-5 h-5" />
+                    How it works
+                </h4>
+                <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Add multiple API keys as backups</li>
+                    <li>Test each key before activation</li>
+                    <li>Only one key can be active at a time</li>
+                    <li>The active key is used for all translations</li>
+                    <li>Switch to a backup key if the active one fails</li>
+                </ul>
+            </div>
         </div>
     );
 }
