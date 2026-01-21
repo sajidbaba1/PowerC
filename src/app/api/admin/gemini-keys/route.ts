@@ -102,8 +102,13 @@ export async function DELETE(req: Request) {
 // Helper function to test a Gemini API key
 async function testGeminiKey(apiKey: string): Promise<{ success: boolean; error?: string }> {
     // List of models to try in order
-    // gemini-pro is often deprecated in v1beta/v1 in favor of 1.0-pro or 1.5-flash
-    const models = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro"];
+    // Includes Gemini 2.0 Flash (Experimental) and standard models
+    const models = [
+        "gemini-2.0-flash-exp",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
+        "gemini-1.0-pro"
+    ];
     let lastError = "No models available";
 
     for (const model of models) {
