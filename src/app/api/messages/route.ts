@@ -39,17 +39,40 @@ export async function POST(req: Request) {
         const chatKey = getChatKey(user1, user2);
         const prisma = getPrisma();
 
+
         if (!user1 || !user2 || !message || !message.id) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
+        let finalMessage = { ...message };
+
+        // Handle Image Upload if present
+        if (finalMessage.imageUrl && finalMessage.imageUrl.startsWith("data:image")) {
+            // Dynamic import for Cloudinary to keep startup fast
+            const { v2: cloudinary } = await import("cloudinary");
+            cloudinary.config({
+                cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+                api_key: process.env.CLOUDINARY_API_KEY,
+                api_secret: process.env.CLOUDINARY_API_SECRET,
+            });
+
+            try {
+                const uploadRes = await cloudinary.uploader.upload(finalMessage.imageUrl, {
+                    folder: "power-couple-messages",
+                    resource_type: "auto",
+                });
+                finalMessage.imageUrl = uploadRes.secure_url;
+            } catch (err) {
+                console.error("Image upload failed:", err);
+            }
+        }
+
         // --- FAST PATH: Real-time and Kafka Logging ---
-        // We trigger Pusher and Kafka first so the partner sees it INSTANTLY
         const fastPayload = {
-            ...message,
+            ...finalMessage,
             chatKey,
-            receiver: user2 === message.sender ? user1 : user2,
-            createdAt: new Date().toISOString(),
+            receiver: user2 === finalMessage.sender ? user1 : user2,
+            createdAt: finalMessage.createdAt || new Date().toISOString(),
         };
 
         // 1. Trigger Pusher for immediate UI update
@@ -63,35 +86,49 @@ export async function POST(req: Request) {
         }).catch(err => console.error("Kafka Error:", err));
 
         // --- BACKGROUND PATH: Persistence and Notifications ---
-        // We start these but don't block the HTTP response
         const persistencePromise = (async () => {
             try {
-                const existing = await prisma.message.findUnique({ where: { id: message.id } });
+                // Handle unlockAt conversion for DB (DB expects DateTime, UI sends "HH:mm" string)
+                let dbUnlockAt = undefined;
+                if (finalMessage.unlockAt) {
+                    if (typeof finalMessage.unlockAt === 'string' && finalMessage.unlockAt.includes(':')) {
+                        const [hours, minutes] = finalMessage.unlockAt.split(':').map(Number);
+                        const d = new Date();
+                        d.setHours(hours, minutes, 0, 0);
+                        dbUnlockAt = d;
+                    } else {
+                        dbUnlockAt = new Date(finalMessage.unlockAt);
+                    }
+                }
+
+                const existing = await prisma.message.findUnique({ where: { id: finalMessage.id } });
                 if (existing) {
                     await prisma.message.update({
-                        where: { id: message.id },
+                        where: { id: finalMessage.id },
                         data: {
-                            translation: message.translation,
-                            status: message.status || "sent",
-                            reactions: message.reactions,
-                            isPinned: message.isPinned
+                            translation: finalMessage.translation,
+                            status: finalMessage.status || "sent",
+                            reactions: finalMessage.reactions,
+                            isPinned: finalMessage.isPinned
                         }
                     });
                 } else {
                     await prisma.message.create({
                         data: {
-                            id: message.id,
-                            text: message.text || "",
-                            translation: message.translation,
-                            sender: message.sender,
+                            id: finalMessage.id,
+                            text: finalMessage.text || "",
+                            translation: finalMessage.translation,
+                            sender: finalMessage.sender,
                             receiver: fastPayload.receiver,
                             chatKey: chatKey,
-                            status: message.status || "sent",
-                            type: message.type || "normal",
-                            parentId: message.parentId,
-                            imageUrl: message.imageUrl,
-                            audioUrl: message.audioUrl,
-                            unlockAt: message.unlockAt ? new Date(message.unlockAt) : undefined,
+                            status: finalMessage.status || "sent",
+                            type: finalMessage.type || "normal",
+                            parentId: finalMessage.parentId,
+                            imageUrl: finalMessage.imageUrl,
+                            audioUrl: finalMessage.audioUrl,
+                            isPinned: finalMessage.isPinned,
+                            unlockAt: dbUnlockAt,
+                            createdAt: new Date()
                         }
                     });
                 }
@@ -100,59 +137,28 @@ export async function POST(req: Request) {
             }
         })();
 
+        // Send Push Notification
         const notificationPromise = (async () => {
-            if (message.sender && fastPayload.receiver) {
+            if (finalMessage.sender && fastPayload.receiver) {
                 try {
-                    const notificationText = message.type === 'sticker' ? 'Sent a sticker' : (message.text || 'Sent an image');
+                    const notificationText = finalMessage.type === 'sticker' ? 'Sent a sticker' : (finalMessage.text || 'Sent an image');
                     await sendPushNotification(
                         fastPayload.receiver,
-                        `Message from ${message.sender}`,
+                        `Message from ${finalMessage.sender}`,
                         notificationText.substring(0, 50),
                         '/'
                     );
                 } catch (err) {
-                    console.error("Notification Error:", err);
+                    // console.error("Notification Error:", err);
                 }
             }
         })();
 
-        // We only await Pusher to ensure the message is at least "out there"
-        // The rest happens in the logs/DB eventually.
         await pusherPromise;
 
         return NextResponse.json({ success: true });
     } catch (error: any) {
         console.error("API POST FAILURE:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-}
-
-export async function DELETE(req: Request) {
-    try {
-        const { searchParams } = new URL(req.url);
-        const user1 = searchParams.get("user1");
-        const user2 = searchParams.get("user2");
-
-        if (!user1 || !user2) {
-            return NextResponse.json({ error: "Both users required" }, { status: 400 });
-        }
-
-        const chatKey = getChatKey(user1, user2);
-        const prisma = getPrisma();
-
-        await prisma.message.deleteMany({
-            where: { chatKey }
-        });
-
-        // Trigger Pusher event
-        try {
-            await pusherServer.trigger(chatKey, "clear-chat", { success: true });
-        } catch (pushErr) {
-            console.error("Pusher trigger failed:", pushErr);
-        }
-
-        return NextResponse.json({ success: true, message: "Chat cleared" });
-    } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

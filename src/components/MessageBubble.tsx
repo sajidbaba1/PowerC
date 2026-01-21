@@ -15,6 +15,7 @@ interface MessageBubbleProps {
     setReplyingTo: (msg: any) => void;
     onReact: (msgId: string, emoji: string) => void;
     onPin: (msgId: string, isPinned: boolean) => void;
+    onImageClick: (url: string) => void;
 }
 
 const MessageBubble = memo(({
@@ -27,7 +28,8 @@ const MessageBubble = memo(({
     setActiveMessageActions,
     setReplyingTo,
     onReact,
-    onPin
+    onPin,
+    onImageClick
 }: MessageBubbleProps) => {
     const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -111,9 +113,21 @@ const MessageBubble = memo(({
                     onTouchEnd={() => {
                         if (longPressTimer.current) clearTimeout(longPressTimer.current);
                     }}
+                    onMouseDown={() => {
+                        if (longPressTimer.current) clearTimeout(longPressTimer.current);
+                        longPressTimer.current = setTimeout(() => {
+                            setActiveMessageActions(msg.id);
+                        }, 300);
+                    }}
+                    onMouseUp={() => {
+                        if (longPressTimer.current) clearTimeout(longPressTimer.current);
+                    }}
+                    onMouseLeave={() => {
+                        if (longPressTimer.current) clearTimeout(longPressTimer.current);
+                    }}
                     onContextMenu={(e) => {
-                        // Prevent context menu on mobile to allow long press custom menu
-                        if (typeof window !== 'undefined' && window.innerWidth < 1024) e.preventDefault();
+                        e.preventDefault();
+                        setActiveMessageActions(msg.id);
                     }}
                 >
                     {/* Swipe Reply Icon */}
@@ -182,7 +196,7 @@ const MessageBubble = memo(({
                                     alt="Sent"
                                     fill
                                     className="rounded-xl shadow-2xl border border-white/10 cursor-pointer transition-transform hover:scale-[1.02] object-cover"
-                                    onClick={() => window.open(msg.imageUrl, '_blank')}
+                                    onClick={() => onImageClick(msg.imageUrl)}
                                     unoptimized={msg.imageUrl.startsWith('data:')}
                                 />
                             </div>

@@ -100,43 +100,14 @@ export async function DELETE(req: Request) {
 }
 
 // Helper function to test a Gemini API key
+// Helper function to test a Gemini API key
 async function testGeminiKey(apiKey: string): Promise<{ success: boolean; error?: string }> {
-    // List of models to try in order
-    // Includes Gemini 2.0 Flash (Experimental) and standard models
-    const models = [
-        "gemini-2.5-flash",
-        "gemini-2.5-flash",
-        "gemini-1.5-pro",
-        "gemini-1.0-pro"
-    ];
-    let lastError = "No models available";
-
-    for (const model of models) {
-        const result = await tryModel(apiKey, model);
-        if (result.success) return result;
-        lastError = result.error || "Unknown error";
-        console.log(`Model ${model} failed:`, lastError);
-    }
-
-    return {
-        success: false,
-        error: `Validation failed using [${models.join(', ')}]. Last error: ${lastError}`
-    };
-}
-
-async function tryModel(apiKey: string, model: string): Promise<{ success: boolean; error?: string }> {
     try {
+        // Use listModels to validate key without guessing model names
+        // distinctively cleaner and more robust
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: "Test" }]
-                    }]
-                })
-            }
+            `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
+            { method: "GET" }
         );
 
         if (!response.ok) {
@@ -148,17 +119,11 @@ async function tryModel(apiKey: string, model: string): Promise<{ success: boole
         }
 
         const data = await response.json();
-
-        if (data.candidates && data.candidates.length > 0) {
-            return { success: true };
+        if (!data.models) {
+            return { success: false, error: "Invalid response format from Google (no models found)" };
         }
 
-        // Sometimes valid response but blocked content (safety) -> still counts as valid key
-        if (data.promptFeedback) {
-            return { success: true };
-        }
-
-        return { success: false, error: "Unexpected API response format" };
+        return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

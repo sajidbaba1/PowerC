@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Smile, Palette, Ghost, Flame, Lock, Unlock, Heart, Mic, Image as ImageIcon, Plus, X } from 'lucide-react';
+import { Send, Smile, Palette, Ghost, Flame, Lock, Unlock, Heart, Mic, Image as ImageIcon, Plus, X, Search, Film, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +15,7 @@ interface ChatInputProps {
     onSendKiss: () => void;
     onSendHeartFirework: () => void;
     onImageUpload: () => void;
+    onSendGif?: (url: string) => void;
     activeChat: string;
     isRecording: boolean;
     replyingTo?: any;
@@ -42,10 +43,13 @@ export default function ChatInput({
     isSecretMode,
     setIsSecretMode,
     secretUnlockTime,
-    setSecretUnlockTime
+    setSecretUnlockTime,
+    onSendGif
 }: ChatInputProps) {
     const [text, setText] = useState("");
     const [showMoreActions, setShowMoreActions] = useState(false);
+    const [showGifs, setShowGifs] = useState(false);
+    const [showStickers, setShowStickers] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const isTypingRef = useRef(false);
@@ -195,7 +199,9 @@ export default function ChatInput({
                                     exit={{ opacity: 0, scale: 0.9, y: 10 }}
                                     className="absolute bottom-[calc(100%+16px)] left-0 bg-zinc-900 border border-white/10 p-2 rounded-2xl shadow-2xl flex flex-col gap-1 z-50 min-w-[160px]"
                                 >
-                                    <button onClick={() => { onShowStickers(); setShowMoreActions(false); }} className="p-3 hover:bg-white/5 rounded-xl flex items-center gap-3"><Smile className="w-5 h-5 text-yellow-400" /><span className="text-xs font-bold font-inter">Stickers</span></button>
+                                    <button onClick={() => { onImageUpload(); setShowMoreActions(false); }} className="p-3 hover:bg-white/5 rounded-xl flex items-center gap-3"><ImageIcon className="w-5 h-5 text-emerald-400" /><span className="text-xs font-bold font-inter">Send Picture</span></button>
+                                    <button onClick={() => { setShowStickers(true); setShowMoreActions(false); }} className="p-3 hover:bg-white/5 rounded-xl flex items-center gap-3"><Smile className="w-5 h-5 text-yellow-400" /><span className="text-xs font-bold font-inter">Stickers</span></button>
+                                    <button onClick={() => { setShowGifs(true); setShowMoreActions(false); }} className="p-3 hover:bg-white/5 rounded-xl flex items-center gap-3"><Film className="w-5 h-5 text-purple-400" /><span className="text-xs font-bold font-inter">GIFs</span></button>
                                     <button onClick={() => { onShowDrawing(); setShowMoreActions(false); }} className="p-3 hover:bg-white/5 rounded-xl flex items-center gap-3"><Palette className="w-5 h-5 text-indigo-400" /><span className="text-xs font-bold font-inter">Draw</span></button>
 
                                     {/* Big Hug & Big Kiss */}
@@ -302,6 +308,129 @@ export default function ChatInput({
                     </button>
                 </div>
             </div>
+            {showGifs && (
+                <GifPickerOverlay
+                    onClose={() => setShowGifs(false)}
+                    onSelect={(url) => {
+                        if (onSendGif) onSendGif(url);
+                        else onSend(url, isSecretMode);
+                        setShowGifs(false);
+                    }}
+                />
+            )}
+            {showStickers && (
+                <StickerPickerOverlay
+                    onClose={() => setShowStickers(false)}
+                    onSelect={(url) => {
+                        if (onSendGif) onSendGif(url);
+                        else onSend(url, isSecretMode);
+                        setShowStickers(false);
+                    }}
+                />
+            )}
         </div >
+    );
+}
+
+function GifPickerOverlay({ onClose, onSelect }: { onClose: () => void, onSelect: (url: string) => void }) {
+    const [query, setQuery] = useState("");
+    const [results, setResults] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    const searchGifs = async () => {
+        if (!query) return;
+        setLoading(true);
+        try {
+            const res = await fetch(`https://g.tenor.com/v1/search?q=${query}&key=LIVDSRZULELA&limit=20`);
+            const data = await res.json();
+            setResults(data.results || []);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-white/10 overflow-hidden flex flex-col h-[60vh]">
+                <div className="p-4 border-b border-white/10 flex gap-2">
+                    <input
+                        className="flex-1 bg-white/5 rounded-xl px-4 py-2 text-sm outline-none text-white"
+                        placeholder="Search GIFs..."
+                        value={query}
+                        onChange={e => setQuery(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && searchGifs()}
+                    />
+                    <button onClick={searchGifs} className="p-2 bg-primary text-white rounded-xl"><Search className="w-5 h-5" /></button>
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl"><X className="w-5 h-5 text-white" /></button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-2 grid grid-cols-2 gap-2 custom-scrollbar">
+                    {loading ? (
+                        <div className="col-span-2 flex justify-center py-8"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
+                    ) : results.map((r) => (
+                        <img
+                            key={r.id}
+                            src={r.media[0].tinygif.url}
+                            className="w-full rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => onSelect(r.media[0].gif.url)}
+                        />
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function StickerPickerOverlay({ onClose, onSelect }: { onClose: () => void, onSelect: (url: string) => void }) {
+    const [query, setQuery] = useState("");
+    const [results, setResults] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        searchStickers("sticker");
+    }, []);
+
+    const searchStickers = async (q: string) => {
+        setLoading(true);
+        try {
+            const res = await fetch(`https://g.tenor.com/v1/search?q=${q}&key=LIVDSRZULELA&limit=20`);
+            const data = await res.json();
+            setResults(data.results || []);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-zinc-900 w-full max-w-lg rounded-2xl border border-white/10 overflow-hidden flex flex-col h-[60vh]">
+                <div className="p-4 border-b border-white/10 flex gap-2">
+                    <input
+                        className="flex-1 bg-white/5 rounded-xl px-4 py-2 text-sm outline-none text-white"
+                        placeholder="Search Stickers..."
+                        value={query}
+                        onChange={e => setQuery(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && searchStickers(query)}
+                    />
+                    <button onClick={() => searchStickers(query)} className="p-2 bg-primary text-white rounded-xl"><Search className="w-5 h-5" /></button>
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl"><X className="w-5 h-5 text-white" /></button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-2 grid grid-cols-3 gap-2 custom-scrollbar">
+                    {loading ? (
+                        <div className="col-span-3 flex justify-center py-8"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
+                    ) : results.map((r) => (
+                        <img
+                            key={r.id}
+                            src={r.media[0].tinygif.url}
+                            className="w-full aspect-square object-contain rounded-lg cursor-pointer hover:scale-105 transition-transform"
+                            onClick={() => onSelect(r.media[0].gif.url)}
+                        />
+                    ))}
+                </div>
+            </div>
+        </div>
     );
 }

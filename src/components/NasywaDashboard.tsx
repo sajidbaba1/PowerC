@@ -87,6 +87,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
     const [activeMessageActions, setActiveMessageActions] = useState<string | null>(null);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [isScrolledUp, setIsScrolledUp] = useState(false);
+    const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
     const handleReact = useCallback(async (msgId: string, emoji: string) => {
         setActiveMessageActions(null);
@@ -956,6 +957,14 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
         <div className="flex h-[100dvh] bg-background overflow-hidden relative">
             <SlideshowBackground isPlaying={isMusicPlaying} />
             <BackgroundEffects effect={isStopEffectsEnabled ? "none" : backgroundEffect} />
+
+            {/* Lightbox */}
+            <AnimatePresence>
+                {lightboxImage && (
+                    <ImageLightbox src={lightboxImage} onClose={() => setLightboxImage(null)} />
+                )}
+            </AnimatePresence>
+
             {/* Mobile Overlay */}
             {(showSidebar || showWordBucket) && (
                 <div
@@ -1266,6 +1275,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                         setReplyingTo={setReplyingTo}
                                         onReact={handleReact}
                                         onPin={handlePin}
+                                        onImageClick={setLightboxImage}
                                     />
                                 ))}
                             </AnimatePresence>
@@ -2535,6 +2545,33 @@ function MapOverlay({ distance, onClose, myLocation, partnerLocation }: { distan
                     )}
                 </div>
             </motion.div>
+        </motion.div>
+    );
+}
+
+function ImageLightbox({ src, onClose }: { src: string, onClose: () => void }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 p-4"
+            onClick={onClose}
+        >
+            <button
+                className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all text-white shadow-2xl z-10"
+                onClick={(e) => { e.stopPropagation(); onClose(); }}
+            >
+                <X className="w-6 h-6" />
+            </button>
+            <motion.img
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                src={src}
+                alt="Full view"
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl shadow-primary/20"
+                onClick={(e) => e.stopPropagation()}
+            />
         </motion.div>
     );
 }

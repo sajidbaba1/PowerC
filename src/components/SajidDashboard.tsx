@@ -89,6 +89,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
     const [replyingTo, setReplyingTo] = useState<any>(null);
     const [showReactionsFor, setShowReactionsFor] = useState<string | null>(null);
     const [activeThreads, setActiveThreads] = useState<Record<string, any[]>>({});
+    const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
     const handleReact = useCallback(async (msgId: string, emoji: string) => {
         setActiveMessageActions(null);
@@ -313,7 +314,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             // Send as an image message
             const userMessage = {
                 id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                text: "[Image]",
+                text: "",
                 imageUrl: base64,
                 sender: "sajid",
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -322,34 +323,20 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
 
             setMessages((prev) => ({
                 ...prev,
-                [activeChat]: [...prev[activeChat], userMessage]
+                [activeChat]: [...(prev[activeChat] || []), userMessage]
             }));
 
-            // Upload via API
+            // Upload via /api/messages which now handles Base64 upload
             try {
-                const res = await fetch("/api/images", {
+                await fetch("/api/messages", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        image: base64,
-                        sender: "sajid",
-                        receiver: activeChat,
-                        viewType: "permanent"
+                        user1: "sajid",
+                        user2: activeChat,
+                        message: { ...userMessage, status: "sent" }
                     })
                 });
-                const data = await res.json();
-                if (data.success) {
-                    // Update the message in store too
-                    await fetch("/api/messages", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            user1: "sajid",
-                            user2: activeChat,
-                            message: { ...userMessage, imageUrl: data.image.url, status: "sent" }
-                        })
-                    });
-                }
             } catch (err) {
                 console.error("Image upload failed", err);
             }
@@ -820,6 +807,41 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
         });
     };
 
+    const handleGifSend = async (url: string) => {
+        const sorted = ["sajid", activeChat].sort();
+        const chatKey = `${sorted[0]}-${sorted[1]}`;
+        const msgId = `msg-${Date.now()}`;
+
+        const newMessage = {
+            id: msgId,
+            text: "Sent a GIF",
+            imageUrl: url,
+            sender: "sajid",
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            status: "sending" as const,
+            type: "image",
+            isPinned: false
+        };
+
+        setMessages((prev: any) => ({
+            ...prev,
+            [activeChat]: [...(prev[activeChat] || []), newMessage]
+        }));
+
+        await fetch("/api/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                user1: "sajid",
+                user2: activeChat,
+                message: {
+                    ...newMessage,
+                    text: "Sent a GIF"
+                }
+            })
+        });
+    };
+
     const sendMumma = async () => {
         const sorted = ["sajid", activeChat].sort();
         const chatKey = `${sorted[0]}-${sorted[1]}`;
@@ -953,6 +975,11 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             sendBabyGirl();
         }
 
+        // Trigger Love you Sajid Rocker animation
+        if (text.toLowerCase().includes("rocker")) {
+            triggerFirework("Love you Sajid Rocker! 🚀");
+        }
+
         // Trigger Greetings
         const lowerText = text.toLowerCase();
         if (lowerText.includes("good morning")) sendGreeting("goodmorning");
@@ -1051,6 +1078,14 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
             <SlideshowBackground isPlaying={isMusicPlaying} />
             {/* Animated Background Effects */}
             <BackgroundEffects effect={isStopEffectsEnabled ? "none" : backgroundEffect} />
+
+            {/* Lightbox */}
+            <AnimatePresence>
+                {lightboxImage && (
+                    <ImageLightbox src={lightboxImage} onClose={() => setLightboxImage(null)} />
+                )}
+            </AnimatePresence>
+
             {/* Mobile Overlay */}
             {(showSidebar || showWordBucket) && (
                 <div
@@ -1343,6 +1378,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                                 setReplyingTo={setReplyingTo}
                                                 onReact={handleReact}
                                                 onPin={handlePin}
+                                                onImageClick={setLightboxImage}
                                             />
                                         ))}
                                     </AnimatePresence>
@@ -1432,6 +1468,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                             onSendKiss={sendKiss}
                             onSendHeartFirework={sendHeartFirework}
                             onImageUpload={() => fileInputRef.current?.click()}
+                            onSendGif={handleGifSend}
                             activeChat={activeChat}
                             isRecording={isRecording}
                             replyingTo={replyingTo}
@@ -1967,7 +2004,42 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                 userRole="sajid"
                 partnerName="Nasywa"
             />
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                className="hidden"
+                accept="image/*"
+            />
         </div >
+    );
+}
+
+
+function ImageLightbox({ src, onClose }: { src: string, onClose: () => void }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 p-4"
+            onClick={onClose}
+        >
+            <button
+                className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all text-white shadow-2xl z-10"
+                onClick={(e) => { e.stopPropagation(); onClose(); }}
+            >
+                <X className="w-6 h-6" />
+            </button>
+            <motion.img
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                src={src}
+                alt="Full view"
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl shadow-primary/20"
+                onClick={(e) => e.stopPropagation()}
+            />
+        </motion.div>
     );
 }
 
@@ -2269,6 +2341,7 @@ function MilestonesOverlay({ milestones, onClose, onAdd, role }: { milestones: a
                     </div>
                 </div>
             </motion.div>
+
         </motion.div>
     );
 }

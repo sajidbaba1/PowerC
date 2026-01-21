@@ -12,6 +12,18 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'api.cloudinary.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'media.tenor.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'g.tenor.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'c.tenor.com',
+      },
     ],
   },
 };

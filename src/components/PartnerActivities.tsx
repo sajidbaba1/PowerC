@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'react-toastify';
-import Pusher from 'pusher-js';
+import { getPusherClient } from '@/lib/pusher';
 
 // --- Types ---
 interface Activity {
@@ -58,6 +58,7 @@ export default function PartnerActivities({ isOpen, onClose, userRole, partnerNa
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [isLoading, setIsLoading] = useState(true);
     const [stats, setStats] = useState({ totalByMe: 0, totalByPartner: 0 });
+    const [selectedFullImage, setSelectedFullImage] = useState<string | null>(null);
 
     const fromName = userRole === "sajid" ? "Sajid" : "Nasywa";
     const toEmail = userRole === "sajid" ? "nasywaagiftania.03@gmail.com" : "ss2727303@gmail.com";
@@ -90,7 +91,9 @@ export default function PartnerActivities({ isOpen, onClose, userRole, partnerNa
 
     // --- Pusher Integration ---
     useEffect(() => {
-        const pusher = new Pusher("0d115e5c942cd8942918", { cluster: "ap2" });
+        const pusher = getPusherClient();
+        if (!pusher) return;
+
         const channel = pusher.subscribe(`activities-${selectedDate}`);
 
         channel.bind("new-activity", (newActivity: Activity) => {
@@ -328,6 +331,7 @@ export default function PartnerActivities({ isOpen, onClose, userRole, partnerNa
                                                             userRole={userRole}
                                                             onReact={handleReaction}
                                                             onComment={handleComment}
+                                                            onImageClick={setSelectedFullImage}
                                                         />
                                                     ))}
                                                 </div>
@@ -377,6 +381,33 @@ export default function PartnerActivities({ isOpen, onClose, userRole, partnerNa
                     </motion.div>
                 </motion.div>
             )}
+
+            {/* Full Image Overlay */}
+            <AnimatePresence>
+                {selectedFullImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 p-4"
+                        onClick={() => setSelectedFullImage(null)}
+                    >
+                        <button
+                            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all text-white shadow-2xl z-10"
+                            onClick={(e) => { e.stopPropagation(); setSelectedFullImage(null); }}
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                        <motion.img
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            src={selectedFullImage}
+                            alt="Full view"
+                            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl shadow-primary/20"
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </AnimatePresence>
     );
 }
@@ -574,11 +605,12 @@ const ActivityInput = ({
 };
 
 // --- Sub-components ---
-const ActivityCard = memo(({ activity, userRole, onReact, onComment }: {
+const ActivityCard = memo(({ activity, userRole, onReact, onComment, onImageClick }: {
     activity: Activity;
     userRole: string;
     onReact: (id: string, e: string) => void;
     onComment: (id: string, t: string) => void;
+    onImageClick: (url: string) => void;
 }) => {
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
@@ -627,8 +659,9 @@ const ActivityCard = memo(({ activity, userRole, onReact, onComment }: {
                             <img
                                 src={activity.imageUrl}
                                 alt="Activity"
-                                className="w-full h-auto object-contain max-h-[300px] md:max-h-[500px]"
+                                className="w-full h-auto object-contain max-h-[300px] md:max-h-[500px] cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
                                 loading="lazy"
+                                onClick={() => onImageClick(activity.imageUrl!)}
                             />
                         </div>
                     )}
@@ -650,9 +683,18 @@ const ActivityCard = memo(({ activity, userRole, onReact, onComment }: {
                             ))}
                         </div>
                         {activity.reactions?.length > 0 && (
-                            <span className="ml-1 text-[10px] md:text-xs font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-full">
-                                {activity.reactions.length}
-                            </span>
+                            <div className="flex flex-wrap gap-1 ml-1">
+                                {Object.entries(
+                                    activity.reactions.reduce((acc, curr) => {
+                                        acc[curr.emoji] = (acc[curr.emoji] || 0) + 1;
+                                        return acc;
+                                    }, {} as Record<string, number>)
+                                ).map(([emo, count]) => (
+                                    <span key={emo} className="text-[9px] md:text-[10px] font-black text-primary px-2 py-0.5 bg-primary/10 rounded-full border border-primary/20">
+                                        {emo} {count}
+                                    </span>
+                                ))}
+                            </div>
                         )}
                     </div>
 

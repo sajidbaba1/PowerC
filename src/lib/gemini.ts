@@ -38,7 +38,7 @@ export async function getAllGeminiKeys() {
 
     // 3. Add Hardcoded Fallback keys to the pool
     const fallbackKeys = [
-        "AIzaSyBB-6mYf0Abf3DcwgeXkTPzuyKPPpS7vIk",
+        "AIzaSyB8PdY8g7LxwUDJRg0c5f6h6vxJN9kkbbk",
         "AIzaSyAcJBvHv2lkEmjRSCby30uxMzL0BQOlzUI",
         "AIzaSyCeIjzNfwSOJ1aqtIjd8s7zvrCEpA67Ha8"
     ];
