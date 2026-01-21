@@ -31,8 +31,7 @@ export async function POST(req: Request) {
 
         if (!testResult.success) {
             return NextResponse.json({
-                error: "API key test failed",
-                details: testResult.error
+                error: testResult.error || "API key test failed",
             }, { status: 400 });
         }
 
@@ -102,31 +101,53 @@ export async function DELETE(req: Request) {
 
 // Helper function to test a Gemini API key
 async function testGeminiKey(apiKey: string): Promise<{ success: boolean; error?: string }> {
+    // Try primary model (Flash - fast and cheap)
+    let result = await tryModel(apiKey, "gemini-1.5-flash");
+    if (result.success) return result;
+
+    console.log("Gemini Flash test failed, trying Pro:", result.error);
+
+    // Try fallback model (Pro - standard)
+    result = await tryModel(apiKey, "gemini-pro");
+    if (result.success) return result;
+
+    return {
+        success: false,
+        error: `Validation failed: ${result.error}`
+    };
+}
+
+async function tryModel(apiKey: string, model: string): Promise<{ success: boolean; error?: string }> {
     try {
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     contents: [{
-                        parts: [{ text: "Hello, this is a test. Please respond with 'OK'." }]
+                        parts: [{ text: "Test" }]
                     }]
                 })
             }
         );
 
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({}));
             return {
                 success: false,
-                error: errorData.error?.message || "API key validation failed"
+                error: errorData.error?.message || `HTTP ${response.status} from Google`
             };
         }
 
         const data = await response.json();
 
         if (data.candidates && data.candidates.length > 0) {
+            return { success: true };
+        }
+
+        // Sometimes valid response but blocked content (safety) -> still counts as valid key
+        if (data.promptFeedback) {
             return { success: true };
         }
 
