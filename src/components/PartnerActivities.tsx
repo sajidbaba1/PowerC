@@ -593,20 +593,20 @@ const ActivityCard = memo(({ activity, userRole, onReact, onComment }: {
                 isMe ? "border-primary/20" : "border-pink-500/20"
             )}
         >
-            <div className="p-6 md:p-8">
+            <div className="p-4 md:p-6">
                 {/* User Info */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
                         <div className={cn(
-                            "w-12 h-12 rounded-2xl flex items-center justify-center border-2 border-white/10 shadow-xl",
+                            "w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center border border-white/10 shadow-lg",
                             isMe ? "bg-gradient-to-br from-blue-500 to-indigo-600" : "bg-gradient-to-br from-pink-500 to-rose-600"
                         )}>
-                            <User className="w-6 h-6 text-white" />
+                            <User className="w-4 h-4 md:w-5 md:h-5 text-white" />
                         </div>
                         <div>
-                            <p className="font-bold text-white tracking-tight">{isMe ? "You" : activity.sender}</p>
-                            <p className="text-[10px] text-muted-foreground flex items-center gap-1 uppercase font-black tracking-widest">
-                                <Clock className="w-3 h-3" />
+                            <p className="text-xs md:text-sm font-bold text-white">{isMe ? "You" : activity.sender}</p>
+                            <p className="text-[9px] md:text-[10px] text-muted-foreground flex items-center gap-1 uppercase font-bold tracking-wider">
+                                <Clock className="w-2.5 h-2.5" />
                                 {new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                         </div>
@@ -614,42 +614,42 @@ const ActivityCard = memo(({ activity, userRole, onReact, onComment }: {
                 </div>
 
                 {/* Content */}
-                <div className="space-y-6">
+                <div className="space-y-3">
                     <div className="relative">
-                        <Quote className="absolute -left-2 -top-2 w-6 h-6 text-primary/10 rotate-180" />
-                        <p className="text-sm md:text-base font-medium text-white leading-relaxed pl-4">
+                        <Quote className="absolute -left-1 -top-1 w-4 h-4 md:w-5 md:h-5 text-primary/10 rotate-180" />
+                        <p className="text-xs md:text-sm font-normal text-white/90 leading-relaxed pl-3">
                             {activity.text}
                         </p>
                     </div>
 
                     {activity.imageUrl && (
-                        <div className="relative w-full rounded-[2rem] overflow-hidden ring-1 ring-white/10 shadow-2xl group/img bg-black/20">
+                        <div className="relative w-full rounded-2xl md:rounded-[2rem] overflow-hidden ring-1 ring-white/10 shadow-xl bg-zinc-900/50">
                             <img
                                 src={activity.imageUrl}
                                 alt="Activity"
-                                className="w-full h-auto object-contain max-h-[500px] transition-transform duration-700 group-hover/img:scale-105"
+                                className="w-full h-auto object-contain max-h-[400px] md:max-h-[600px]"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity pointer-events-none" />
                         </div>
                     )}
                 </div>
 
+
                 {/* Footer / Stats */}
-                <div className="mt-8 flex items-center justify-between pt-6 border-t border-white/5">
-                    <div className="flex items-center gap-3">
-                        <div className="flex -space-x-2">
+                <div className="mt-4 md:mt-6 flex items-center justify-between pt-4 md:pt-5 border-t border-white/5">
+                    <div className="flex items-center gap-2">
+                        <div className="flex -space-x-1.5">
                             {["❤️", "🔥", "✨", "😮"].map((emoji) => (
                                 <button
                                     key={emoji}
                                     onClick={() => onReact(activity.id, emoji)}
-                                    className="w-10 h-10 rounded-full bg-zinc-900 border-2 border-zinc-950 flex items-center justify-center text-lg hover:scale-125 hover:-translate-y-1 transition-all active:scale-95 shadow-lg shadow-black/40"
+                                    className="w-7 h-7 md:w-9 md:h-9 rounded-full bg-zinc-900 border border-zinc-950 flex items-center justify-center text-sm md:text-base hover:scale-125 hover:-translate-y-1 transition-all active:scale-95 shadow-lg shadow-black/40"
                                 >
                                     {emoji}
                                 </button>
                             ))}
                         </div>
                         {activity.reactions?.length > 0 && (
-                            <span className="ml-2 text-xs font-bold text-primary px-3 py-1 bg-primary/10 rounded-full">
+                            <span className="ml-1 text-[10px] md:text-xs font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-full">
                                 {activity.reactions.length}
                             </span>
                         )}
@@ -657,10 +657,10 @@ const ActivityCard = memo(({ activity, userRole, onReact, onComment }: {
 
                     <button
                         onClick={() => setShowComments(!showComments)}
-                        className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all active:scale-95 group"
+                        className="flex items-center gap-1.5 px-3 py-2 md:px-4 md:py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl md:rounded-2xl transition-all active:scale-95 group"
                     >
-                        <MessageSquare className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-                        <span className="text-sm font-bold text-white">{activity.comments?.length || 0} Comments</span>
+                        <MessageSquare className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary group-hover:scale-110 transition-transform" />
+                        <span className="text-[10px] md:text-xs font-bold text-white">{activity.comments?.length || 0}</span>
                     </button>
                 </div>
 
