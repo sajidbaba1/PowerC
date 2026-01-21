@@ -32,34 +32,26 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { chatKey, playlist, index, isPlaying } = body;
+        const { chatKey, playlist } = body;
+
+        // Handle both index/currentIndex and isPlaying/playing
+        const index = body.index !== undefined ? body.index : body.currentIndex;
+        const isPlaying = body.isPlaying !== undefined ? body.isPlaying : body.playing;
+
         const prisma = getPrisma();
 
         if (!chatKey) {
             return NextResponse.json({ error: "Missing chatKey" }, { status: 400 });
         }
 
-        // Persistence: If playlist sent, sync to DB
-        if (playlist) {
-            await prisma.$transaction([
-                prisma.playlistSong.deleteMany({ where: { chatKey } }),
-                prisma.playlistSong.createMany({
-                    data: playlist.map((s: any, i: number) => ({
-                        id: s.id,
-                        url: s.url,
-                        title: s.title,
-                        effect: s.effect,
-                        chatKey: chatKey,
-                        order: i
-                    }))
-                })
-            ]);
-        }
-
+        // Broadcast update via Pusher (including the playlist for instant sync)
         await pusherServer.trigger(chatKey, "music-update", {
             playlist,
             index,
-            isPlaying
+            isPlaying,
+            effect: body.effect,
+            sajidVolume: body.sajidVolume,
+            nasywaVolume: body.nasywaVolume
         });
 
         // Log to Kafka (Asynchronous)
