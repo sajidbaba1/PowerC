@@ -462,14 +462,44 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
 
             setMessages((prev) => {
                 const chatMessages = prev[activeChat] || [];
-                // If message exists (sent by us), update it; otherwise append
-                const exists = chatMessages.find(m => m.id === newMessage.id);
-                if (exists) {
-                    return {
-                        ...prev,
-                        [activeChat]: chatMessages.map(m => m.id === newMessage.id ? newMessage : m)
-                    };
+                const existingIndex = chatMessages.findIndex(m => m.id === newMessage.id);
+
+                if (existingIndex !== -1) {
+                    // Update existing message
+                    const existing = chatMessages[existingIndex];
+
+                    // CRITICAL: If we are the sender, don't let a stale server update (without translation) 
+                    // overwrite our local state which might already have the translation.
+                    if (newMessage.sender === "sajid") {
+                        // Only update if the new message has translation and ours doesn't,
+                        // or if the status changed.
+                        const shouldUpdate =
+                            (!existing.translation && newMessage.translation) ||
+                            (existing.status !== newMessage.status) ||
+                            (JSON.stringify(existing.reactions) !== JSON.stringify(newMessage.reactions));
+
+                        if (!shouldUpdate) return prev;
+
+                        // Merge instead of replace to keep local translation if server one is missing
+                        const merged = {
+                            ...existing,
+                            ...newMessage,
+                            translation: newMessage.translation || existing.translation,
+                            wordBreakdown: newMessage.wordBreakdown || existing.wordBreakdown
+                        };
+
+                        const newChatMessages = [...chatMessages];
+                        newChatMessages[existingIndex] = merged;
+                        return { ...prev, [activeChat]: newChatMessages };
+                    }
+
+                    // For foreign messages, replace is fine
+                    const newChatMessages = [...chatMessages];
+                    newChatMessages[existingIndex] = newMessage;
+                    return { ...prev, [activeChat]: newChatMessages };
                 }
+
+                // New message: Append
                 return {
                     ...prev,
                     [activeChat]: [...chatMessages, newMessage]
@@ -1357,14 +1387,12 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                     </AnimatePresence>
                 </div >
 
-                {/* Input */}
-                < div className={
-                    cn(
-                        "fixed lg:relative bottom-0 left-0 right-0 lg:bottom-auto lg:left-auto lg:right-auto p-3 lg:p-6 lg:pt-0 shrink-0 z-40 transition-all duration-300",
-                        isScrolledUp ? "bg-zinc-950 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/5" : "bg-background/80 backdrop-blur-sm"
-                    )
-                } >
-                    <div className="flex flex-col gap-2">
+                {/* Input Area - Optimized for Mobile safe areas and alignment */}
+                <div className={cn(
+                    "fixed lg:relative bottom-0 left-0 right-0 lg:bottom-auto lg:left-auto lg:right-auto shrink-0 z-40 transition-all duration-300",
+                    isScrolledUp ? "bg-zinc-950/90 backdrop-blur-xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/5" : "bg-background/40 backdrop-blur-md"
+                )}>
+                    <div className="flex flex-col w-full">
                         {showStickers && (
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}

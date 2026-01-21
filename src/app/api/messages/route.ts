@@ -56,19 +56,19 @@ export async function POST(req: Request) {
         const pusherPromise = pusherServer.trigger(chatKey, "new-message", fastPayload)
             .catch(err => console.error("Pusher Error:", err));
 
-        // 2. Publish to Kafka for high-throughput processing/logging
+        // 2. Publish to Kafka for high-throughput processing/logging (No await)
         kafka.publish(KAFKA_TOPICS.MESSAGES, {
             ...fastPayload,
             operation: "message_sent"
-        });
+        }).catch(err => console.error("Kafka Error:", err));
 
         // --- BACKGROUND PATH: Persistence and Notifications ---
-        // These can happen while we prepare the response
+        // We start these but don't block the HTTP response
         const persistencePromise = (async () => {
             try {
                 const existing = await prisma.message.findUnique({ where: { id: message.id } });
                 if (existing) {
-                    return await prisma.message.update({
+                    await prisma.message.update({
                         where: { id: message.id },
                         data: {
                             translation: message.translation,
@@ -78,10 +78,10 @@ export async function POST(req: Request) {
                         }
                     });
                 } else {
-                    return await prisma.message.create({
+                    await prisma.message.create({
                         data: {
                             id: message.id,
-                            text: message.text,
+                            text: message.text || "",
                             translation: message.translation,
                             sender: message.sender,
                             receiver: fastPayload.receiver,
@@ -100,24 +100,25 @@ export async function POST(req: Request) {
             }
         })();
 
-        // 3. Send Push Notification (Non-blocking)
         const notificationPromise = (async () => {
             if (message.sender && fastPayload.receiver) {
-                const notificationText = message.type === 'sticker' ? 'Sent a sticker' : (message.text || 'Sent an image');
-                await sendPushNotification(
-                    fastPayload.receiver,
-                    `Message from ${message.sender}`,
-                    notificationText.substring(0, 50),
-                    '/'
-                ).catch(err => console.error("Notification Error:", err));
+                try {
+                    const notificationText = message.type === 'sticker' ? 'Sent a sticker' : (message.text || 'Sent an image');
+                    await sendPushNotification(
+                        fastPayload.receiver,
+                        `Message from ${message.sender}`,
+                        notificationText.substring(0, 50),
+                        '/'
+                    );
+                } catch (err) {
+                    console.error("Notification Error:", err);
+                }
             }
         })();
 
-        // We don't await persistencePromise or notificationPromise if we want MAXIMUM speed,
-        // but in Next.js on Vercel, we should await them OR use waitUntil to ensure they finish.
-        // For now, we await them to ensure data integrity, but the code is optimized.
-        // If 'high throughput' is the goal, we would move DB writes to a Kafka consumer.
-        await Promise.all([pusherPromise, persistencePromise, notificationPromise]);
+        // We only await Pusher to ensure the message is at least "out there"
+        // The rest happens in the logs/DB eventually.
+        await pusherPromise;
 
         return NextResponse.json({ success: true });
     } catch (error: any) {
