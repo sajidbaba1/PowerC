@@ -595,18 +595,18 @@ const ActivityCard = memo(({ activity, userRole, onReact, onComment }: {
         >
             <div className="p-4 md:p-6">
                 {/* User Info */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                         <div className={cn(
-                            "w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center border border-white/10 shadow-lg",
+                            "w-7 h-7 md:w-9 md:h-9 rounded-xl flex items-center justify-center border border-white/10 shadow-lg",
                             isMe ? "bg-gradient-to-br from-blue-500 to-indigo-600" : "bg-gradient-to-br from-pink-500 to-rose-600"
                         )}>
-                            <User className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                            <User className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
                         </div>
                         <div>
-                            <p className="text-xs md:text-sm font-bold text-white">{isMe ? "You" : activity.sender}</p>
-                            <p className="text-[9px] md:text-[10px] text-muted-foreground flex items-center gap-1 uppercase font-bold tracking-wider">
-                                <Clock className="w-2.5 h-2.5" />
+                            <p className="text-[10px] md:text-sm font-bold text-white">{isMe ? "You" : activity.sender}</p>
+                            <p className="text-[8px] md:text-[10px] text-muted-foreground flex items-center gap-1 uppercase font-bold tracking-wider">
+                                <Clock className="w-2 h-2 text-muted-foreground/70" />
                                 {new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                         </div>
@@ -614,20 +614,21 @@ const ActivityCard = memo(({ activity, userRole, onReact, onComment }: {
                 </div>
 
                 {/* Content */}
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                     <div className="relative">
-                        <Quote className="absolute -left-1 -top-1 w-4 h-4 md:w-5 md:h-5 text-primary/10 rotate-180" />
-                        <p className="text-xs md:text-sm font-normal text-white/90 leading-relaxed pl-3">
+                        <Quote className="absolute -left-1 -top-1 w-3 h-3 md:w-4 md:h-4 text-primary/20 rotate-180" />
+                        <p className="text-[11px] md:text-[13px] font-medium text-white/90 leading-relaxed pl-3.5">
                             {activity.text}
                         </p>
                     </div>
 
                     {activity.imageUrl && (
-                        <div className="relative w-full rounded-2xl md:rounded-[2rem] overflow-hidden ring-1 ring-white/10 shadow-xl bg-zinc-900/50">
+                        <div className="relative w-full rounded-xl md:rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-lg bg-black/40">
                             <img
                                 src={activity.imageUrl}
                                 alt="Activity"
-                                className="w-full h-auto object-contain max-h-[400px] md:max-h-[600px]"
+                                className="w-full h-auto object-contain max-h-[300px] md:max-h-[500px]"
+                                loading="lazy"
                             />
                         </div>
                     )}
@@ -712,7 +713,7 @@ const ActivityCard = memo(({ activity, userRole, onReact, onComment }: {
                     )}
                 </AnimatePresence>
             </div>
-        </motion.div>
+        </motion.div >
     );
 });
 

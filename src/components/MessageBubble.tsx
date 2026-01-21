@@ -94,7 +94,7 @@ const MessageBubble = memo(({
                 {/* Bubble */}
                 <div
                     className={cn(
-                        "p-3 lg:p-4 rounded-2xl transition-all relative group/msg cursor-pointer lg:cursor-default max-w-full overflow-hidden",
+                        "p-3 lg:p-4 rounded-2xl transition-all relative group/msg cursor-pointer lg:cursor-default max-w-full overflow-hidden touch-manipulation",
                         isMe
                             ? "bg-gradient-to-br from-primary/30 to-primary/10 rounded-tr-none border border-primary/20 shadow-[0_4px_20px_rgba(59,130,246,0.1)] hover:border-primary/40"
                             : "bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md rounded-tl-none border border-white/5 shadow-[0_4px_20px_rgba(0,0,0,0.2)] hover:border-white/20",
@@ -106,7 +106,7 @@ const MessageBubble = memo(({
                         longPressTimer.current = setTimeout(() => {
                             setActiveMessageActions(msg.id);
                             if ('vibrate' in navigator) navigator.vibrate(50);
-                        }, 500);
+                        }, 300);
                     }}
                     onTouchEnd={() => {
                         if (longPressTimer.current) clearTimeout(longPressTimer.current);

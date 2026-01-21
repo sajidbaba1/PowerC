@@ -165,6 +165,7 @@ export default function ChatInput({
                                     <button
                                         onClick={onImageUpload}
                                         type="button"
+                                        onMouseDown={(e) => e.preventDefault()}
                                         className="p-2.5 lg:p-3 hover:bg-white/10 active:bg-white/20 rounded-full transition-all shrink-0 text-muted-foreground touch-manipulation"
                                     >
                                         <ImageIcon className="w-5 h-5 lg:w-5 lg:h-5" />
@@ -177,6 +178,7 @@ export default function ChatInput({
                         <button
                             onClick={() => setShowMoreActions(!showMoreActions)}
                             type="button"
+                            onMouseDown={(e) => e.preventDefault()}
                             className={cn(
                                 "p-2.5 lg:p-3 hover:bg-white/10 active:bg-white/20 rounded-full transition-all shrink-0 touch-manipulation",
                                 showMoreActions ? "bg-primary/20 text-primary rotate-45" : "text-muted-foreground"
@@ -275,8 +277,10 @@ export default function ChatInput({
 
                         <button
                             onClick={onStartRecording}
+                            type="button"
+                            onMouseDown={(e) => e.preventDefault()}
                             className={cn(
-                                "p-2 lg:p-3 hover:bg-white/10 rounded-full transition-all shrink-0",
+                                "p-2.5 lg:p-3 hover:bg-white/10 active:bg-white/20 rounded-full transition-all shrink-0 touch-manipulation",
                                 isRecording ? "text-red-500 animate-pulse bg-red-500/10" : "text-muted-foreground"
                             )}
                         >
