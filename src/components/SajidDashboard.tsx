@@ -73,7 +73,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
     const [currentStreak, setCurrentStreak] = useState(0);
     const [showActivities, setShowActivities] = useState(false);
     const [activeMessageActions, setActiveMessageActions] = useState<string | null>(null);
-    const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+    const longPressTimer = useRef<any>(null);
     const [isScrolledUp, setIsScrolledUp] = useState(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
 
@@ -81,7 +81,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
     const [fireworkText, setFireworkText] = useState<string | null>(null);
     const lastFireworkId = useRef<string | null>(null);
     const [isOtherTyping, setIsOtherTyping] = useState(false);
-    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const typingTimeoutRef = useRef<any>(null);
     const isTypingRef = useRef(false);
     const [showRocket, setShowRocket] = useState(false);
     const [chatWallpaper, setChatWallpaper] = useState<string | null>(null);
