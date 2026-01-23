@@ -34,6 +34,9 @@ model Profile {
   trackImage    String?
   isPlaying     Boolean  @default(false)
   ourSongUrl    String?
+  expoPushToken String?
+  hometown      String?
+  country       String?
   updatedAt     DateTime @updatedAt
 }
 

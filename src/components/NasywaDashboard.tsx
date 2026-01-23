@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload, Rocket, Check, CheckCheck, Ghost, Flame, Coffee, HeartOff, MapPin, Calendar, Lock, Unlock, Play, Pause, Music, Stars, Layout, Plus, RotateCcw, ChevronRight, ChevronDown, RefreshCw } from "lucide-react";
+import { Send, MessageSquare, LogOut, User, Menu, BookOpen, X, Mail, Mic, Image as ImageIcon, Heart, Trash2, Palette, Smile, Settings, Upload, Rocket, Check, CheckCheck, Ghost, Flame, Coffee, HeartOff, MapPin, Calendar, Lock, Unlock, Play, Pause, Music, Stars, Layout, Plus, RotateCcw, ChevronRight, ChevronDown, RefreshCw, Phone, Video, PhoneOff, MicOff, VideoOff } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import confetti from "canvas-confetti";
@@ -16,6 +16,9 @@ import PartnerActivities from './PartnerActivities';
 import NotificationBell from './NotificationBell';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
+import CallOverlay from './CallOverlay';
+import { generateWordsPDF } from "@/lib/pdfGenerator";
+import { Download } from "lucide-react";
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -89,6 +92,237 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
     const [isScrolledUp, setIsScrolledUp] = useState(false);
     const [lightboxImage, setLightboxImage] = useState<string | null>(null);
     const [editingMessage, setEditingMessage] = useState<any>(null);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const audioChunksRef = useRef<Blob[]>([]);
+
+    const [callConfig, setCallConfig] = useState<{
+        isOpen: boolean;
+        type: 'audio' | 'video';
+        role: 'caller' | 'receiver';
+        partnerName: string;
+        partnerAvatar?: string;
+    }>({
+        isOpen: false,
+        type: 'audio',
+        role: 'caller',
+        partnerName: 'Sajid'
+    });
+    const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+    const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+    const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+
+    const sendSignal = useCallback(async (type: string, data: any) => {
+        await fetch("/api/chat/signal", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                sender: "nasywa",
+                receiver: "sajid",
+                type,
+                data
+            })
+        });
+    }, []);
+
+    const createPeerConnection = useCallback((type: 'audio' | 'video') => {
+        const pc = new RTCPeerConnection({
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        });
+
+        pc.onicecandidate = (event) => {
+            if (event.candidate) {
+                sendSignal('candidate', event.candidate);
+            }
+        };
+
+        pc.ontrack = (event) => {
+            setRemoteStream(event.streams[0]);
+        };
+
+        peerConnectionRef.current = pc;
+        return pc;
+    }, [sendSignal]);
+
+    const initiateCall = async (type: 'audio' | 'video') => {
+        setCallConfig({
+            isOpen: true,
+            type,
+            role: 'caller',
+            partnerName: profiles.sajid?.name || 'Sajid',
+            partnerAvatar: profiles.sajid?.avatarUrl
+        });
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: type === 'video'
+            });
+            setLocalStream(stream);
+
+            const pc = createPeerConnection(type);
+            stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            await sendSignal('call-invite', { type });
+            await sendSignal('offer', offer);
+        } catch (err) {
+            console.error("Call initiation failed:", err);
+            alert("Could not access camera/microphone");
+            setCallConfig(prev => ({ ...prev, isOpen: false }));
+        }
+    };
+
+    const handleAcceptCall = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: callConfig.type === 'video'
+            });
+            setLocalStream(stream);
+
+            const pc = createPeerConnection(callConfig.type);
+            stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+            const offer = (window as any).pendingOffer;
+            if (offer) {
+                await pc.setRemoteDescription(new RTCSessionDescription(offer));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                sendSignal('answer', answer);
+                (window as any).pendingOffer = null;
+            }
+        } catch (err) {
+            console.error("Failed to accept call:", err);
+            handleHangup();
+        }
+    };
+
+    const handleOffer = async (offer: RTCSessionDescriptionInit) => {
+        (window as any).pendingOffer = offer;
+        if (peerConnectionRef.current) {
+            await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await peerConnectionRef.current.createAnswer();
+            await peerConnectionRef.current.setLocalDescription(answer);
+            sendSignal('answer', answer);
+        }
+    };
+
+    const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
+        if (peerConnectionRef.current) {
+            await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+        }
+    };
+
+    const handleCandidate = async (candidate: RTCIceCandidateInit) => {
+        if (peerConnectionRef.current) {
+            await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+    };
+
+    const handleDeclineCall = () => {
+        sendSignal('call-decline', {});
+        setCallConfig(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const handleHangup = useCallback((shouldSignal = true) => {
+        if (shouldSignal) sendSignal('hangup', {});
+
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            setLocalStream(null);
+        }
+        setRemoteStream(null);
+        if (peerConnectionRef.current) {
+            peerConnectionRef.current.close();
+            peerConnectionRef.current = null;
+        }
+        setCallConfig(prev => ({ ...prev, isOpen: false }));
+    }, [localStream, sendSignal]);
+
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = mediaRecorder;
+            audioChunksRef.current = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = async () => {
+                    const base64Audio = reader.result as string;
+                    await handleAudioUpload(base64Audio);
+                };
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            mediaRecorder.start();
+            setIsRecording(true);
+        } catch (err) {
+            console.error("Error accessing microphone:", err);
+            alert("Could not access microphone.");
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+        }
+    };
+
+    const handleAudioUpload = async (base64Audio: string) => {
+        try {
+            const res = await fetch("/api/images", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    image: base64Audio,
+                    sender: "nasywa",
+                    receiver: activeChat,
+                    viewType: "permanent"
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                const audioMsg = {
+                    id: `msg-${Date.now()}`,
+                    text: "Voice message",
+                    sender: "nasywa",
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    status: "sent",
+                    type: "audio",
+                    audioUrl: data.image.url
+                };
+
+                setMessages(prev => ({
+                    ...prev,
+                    [activeChat]: [...(prev[activeChat] || []), audioMsg]
+                }));
+
+                await fetch("/api/messages", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user1: "nasywa",
+                        user2: activeChat,
+                        message: audioMsg
+                    })
+                });
+            }
+        } catch (err) {
+            console.error("Audio message upload failed:", err);
+        }
+    };
 
     const handleReact = useCallback(async (msgId: string, emoji: string) => {
         setActiveMessageActions(null);
@@ -339,7 +573,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
         reader.readAsDataURL(file);
     };
 
-    const startRecording = () => {
+    const startVoiceToText = () => {
         if (!('webkitSpeechRecognition' in window)) {
             alert("Speech recognition not supported in this browser.");
             return;
@@ -508,6 +742,35 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
 
         channel.bind("profile-update", (data: { role: string, profile: any }) => {
             setProfiles(prev => ({ ...prev, [data.role]: data.profile }));
+        });
+
+        channel.bind("call-signal", async (signal: any) => {
+            if (signal.sender === "nasywa") return;
+
+            switch (signal.type) {
+                case 'call-invite':
+                    setCallConfig({
+                        isOpen: true,
+                        type: signal.data.type,
+                        role: 'receiver',
+                        partnerName: profiles[signal.sender]?.name || signal.sender,
+                        partnerAvatar: profiles[signal.sender]?.avatarUrl
+                    });
+                    break;
+                case 'call-decline':
+                case 'hangup':
+                    handleHangup(false);
+                    break;
+                case 'offer':
+                    handleOffer(signal.data);
+                    break;
+                case 'answer':
+                    handleAnswer(signal.data);
+                    break;
+                case 'candidate':
+                    handleCandidate(signal.data);
+                    break;
+            }
         });
 
         channel.bind("hug", () => {
@@ -1227,6 +1490,24 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                 Online
                             </p>
                         </div>
+
+                        {/* Call Buttons */}
+                        <div className="flex items-center gap-1 sm:gap-2 ml-2 sm:ml-4 border-l border-white/5 pl-2 sm:pl-4">
+                            <button
+                                onClick={() => initiateCall('audio')}
+                                className="p-2 hover:bg-green-500/10 text-green-500 rounded-lg transition-all active:scale-95"
+                                title="Audio Call"
+                            >
+                                <Phone className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={() => initiateCall('video')}
+                                className="p-2 hover:bg-blue-500/10 text-blue-500 rounded-lg transition-all active:scale-95"
+                                title="Video Call"
+                            >
+                                <Video className="w-5 h-5" />
+                            </button>
+                        </div>
                         <div className="ml-1 sm:ml-3">
                             <NotificationBell
                                 userRole="nasywa"
@@ -1402,7 +1683,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                     body: JSON.stringify({ chatKey, user: "nasywa", isTyping })
                                 });
                             }}
-                            onStartRecording={startRecording}
+                            onStartRecording={() => isRecording ? stopRecording() : startRecording()}
                             onShowStickers={() => setShowStickers(!showStickers)}
                             onShowDrawing={() => setIsDrawing(true)}
                             onSendHug={sendHug}
@@ -1435,7 +1716,26 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                         )
                     }
                 </AnimatePresence >
-            </main >
+            </main>
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                className="hidden"
+                accept="image/*"
+            />
+            <CallOverlay
+                {...callConfig}
+                onClose={() => {
+                    handleHangup();
+                    setCallConfig(prev => ({ ...prev, isOpen: false }));
+                }}
+                onAccept={handleAcceptCall}
+                onDecline={handleDeclineCall}
+                onHangup={handleHangup}
+                localStream={localStream}
+                remoteStream={remoteStream}
+            />
 
             {/* Word Bucket */}
             < aside className={
@@ -1451,6 +1751,13 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                             <p className="text-xs text-muted-foreground">{learnedWords.length} words collected</p>
                         </div>
                         <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => generateWordsPDF(learnedWords, "Nasywa", "Hindi")}
+                                className="p-2 hover:bg-muted rounded-lg transition-colors"
+                                title="Download PDF"
+                            >
+                                <Download className="w-4 h-4" />
+                            </button>
                             <button
                                 onClick={() => setShowEmailSettings(!showEmailSettings)}
                                 className="p-2 hover:bg-muted rounded-lg transition-colors"

@@ -144,6 +144,9 @@ exports.Prisma.ProfileScalarFieldEnum = {
   trackImage: 'trackImage',
   isPlaying: 'isPlaying',
   ourSongUrl: 'ourSongUrl',
+  expoPushToken: 'expoPushToken',
+  hometown: 'hometown',
+  country: 'country',
   updatedAt: 'updatedAt'
 };
 

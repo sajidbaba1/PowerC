@@ -3,16 +3,13 @@ import { pusherServer } from "@/lib/pusher";
 
 export async function POST(req: Request) {
     try {
-        const { chatKey, user, isTyping } = await req.json();
+        const { role, chatKey, isTyping } = await req.json();
 
-        if (!chatKey || !user) {
+        if (!role || !chatKey) {
             return NextResponse.json({ error: "Missing fields" }, { status: 400 });
         }
 
-        await pusherServer.trigger(chatKey, "typing", {
-            user,
-            isTyping
-        });
+        await pusherServer.trigger(chatKey, "typing", { role, isTyping });
 
         return NextResponse.json({ success: true });
     } catch (error: any) {

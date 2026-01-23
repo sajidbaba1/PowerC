@@ -3336,6 +3336,9 @@ export namespace Prisma {
     trackImage: string | null
     isPlaying: boolean | null
     ourSongUrl: string | null
+    expoPushToken: string | null
+    hometown: string | null
+    country: string | null
     updatedAt: Date | null
   }
 
@@ -3354,6 +3357,9 @@ export namespace Prisma {
     trackImage: string | null
     isPlaying: boolean | null
     ourSongUrl: string | null
+    expoPushToken: string | null
+    hometown: string | null
+    country: string | null
     updatedAt: Date | null
   }
 
@@ -3372,6 +3378,9 @@ export namespace Prisma {
     trackImage: number
     isPlaying: number
     ourSongUrl: number
+    expoPushToken: number
+    hometown: number
+    country: number
     updatedAt: number
     _all: number
   }
@@ -3402,6 +3411,9 @@ export namespace Prisma {
     trackImage?: true
     isPlaying?: true
     ourSongUrl?: true
+    expoPushToken?: true
+    hometown?: true
+    country?: true
     updatedAt?: true
   }
 
@@ -3420,6 +3432,9 @@ export namespace Prisma {
     trackImage?: true
     isPlaying?: true
     ourSongUrl?: true
+    expoPushToken?: true
+    hometown?: true
+    country?: true
     updatedAt?: true
   }
 
@@ -3438,6 +3453,9 @@ export namespace Prisma {
     trackImage?: true
     isPlaying?: true
     ourSongUrl?: true
+    expoPushToken?: true
+    hometown?: true
+    country?: true
     updatedAt?: true
     _all?: true
   }
@@ -3543,6 +3561,9 @@ export namespace Prisma {
     trackImage: string | null
     isPlaying: boolean
     ourSongUrl: string | null
+    expoPushToken: string | null
+    hometown: string | null
+    country: string | null
     updatedAt: Date
     _count: ProfileCountAggregateOutputType | null
     _avg: ProfileAvgAggregateOutputType | null
@@ -3580,6 +3601,9 @@ export namespace Prisma {
     trackImage?: boolean
     isPlaying?: boolean
     ourSongUrl?: boolean
+    expoPushToken?: boolean
+    hometown?: boolean
+    country?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["profile"]>
 
@@ -3598,6 +3622,9 @@ export namespace Prisma {
     trackImage?: boolean
     isPlaying?: boolean
     ourSongUrl?: boolean
+    expoPushToken?: boolean
+    hometown?: boolean
+    country?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["profile"]>
 
@@ -3616,6 +3643,9 @@ export namespace Prisma {
     trackImage?: boolean
     isPlaying?: boolean
     ourSongUrl?: boolean
+    expoPushToken?: boolean
+    hometown?: boolean
+    country?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["profile"]>
 
@@ -3634,10 +3664,13 @@ export namespace Prisma {
     trackImage?: boolean
     isPlaying?: boolean
     ourSongUrl?: boolean
+    expoPushToken?: boolean
+    hometown?: boolean
+    country?: boolean
     updatedAt?: boolean
   }
 
-  export type ProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "role" | "name" | "email" | "avatarUrl" | "mood" | "moodUpdatedAt" | "latitude" | "longitude" | "trackName" | "trackArtist" | "trackImage" | "isPlaying" | "ourSongUrl" | "updatedAt", ExtArgs["result"]["profile"]>
+  export type ProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "role" | "name" | "email" | "avatarUrl" | "mood" | "moodUpdatedAt" | "latitude" | "longitude" | "trackName" | "trackArtist" | "trackImage" | "isPlaying" | "ourSongUrl" | "expoPushToken" | "hometown" | "country" | "updatedAt", ExtArgs["result"]["profile"]>
 
   export type $ProfilePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Profile"
@@ -3657,6 +3690,9 @@ export namespace Prisma {
       trackImage: string | null
       isPlaying: boolean
       ourSongUrl: string | null
+      expoPushToken: string | null
+      hometown: string | null
+      country: string | null
       updatedAt: Date
     }, ExtArgs["result"]["profile"]>
     composites: {}
@@ -4095,6 +4131,9 @@ export namespace Prisma {
     readonly trackImage: FieldRef<"Profile", 'String'>
     readonly isPlaying: FieldRef<"Profile", 'Boolean'>
     readonly ourSongUrl: FieldRef<"Profile", 'String'>
+    readonly expoPushToken: FieldRef<"Profile", 'String'>
+    readonly hometown: FieldRef<"Profile", 'String'>
+    readonly country: FieldRef<"Profile", 'String'>
     readonly updatedAt: FieldRef<"Profile", 'DateTime'>
   }
     
@@ -19068,6 +19107,9 @@ export namespace Prisma {
     trackImage: 'trackImage',
     isPlaying: 'isPlaying',
     ourSongUrl: 'ourSongUrl',
+    expoPushToken: 'expoPushToken',
+    hometown: 'hometown',
+    country: 'country',
     updatedAt: 'updatedAt'
   };
 
@@ -19462,6 +19504,9 @@ export namespace Prisma {
     trackImage?: StringNullableFilter<"Profile"> | string | null
     isPlaying?: BoolFilter<"Profile"> | boolean
     ourSongUrl?: StringNullableFilter<"Profile"> | string | null
+    expoPushToken?: StringNullableFilter<"Profile"> | string | null
+    hometown?: StringNullableFilter<"Profile"> | string | null
+    country?: StringNullableFilter<"Profile"> | string | null
     updatedAt?: DateTimeFilter<"Profile"> | Date | string
   }
 
@@ -19480,6 +19525,9 @@ export namespace Prisma {
     trackImage?: SortOrderInput | SortOrder
     isPlaying?: SortOrder
     ourSongUrl?: SortOrderInput | SortOrder
+    expoPushToken?: SortOrderInput | SortOrder
+    hometown?: SortOrderInput | SortOrder
+    country?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
   }
 
@@ -19501,6 +19549,9 @@ export namespace Prisma {
     trackImage?: StringNullableFilter<"Profile"> | string | null
     isPlaying?: BoolFilter<"Profile"> | boolean
     ourSongUrl?: StringNullableFilter<"Profile"> | string | null
+    expoPushToken?: StringNullableFilter<"Profile"> | string | null
+    hometown?: StringNullableFilter<"Profile"> | string | null
+    country?: StringNullableFilter<"Profile"> | string | null
     updatedAt?: DateTimeFilter<"Profile"> | Date | string
   }, "id" | "role">
 
@@ -19519,6 +19570,9 @@ export namespace Prisma {
     trackImage?: SortOrderInput | SortOrder
     isPlaying?: SortOrder
     ourSongUrl?: SortOrderInput | SortOrder
+    expoPushToken?: SortOrderInput | SortOrder
+    hometown?: SortOrderInput | SortOrder
+    country?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
     _count?: ProfileCountOrderByAggregateInput
     _avg?: ProfileAvgOrderByAggregateInput
@@ -19545,6 +19599,9 @@ export namespace Prisma {
     trackImage?: StringNullableWithAggregatesFilter<"Profile"> | string | null
     isPlaying?: BoolWithAggregatesFilter<"Profile"> | boolean
     ourSongUrl?: StringNullableWithAggregatesFilter<"Profile"> | string | null
+    expoPushToken?: StringNullableWithAggregatesFilter<"Profile"> | string | null
+    hometown?: StringNullableWithAggregatesFilter<"Profile"> | string | null
+    country?: StringNullableWithAggregatesFilter<"Profile"> | string | null
     updatedAt?: DateTimeWithAggregatesFilter<"Profile"> | Date | string
   }
 
@@ -20521,6 +20578,9 @@ export namespace Prisma {
     trackImage?: string | null
     isPlaying?: boolean
     ourSongUrl?: string | null
+    expoPushToken?: string | null
+    hometown?: string | null
+    country?: string | null
     updatedAt?: Date | string
   }
 
@@ -20539,6 +20599,9 @@ export namespace Prisma {
     trackImage?: string | null
     isPlaying?: boolean
     ourSongUrl?: string | null
+    expoPushToken?: string | null
+    hometown?: string | null
+    country?: string | null
     updatedAt?: Date | string
   }
 
@@ -20557,6 +20620,9 @@ export namespace Prisma {
     trackImage?: NullableStringFieldUpdateOperationsInput | string | null
     isPlaying?: BoolFieldUpdateOperationsInput | boolean
     ourSongUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
+    hometown?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -20575,6 +20641,9 @@ export namespace Prisma {
     trackImage?: NullableStringFieldUpdateOperationsInput | string | null
     isPlaying?: BoolFieldUpdateOperationsInput | boolean
     ourSongUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
+    hometown?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -20593,6 +20662,9 @@ export namespace Prisma {
     trackImage?: string | null
     isPlaying?: boolean
     ourSongUrl?: string | null
+    expoPushToken?: string | null
+    hometown?: string | null
+    country?: string | null
     updatedAt?: Date | string
   }
 
@@ -20611,6 +20683,9 @@ export namespace Prisma {
     trackImage?: NullableStringFieldUpdateOperationsInput | string | null
     isPlaying?: BoolFieldUpdateOperationsInput | boolean
     ourSongUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
+    hometown?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -20629,6 +20704,9 @@ export namespace Prisma {
     trackImage?: NullableStringFieldUpdateOperationsInput | string | null
     isPlaying?: BoolFieldUpdateOperationsInput | boolean
     ourSongUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    expoPushToken?: NullableStringFieldUpdateOperationsInput | string | null
+    hometown?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -21818,6 +21896,9 @@ export namespace Prisma {
     trackImage?: SortOrder
     isPlaying?: SortOrder
     ourSongUrl?: SortOrder
+    expoPushToken?: SortOrder
+    hometown?: SortOrder
+    country?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -21841,6 +21922,9 @@ export namespace Prisma {
     trackImage?: SortOrder
     isPlaying?: SortOrder
     ourSongUrl?: SortOrder
+    expoPushToken?: SortOrder
+    hometown?: SortOrder
+    country?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -21859,6 +21943,9 @@ export namespace Prisma {
     trackImage?: SortOrder
     isPlaying?: SortOrder
     ourSongUrl?: SortOrder
+    expoPushToken?: SortOrder
+    hometown?: SortOrder
+    country?: SortOrder
     updatedAt?: SortOrder
   }
 

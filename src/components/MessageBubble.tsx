@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { User, RotateCcw, MapPin, Lock, Check, CheckCheck, Pencil, Trash2, Copy, Trash } from "lucide-react";
+import { User, RotateCcw, MapPin, Lock, Check, CheckCheck, Pencil, Trash2, Copy, Trash, Play, Pause, Volume2 } from "lucide-react";
 import Image from "next/image";
 import { useState, useRef, memo } from "react";
 
@@ -20,6 +20,57 @@ interface MessageBubbleProps {
     onEdit?: (msgId: string, text: string) => void;
     onDeleteForEveryone?: (msgId: string) => void;
 }
+
+const AudioPlayer = memo(({ src }: { src: string }) => {
+    const [isPlaying, setIsPlaying] = useState(false);
+    const audioRef = useRef<HTMLAudioElement>(null);
+    const [progress, setProgress] = useState(0);
+
+    const togglePlay = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (audioRef.current) {
+            if (isPlaying) {
+                audioRef.current.pause();
+            } else {
+                audioRef.current.play();
+            }
+            setIsPlaying(!isPlaying);
+        }
+    };
+
+    const updateProgress = () => {
+        if (audioRef.current) {
+            setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
+        }
+    };
+
+    return (
+        <div className="flex items-center gap-4 bg-black/20 backdrop-blur-md rounded-2xl p-4 min-w-[240px] border border-white/10 group/audio transition-all hover:bg-black/30">
+            <button
+                onClick={togglePlay}
+                className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30 transition-transform active:scale-90"
+            >
+                {isPlaying ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current translate-x-0.5" />}
+            </button>
+            <div className="flex-1 flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Voice Note</span>
+                    <Volume2 className="w-3 h-3 text-white/40" />
+                </div>
+                <div className="h-2 bg-white/10 rounded-full overflow-hidden relative">
+                    <div className="h-full bg-gradient-to-r from-primary to-blue-400 transition-all duration-100 ease-linear shadow-[0_0_10px_rgba(59,130,246,0.5)]" style={{ width: `${progress}%` }} />
+                </div>
+            </div>
+            <audio
+                ref={audioRef}
+                src={src}
+                onTimeUpdate={updateProgress}
+                onEnded={() => { setIsPlaying(false); setProgress(0); }}
+                className="hidden"
+            />
+        </div>
+    );
+});
 
 const MessageBubble = memo(({
     msg,
@@ -277,6 +328,8 @@ const MessageBubble = memo(({
                                     <span className="text-amber-500 font-display">T-{msg.unlockAt}</span>
                                 </p>
                             </div>
+                        ) : msg.type === "audio" || msg.audioUrl ? (
+                            <AudioPlayer src={msg.audioUrl} />
                         ) : (
                             <>
                                 {msg.text}

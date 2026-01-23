@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "6f02b8a4-ce04-492b-af2b-524915b5f7d6"
+      }
+    },
+    "android": {
+      "package": "com.ss2727303.temp"
+    }
+  }
+}

@@ -597,6 +597,21 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                             <MessageSquare className="w-5 h-5 text-blue-500" />
                             <span className="font-semibold text-sm">Support Chat</span>
                         </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab("vercel-config");
+                                setShowSidebar(false);
+                            }}
+                            className={cn(
+                                "w-full p-3 lg:p-4 rounded-2xl transition-all flex items-center gap-3",
+                                activeTab === "vercel-config"
+                                    ? "bg-purple-500/10 border-2 border-purple-500"
+                                    : "glass border border-white/5 hover:border-white/20"
+                            )}
+                        >
+                            <CloudRain className="w-5 h-5 text-purple-500" />
+                            <span className="font-semibold text-sm">Vercel Config</span>
+                        </button>
                     </div>
 
                     <div className="mt-auto p-4 border-t border-white/5">
@@ -811,6 +826,10 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
 
                 {activeTab === "gemini-keys" && (
                     <GeminiKeysManager />
+                )}
+
+                {activeTab === "vercel-config" && (
+                    <VercelConfigManager />
                 )}
 
                 {activeTab === "users" && (
@@ -1452,6 +1471,111 @@ function MediaGallery() {
                     No images shared yet.
                 </div>
             )}
+        </div>
+    );
+}
+
+
+function VercelConfigManager() {
+    const [apiKey, setApiKey] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [isFetching, setIsFetching] = useState(true);
+
+    useEffect(() => {
+        fetchCurrentKey();
+    }, []);
+
+    const fetchCurrentKey = async () => {
+        try {
+            const res = await fetch("/api/admin/vercel-env");
+            const data = await res.json();
+            if (data.key) setApiKey(data.key);
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to fetch current Vercel config");
+        } finally {
+            setIsFetching(false);
+        }
+    };
+
+    const handleUpdate = async () => {
+        if (!apiKey.trim()) return toast.warn("Please enter API Key(s)");
+
+        setIsLoading(true);
+        try {
+            const res = await fetch("/api/admin/vercel-env", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ key: apiKey.trim() })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success(data.message || "Updated successfully!");
+            } else {
+                toast.error(data.error || "Update failed");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to connect to server");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-8">
+            <div>
+                <h1 className="text-3xl font-bold mb-2">Vercel Configuration</h1>
+                <p className="text-muted-foreground">
+                    Manage server-side environment variables directly on Vercel.
+                </p>
+            </div>
+
+            <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border border-purple-500/20 shadow-2xl">
+                <h2 className="text-xl font-bold mb-6 flex items-center gap-3">
+                    <CloudRain className="w-6 h-6 text-purple-500" />
+                    GEMINI_API_KEYS
+                </h2>
+
+                <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground/80">
+                        Enter comma-separated API keys. This will update the <code>GEMINI_API_KEYS</code> environment variable on Vercel and trigger a redeployment.
+                    </p>
+
+                    {isFetching ? (
+                        <div className="h-12 w-full bg-white/5 animate-pulse rounded-xl" />
+                    ) : (
+                        <textarea
+                            value={apiKey}
+                            onChange={(e) => setApiKey(e.target.value)}
+                            className="w-full h-32 bg-black/20 border border-white/10 rounded-xl p-4 font-mono text-sm outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                            placeholder="AIzaSy..., AIzaSy..."
+                        />
+                    )}
+
+                    <div className="flex justify-end">
+                        <button
+                            onClick={handleUpdate}
+                            disabled={isLoading || isFetching}
+                            className="px-8 py-3 bg-purple-500 text-white rounded-xl font-bold hover:bg-purple-600 transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-purple-500/20"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Updating & Redeploying...
+                                </>
+                            ) : (
+                                <>
+                                    <Zap className="w-4 h-4 fill-current" />
+                                    Update & Redeploy
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
