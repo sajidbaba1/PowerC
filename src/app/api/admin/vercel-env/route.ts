@@ -8,9 +8,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "API Key required" }, { status: 400 });
         }
 
-        const project_id = process.env.VERCEL_PROJECT_ID;
-        const team_id = process.env.VERCEL_TEAM_ID;
-        const token = process.env.VERCEL_TOKEN;
+        const project_id = process.env.VERCEL_PROJECT_ID?.trim();
+        const team_id = process.env.VERCEL_TEAM_ID?.trim();
+        const token = process.env.VERCEL_TOKEN?.trim();
+
+        console.log("Vercel Conf Debug:", {
+            hasProject: !!project_id,
+            hasTeam: !!team_id,
+            hasToken: !!token,
+            projectVal: project_id, // safe to log internal ID usually
+            teamVal: team_id
+        });
 
         if (!project_id || !team_id || !token) {
             return NextResponse.json({ error: "Server misconfigured: Missing Vercel credentials" }, { status: 500 });
@@ -123,9 +131,17 @@ export async function POST(req: Request) {
 
 export async function GET() {
     try {
-        const project_id = process.env.VERCEL_PROJECT_ID;
-        const team_id = process.env.VERCEL_TEAM_ID;
-        const token = process.env.VERCEL_TOKEN;
+        const project_id = process.env.VERCEL_PROJECT_ID?.trim();
+        const team_id = process.env.VERCEL_TEAM_ID?.trim();
+        const token = process.env.VERCEL_TOKEN?.trim();
+
+        console.log("Vercel Conf GET Debug:", {
+            hasProject: !!project_id,
+            hasTeam: !!team_id,
+            hasToken: !!token,
+            projectVal: project_id,
+            teamVal: team_id
+        });
 
         if (!project_id || !team_id || !token) {
             return NextResponse.json({ error: "Missing Vercel credentials" }, { status: 500 });
