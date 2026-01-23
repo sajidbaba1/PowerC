@@ -17,6 +17,7 @@ import NotificationBell from './NotificationBell';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import CallOverlay from './CallOverlay';
+import NotificationManager from './NotificationManager';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -1640,6 +1641,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                                     }
                                 }}
                             />
+                            <NotificationManager userId="sajid" />
                         </div>
                     </div>
 

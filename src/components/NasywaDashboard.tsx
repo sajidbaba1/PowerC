@@ -18,6 +18,7 @@ import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import CallOverlay from './CallOverlay';
 import { generateWordsPDF } from "@/lib/pdfGenerator";
+import NotificationManager from './NotificationManager';
 import { Download } from "lucide-react";
 
 function cn(...inputs: ClassValue[]) {
@@ -1570,6 +1571,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                                 }
                             }}
                         />
+                        <NotificationManager userId="nasywa" />
                         <button onClick={handleClearChat} className="p-2 hover:bg-destructive/10 rounded-lg transition-colors group" title="Clear Chat">
                             <Trash2 className="w-4 h-4 lg:w-5 lg:h-5 text-muted-foreground group-hover:text-destructive" />
                         </button>
