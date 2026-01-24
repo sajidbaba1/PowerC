@@ -61,6 +61,24 @@ export default function CallOverlay({
         }
     }, [remoteStream, isOpen]);
 
+    // Handle Mute/Unmute
+    useEffect(() => {
+        if (localStream) {
+            localStream.getAudioTracks().forEach(track => {
+                track.enabled = !isMuted;
+            });
+        }
+    }, [isMuted, localStream]);
+
+    // Handle Video On/Off
+    useEffect(() => {
+        if (localStream) {
+            localStream.getVideoTracks().forEach(track => {
+                track.enabled = !isVideoOff;
+            });
+        }
+    }, [isVideoOff, localStream]);
+
     const formatDuration = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -84,15 +102,18 @@ export default function CallOverlay({
             >
                 {/* Background Video (Remote) */}
                 <div className="absolute inset-0 z-0 bg-zinc-900 flex items-center justify-center">
-                    {type === 'video' && remoteStream ? (
-                        <video
-                            ref={remoteVideoRef}
-                            autoPlay
-                            playsInline
-                            className="w-full h-full object-cover"
-                        />
-                    ) : (
-                        <div className="flex flex-col items-center gap-6">
+                    <video
+                        ref={remoteVideoRef}
+                        autoPlay
+                        playsInline
+                        className={cn(
+                            "w-full h-full object-cover absolute inset-0 transition-opacity duration-500",
+                            (type !== 'video' || !remoteStream) ? "opacity-0" : "opacity-100"
+                        )}
+                    />
+
+                    {(type !== 'video' || !remoteStream) && (
+                        <div className="flex flex-col items-center gap-6 z-10 relative">
                             <div className="w-32 h-32 md:w-48 md:h-48 rounded-full bg-gradient-to-br from-primary to-blue-600 p-1 animate-pulse shadow-2xl">
                                 <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center overflow-hidden border-4 border-white/10">
                                     {partnerAvatar ? (
