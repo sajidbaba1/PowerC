@@ -1153,6 +1153,41 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
         });
     };
 
+    const handleGifSend = async (url: string) => {
+        const sorted = ["nasywa", activeChat].sort();
+        const chatKey = `${sorted[0]}-${sorted[1]}`;
+        const msgId = `msg-${Date.now()}`;
+
+        const newMessage = {
+            id: msgId,
+            text: "Sent a GIF",
+            imageUrl: url,
+            sender: "nasywa",
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            status: "sending" as const,
+            type: "image",
+            isPinned: false
+        };
+
+        setMessages((prev: any) => ({
+            ...prev,
+            [activeChat]: [...(prev[activeChat] || []), newMessage]
+        }));
+
+        await fetch("/api/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                user1: "nasywa",
+                user2: activeChat,
+                message: {
+                    ...newMessage,
+                    text: "Sent a GIF"
+                }
+            })
+        });
+    };
+
     const handleAddJarNote = async (content: string) => {
         const res = await fetch("/api/jar", {
             method: "POST",
@@ -1708,6 +1743,7 @@ export default function NasywaDashboard({ user, onLogout }: NasywaDashboardProps
                             onSendKiss={sendKiss}
                             onSendHeartFirework={sendHeartFirework}
                             onImageUpload={() => fileInputRef.current?.click()}
+                            onSendGif={handleGifSend}
                             activeChat={activeChat}
                             isRecording={isRecording}
                             replyingTo={replyingTo}
