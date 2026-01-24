@@ -7,16 +7,24 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import confetti from "canvas-confetti";
 import { getPusherClient } from "@/lib/pusher";
-import InteractiveMap from "@/components/InteractiveMap";
-import StreakOverlay from "@/components/StreakOverlay";
+import dynamic from 'next/dynamic';
+
+// Lazy loaded components
+const InteractiveMap = dynamic(() => import("@/components/lazy/InteractiveMap"), { ssr: false });
+const StreakOverlay = dynamic(() => import("@/components/lazy/StreakOverlay"), { ssr: false });
+const PartnerActivities = dynamic(() => import("@/components/lazy/PartnerActivities"), { ssr: false });
+const LoveWallOverlay = dynamic(() => import("@/components/lazy/LoveWallOverlay"), { ssr: false });
+const JarOverlay = dynamic(() => import("@/components/lazy/JarOverlay"), { ssr: false });
+const MilestonesOverlay = dynamic(() => import("@/components/lazy/MilestonesOverlay"), { ssr: false });
+const HealthTracker = dynamic(() => import("@/components/lazy/HealthTracker"), { ssr: false });
+const CallOverlay = dynamic(() => import("@/components/lazy/CallOverlay"), { ssr: false });
+
 import MusicPlayer from './MusicPlayer';
 import BackgroundEffects, { EffectType } from './BackgroundEffects';
 import SlideshowBackground from './SlideshowBackground';
-import PartnerActivities from './PartnerActivities';
 import NotificationBell from './NotificationBell';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
-import CallOverlay from './CallOverlay';
 import { generateWordsPDF } from "@/lib/pdfGenerator";
 import NotificationManager from './NotificationManager';
 import { Download } from "lucide-react";
@@ -51,6 +59,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
     const [showSettings, setShowSettings] = useState(false);
     const [showLoveWall, setShowLoveWall] = useState(false);
     const [showMilestones, setShowMilestones] = useState(false);
+    const [showHealthTracker, setShowHealthTracker] = useState(false);
     const [loveNotes, setLoveNotes] = useState<any[]>([]);
     const [milestones, setMilestones] = useState<any[]>([]);
     const [currentHug, setCurrentHug] = useState<boolean>(false);
@@ -1559,6 +1568,13 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         <Stars className="w-3 h-3" />
                         What Partner is Doing
                     </button>
+                    <button
+                        onClick={() => setShowHealthTracker(true)}
+                        className="w-full mt-2 flex items-center justify-center gap-2 bg-gradient-to-br from-cyan-500 to-blue-500 text-white rounded-xl py-2.5 text-[10px] font-black uppercase tracking-wider shadow-lg shadow-cyan-500/20 hover:scale-[1.02] transition-all"
+                    >
+                        <Coffee className="w-3 h-3" />
+                        Health Tracker
+                    </button>
 
                     {distance !== null && (
                         <div className="mt-4 p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
@@ -1693,6 +1709,13 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         </div>
 
                         {/* Streak Button */}
+                        <button
+                            onClick={() => setShowHealthTracker(true)}
+                            className="p-2 hover:bg-cyan-500/10 text-cyan-500 rounded-lg transition-all active:scale-95"
+                            title="Health Tracker"
+                        >
+                            <Coffee className="w-5 h-5" />
+                        </button>
                         <button
                             onClick={() => setShowStreak(true)}
                             className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-500/10 to-pink-500/10 border border-orange-500/20 rounded-xl hover:border-orange-500/40 transition-all group"
@@ -2383,6 +2406,14 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                         />
                     )
                 }
+                {
+                    showHealthTracker && (
+                        <HealthTracker
+                            onClose={() => setShowHealthTracker(false)}
+                            role="sajid"
+                        />
+                    )
+                }
             </AnimatePresence >
             <PartnerActivities
                 isOpen={showActivities}
@@ -2551,357 +2582,10 @@ function dataURLtoFile(dataurl: string, filename: string) {
     return new File([u8arr], filename, { type: mime });
 }
 
-function LoveWallOverlay({ notes, onClose, onAdd, onDelete, role }: { notes: any[], onClose: () => void, onAdd: (text: string) => void, onDelete: (id: string) => void, role: string }) {
-    const [newNote, setNewNote] = useState("");
 
-    return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 lg:p-8"
-        >
-            <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                className="bg-card w-full max-w-4xl max-h-[90vh] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl flex flex-col"
-            >
-                <div className="p-6 border-b border-border flex items-center justify-between bg-gradient-to-r from-pink-500/10 to-rose-500/10">
-                    <div>
-                        <h3 className="text-2xl font-black flex items-center gap-3">
-                            <Heart className="text-pink-500 fill-current" />
-                            Our Love Wall
-                        </h3>
-                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">Capture every sweet moment</p>
-                    </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                        <X className="w-6 h-6" />
-                    </button>
-                </div>
 
-                <div className="flex-1 overflow-y-auto p-6 lg:p-10 custom-scrollbar">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div className="p-6 rounded-3xl bg-white/5 border-2 border-dashed border-white/10 flex flex-col gap-4">
-                            <textarea
-                                value={newNote}
-                                onChange={(e) => setNewNote(e.target.value)}
-                                placeholder="I love when you..."
-                                className="flex-1 bg-transparent resize-none outline-none text-sm font-medium italic placeholder:text-muted-foreground/30"
-                            />
-                            <button
-                                onClick={() => {
-                                    if (newNote.trim()) {
-                                        onAdd(newNote);
-                                        setNewNote("");
-                                    }
-                                }}
-                                className="w-full py-2.5 bg-pink-500 text-white rounded-xl text-xs font-bold hover:bg-pink-600 transition-all flex items-center justify-center gap-2"
-                            >
-                                <Plus className="w-4 h-4" />
-                                Add Note
-                            </button>
-                        </div>
 
-                        {notes.map((note) => (
-                            <motion.div
-                                key={note.id}
-                                layout
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="p-6 rounded-3xl bg-gradient-to-br from-pink-500/5 to-rose-500/5 border border-pink-500/20 shadow-lg relative group overflow-hidden"
-                            >
-                                <div className="absolute -top-4 -right-4 w-12 h-12 bg-pink-500/10 rounded-full blur-xl group-hover:bg-pink-500/20 transition-all" />
-                                <p className="text-sm font-medium italic mb-4 leading-relaxed">{note.content || note.text}</p>
-                                <div className="flex items-center justify-between mt-auto">
-                                    <div className="flex items-center gap-2">
-                                        <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black uppercase text-white", (note.sender || note.author) === 'sajid' ? 'bg-blue-500' : 'bg-pink-500')}>
-                                            {(note.sender || note.author)?.[0] || '?'}
-                                        </div>
-                                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">{new Date(note.createdAt).toLocaleDateString()}</span>
-                                    </div>
-                                    {(note.sender || note.author) === role && (
-                                        <button
-                                            onClick={() => onDelete(note.id)}
-                                            className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-red-500 rounded-lg transition-all"
-                                        >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                    )}
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </motion.div>
-        </motion.div>
-    );
-}
 
-function MilestonesOverlay({ milestones, onClose, onAdd, role }: { milestones: any[], onClose: () => void, onAdd: (data: any) => void, role: string }) {
-    const [title, setTitle] = useState("");
-    const [date, setDate] = useState("");
 
-    return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 lg:p-8"
-        >
-            <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                className="bg-card w-full max-w-2xl max-h-[90vh] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl flex flex-col"
-            >
-                <div className="p-6 border-b border-border flex items-center justify-between bg-gradient-to-r from-indigo-500/10 to-purple-500/10">
-                    <div>
-                        <h3 className="text-2xl font-black flex items-center gap-3">
-                            <Calendar className="text-indigo-500" />
-                            Our Journey
-                        </h3>
-                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">Every step of the way</p>
-                    </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                        <X className="w-6 h-6" />
-                    </button>
-                </div>
 
-                <div className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar">
-                    <div className="space-y-8 relative">
-                        {/* Timeline line */}
-                        <div className="absolute left-[11px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-indigo-500/50 to-purple-500/50" />
 
-                        {milestones.map((m, idx) => {
-                            const mDate = new Date(m.date);
-                            const diff = mDate.getTime() - Date.now();
-                            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                            const isPast = days < 0;
-
-                            return (
-                                <motion.div
-                                    key={m.id}
-                                    initial={{ x: -20, opacity: 0 }}
-                                    animate={{ x: 0, opacity: 1 }}
-                                    transition={{ delay: idx * 0.1 }}
-                                    className="flex gap-6 relative"
-                                >
-                                    <div className={cn(
-                                        "w-6 h-6 rounded-full border-2 border-background z-10 shrink-0 mt-1",
-                                        isPast ? "bg-indigo-500" : "bg-white border-indigo-500 animate-pulse"
-                                    )} />
-                                    <div className="flex-1 p-4 rounded-2xl bg-white/5 border border-white/10 shadow-lg">
-                                        <h4 className="font-black text-sm uppercase tracking-wider">{m.title}</h4>
-                                        <div className="flex items-center gap-3 mt-2">
-                                            <span className="text-[10px] font-bold text-muted-foreground uppercase">{mDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                                            <span className={cn(
-                                                "text-[10px] font-black px-2 py-0.5 rounded-full",
-                                                isPast ? "bg-white/10 text-white/50" : "bg-green-500/20 text-green-500"
-                                            )}>
-                                                {isPast ? "COMPLETED" : `${Math.abs(days)} DAYS TO GO`}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            );
-                        })}
-
-                        <div className="flex gap-6 relative">
-                            <div className="w-6 h-6 rounded-full border-2 border-dashed border-indigo-500/50 z-10 shrink-0 mt-1" />
-                            <div className="flex-1 p-6 rounded-2xl bg-indigo-500/5 border-2 border-dashed border-indigo-500/20 flex flex-col gap-4">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <input
-                                        type="text"
-                                        value={title}
-                                        onChange={(e) => setTitle(e.target.value)}
-                                        placeholder="Event Name"
-                                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"
-                                    />
-                                    <input
-                                        type="date"
-                                        value={date}
-                                        onChange={(e) => setDate(e.target.value)}
-                                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"
-                                    />
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        if (title && date) {
-                                            onAdd({ title, date });
-                                            setTitle("");
-                                            setDate("");
-                                        }
-                                    }}
-                                    className="w-full py-3 bg-indigo-500 text-white rounded-xl text-xs font-bold hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20"
-                                >
-                                    Add New Milestone
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </motion.div>
-
-        </motion.div>
-    );
-}
-
-function JarOverlay({ notes, onClose, onAdd, role }: { notes: any[], onClose: () => void, onAdd: (content: string) => void, role: string }) {
-    const [newNote, setNewNote] = useState("");
-
-    return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 lg:p-8"
-        >
-            <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                className="bg-card w-full max-w-2xl max-h-[90vh] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl flex flex-col"
-            >
-                <div className="p-6 border-b border-border flex items-center justify-between bg-gradient-to-r from-amber-500/10 to-orange-500/10">
-                    <div>
-                        <h3 className="text-2xl font-black flex items-center gap-3">
-                            <Heart className="text-amber-500 fill-current" />
-                            Jar of Hearts
-                        </h3>
-                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">Daily gratitude & compliments</p>
-                    </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                        <X className="w-6 h-6" />
-                    </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar">
-                    <div className="mb-6 p-4 rounded-2xl bg-white/5 border border-white/10">
-                        <p className="text-sm font-bold mb-3 text-amber-500">✨ Write something you appreciate about your partner today:</p>
-                        <textarea
-                            value={newNote}
-                            onChange={(e) => setNewNote(e.target.value)}
-                            placeholder="Today I appreciate you for..."
-                            className="w-full bg-transparent resize-none outline-none text-sm font-medium italic placeholder:text-muted-foreground/30 min-h-[80px]"
-                        />
-                        <button
-                            onClick={() => {
-                                if (newNote.trim()) {
-                                    onAdd(newNote);
-                                    setNewNote("");
-                                }
-                            }}
-                            className="w-full py-2.5 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600 transition-all flex items-center justify-center gap-2 mt-3"
-                        >
-                            <Heart className="w-4 h-4 fill-current" />
-                            Add to Jar
-                        </button>
-                    </div>
-
-                    <div className="space-y-4">
-                        {notes.map((note, idx) => (
-                            <motion.div
-                                key={note.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: idx * 0.05 }}
-                                className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20"
-                            >
-                                <p className="text-sm italic">"{note.content}"</p>
-                                <div className="flex items-center justify-between mt-3">
-                                    <span className="text-[10px] font-bold text-amber-500 uppercase">— {note.author}</span>
-                                    <span className="text-[10px] text-muted-foreground">{new Date(note.createdAt).toLocaleDateString()}</span>
-                                </div>
-                            </motion.div>
-                        ))}
-                        {notes.length === 0 && (
-                            <div className="text-center py-12 text-muted-foreground">
-                                <Heart className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                                <p className="text-sm">No notes yet. Be the first to add one!</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </motion.div>
-        </motion.div>
-    );
-}
-
-function MapOverlay({ distance, onClose, myLocation, partnerLocation }: { distance: number | null, onClose: () => void, myLocation: any, partnerLocation: any }) {
-    return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 lg:p-8"
-        >
-            <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                className="bg-card w-full max-w-lg max-h-[90vh] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl flex flex-col"
-            >
-                <div className="p-6 border-b border-border flex items-center justify-between bg-gradient-to-r from-emerald-500/10 to-teal-500/10">
-                    <div>
-                        <h3 className="text-2xl font-black flex items-center gap-3">
-                            <MapPin className="text-emerald-500" />
-                            Distance Tracker
-                        </h3>
-                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">Thinking of you from afar</p>
-                    </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                        <X className="w-6 h-6" />
-                    </button>
-                </div>
-
-                <div className="flex-1 p-6 lg:p-8 flex flex-col items-center justify-center">
-                    {distance !== null ? (
-                        <>
-                            <div className="relative w-48 h-48 mb-8">
-                                <motion.div
-                                    animate={{ scale: [1, 1.1, 1] }}
-                                    transition={{ repeat: Infinity, duration: 2 }}
-                                    className="absolute inset-0 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border-2 border-emerald-500/30"
-                                />
-                                <div className="absolute inset-4 rounded-full bg-gradient-to-br from-emerald-500/30 to-teal-500/30 border border-emerald-500/50 flex items-center justify-center flex-col">
-                                    <span className="text-4xl font-black text-emerald-500">{Math.round(distance).toLocaleString()}</span>
-                                    <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">kilometers</span>
-                                </div>
-                            </div>
-
-                            <div className="w-full flex items-center justify-between gap-4">
-                                <div className="flex-1 text-center p-4 rounded-2xl bg-white/5 border border-white/10">
-                                    <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-blue-500/20 flex items-center justify-center">
-                                        <User className="w-6 h-6 text-blue-500" />
-                                    </div>
-                                    <p className="text-xs font-bold text-blue-500 uppercase">You</p>
-                                </div>
-
-                                <motion.div
-                                    animate={{ x: [0, 10, 0] }}
-                                    transition={{ repeat: Infinity, duration: 1.5 }}
-                                >
-                                    <Heart className="w-8 h-8 text-pink-500 fill-current" />
-                                </motion.div>
-
-                                <div className="flex-1 text-center p-4 rounded-2xl bg-white/5 border border-white/10">
-                                    <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-pink-500/20 flex items-center justify-center">
-                                        <User className="w-6 h-6 text-pink-500" />
-                                    </div>
-                                    <p className="text-xs font-bold text-pink-500 uppercase">Your Love</p>
-                                </div>
-                            </div>
-
-                            <p className="mt-8 text-center text-sm text-muted-foreground italic">
-                                "No matter the distance, our hearts are always close."
-                            </p>
-                        </>
-                    ) : (
-                        <div className="text-center py-12 text-muted-foreground">
-                            <MapPin className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                            <p className="text-sm">Enable location to see the distance between you</p>
-                            <p className="text-xs mt-2 opacity-50">Location permissions may be required</p>
-                        </div>
-                    )}
-                </div>
-            </motion.div>
-        </motion.div>
-    );
-}
