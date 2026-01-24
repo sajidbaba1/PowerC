@@ -16,6 +16,7 @@ interface ChatInputProps {
     onSendHeartFirework: () => void;
     onImageUpload: () => void;
     onSendGif?: (url: string) => void;
+    value?: string;
     activeChat: string;
     isRecording: boolean;
     replyingTo?: any;
@@ -44,15 +45,23 @@ export default function ChatInput({
     setIsSecretMode,
     secretUnlockTime,
     setSecretUnlockTime,
-    onSendGif
+    onSendGif,
+    value
 }: ChatInputProps) {
-    const [text, setText] = useState("");
+    const [text, setText] = useState(value || "");
     const [showMoreActions, setShowMoreActions] = useState(false);
     const [showGifs, setShowGifs] = useState(false);
     const [showStickers, setShowStickers] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const typingTimeoutRef = useRef<any>(null);
     const isTypingRef = useRef(false);
+
+    // Sync with external value if provided
+    useEffect(() => {
+        if (value !== undefined) {
+            setText(value);
+        }
+    }, [value]);
 
     useEffect(() => {
         if (textareaRef.current) {

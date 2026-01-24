@@ -24,6 +24,7 @@ import BackgroundEffects, { EffectType } from './BackgroundEffects';
 import SlideshowBackground from './SlideshowBackground';
 import NotificationBell from './NotificationBell';
 import MessageBubble from './MessageBubble';
+import MessageList from './MessageList';
 import ChatInput from './ChatInput';
 import { generateWordsPDF } from "@/lib/pdfGenerator";
 import NotificationManager from './NotificationManager';
@@ -1752,86 +1753,23 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                 </header>
 
                 {/* Messages Container */}
-                <div
-                    ref={messagesContainerRef}
-                    className="flex-1 overflow-y-auto p-3 lg:p-6 space-y-3 lg:space-y-4 pb-24 lg:pb-6 relative"
-                    onClick={() => setActiveMessageActions(null)}
-                    style={{
-                        backgroundImage: chatWallpaper ? `url(${chatWallpaper})` : 'none',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }}
-                >
-                    {chatWallpaper && <div className="absolute inset-0 bg-background/60 pointer-events-none" />}
-                    {
-                        messages[activeChat].length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
-                                <MessageSquare className="w-12 h-12 mb-4 opacity-20" />
-                                <p className="text-sm">Start chatting with {activeChat}</p>
-                            </div>
-                        ) : (
-                            (() => {
-                                const messageMap = new Map(messages[activeChat].map(m => [m.id, m]));
-                                return (
-                                    <AnimatePresence mode="popLayout">
-                                        {messages[activeChat].map((msg) => (
-                                            <MessageBubble
-                                                key={msg.id}
-                                                msg={msg}
-                                                userRole="sajid"
-                                                activeChat={activeChat}
-                                                senderProfile={profiles[msg.sender]}
-                                                parentMessage={msg.parentId ? messageMap.get(msg.parentId) : undefined}
-                                                isActive={activeMessageActions === msg.id}
-                                                setActiveMessageActions={setActiveMessageActions}
-                                                setReplyingTo={setReplyingTo}
-                                                onReact={handleReact}
-                                                onPin={handlePin}
-                                                onImageClick={setLightboxImage}
-                                                onDelete={handleDelete}
-                                                onEdit={handleEdit}
-                                                onDeleteForEveryone={handleDeleteForEveryone}
-                                            />
-                                        ))}
-                                    </AnimatePresence>
-                                );
-                            })()
-                        )
-                    }
-
-                    {
-                        isOtherTyping && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="flex items-center gap-2 px-4 py-2"
-                            >
-                                <div className="flex gap-1">
-                                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
-                                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
-                                    <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-primary rounded-full" />
-                                </div>
-                                <span className="text-xs text-muted-foreground italic">Nasywa is typing...</span>
-                            </motion.div>
-                        )
-                    }
-                    <div ref={messagesEndRef} />
-
-                    {/* Scroll to Bottom Button */}
-                    <AnimatePresence>
-                        {showScrollButton && (
-                            <motion.button
-                                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                                onClick={scrollToBottom}
-                                className="fixed bottom-24 lg:bottom-32 right-4 lg:right-8 z-30 p-3 bg-white/10 hover:bg-white/20 text-primary rounded-full shadow-2xl border border-white/10 backdrop-blur-xl transition-all hover:scale-110 active:scale-95"
-                            >
-                                <ChevronDown className="w-5 h-5" />
-                            </motion.button>
-                        )}
-                    </AnimatePresence>
-                </div >
+                <MessageList
+                    messages={messages[activeChat] || []}
+                    activeChat={activeChat}
+                    userRole="sajid"
+                    profiles={profiles}
+                    activeMessageActions={activeMessageActions}
+                    setActiveMessageActions={setActiveMessageActions}
+                    setReplyingTo={setReplyingTo}
+                    onReact={handleReact}
+                    onPin={handlePin}
+                    onImageClick={setLightboxImage}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
+                    onDeleteForEveryone={handleDeleteForEveryone}
+                    chatWallpaper={chatWallpaper}
+                    isOtherTyping={isOtherTyping}
+                />
 
                 {/* Input Area - Optimized for Mobile safe areas and alignment */}
                 <div className={cn(
@@ -1881,6 +1819,7 @@ export default function SajidDashboard({ user, onLogout }: SajidDashboardProps) 
                             onSendHeartFirework={sendHeartFirework}
                             onImageUpload={() => fileInputRef.current?.click()}
                             onSendGif={handleGifSend}
+                            value={inputValue}
                             activeChat={activeChat}
                             isRecording={isRecording}
                             replyingTo={replyingTo}
