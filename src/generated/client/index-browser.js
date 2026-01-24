@@ -293,6 +293,24 @@ exports.Prisma.GeminiKeyScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.HealthLogScalarFieldEnum = {
+  id: 'id',
+  role: 'role',
+  date: 'date',
+  water: 'water',
+  meals: 'meals',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.HealthCommentScalarFieldEnum = {
+  id: 'id',
+  text: 'text',
+  sender: 'sender',
+  healthLogId: 'healthLogId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -336,7 +354,9 @@ exports.Prisma.ModelName = {
   Activity: 'Activity',
   ActivityComment: 'ActivityComment',
   PushSubscription: 'PushSubscription',
-  GeminiKey: 'GeminiKey'
+  GeminiKey: 'GeminiKey',
+  HealthLog: 'HealthLog',
+  HealthComment: 'HealthComment'
 };
 
 /**

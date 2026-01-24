@@ -93,6 +93,16 @@ export type PushSubscription = $Result.DefaultSelection<Prisma.$PushSubscription
  * 
  */
 export type GeminiKey = $Result.DefaultSelection<Prisma.$GeminiKeyPayload>
+/**
+ * Model HealthLog
+ * 
+ */
+export type HealthLog = $Result.DefaultSelection<Prisma.$HealthLogPayload>
+/**
+ * Model HealthComment
+ * 
+ */
+export type HealthComment = $Result.DefaultSelection<Prisma.$HealthCommentPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -370,6 +380,26 @@ export class PrismaClient<
     * ```
     */
   get geminiKey(): Prisma.GeminiKeyDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.healthLog`: Exposes CRUD operations for the **HealthLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more HealthLogs
+    * const healthLogs = await prisma.healthLog.findMany()
+    * ```
+    */
+  get healthLog(): Prisma.HealthLogDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.healthComment`: Exposes CRUD operations for the **HealthComment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more HealthComments
+    * const healthComments = await prisma.healthComment.findMany()
+    * ```
+    */
+  get healthComment(): Prisma.HealthCommentDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -819,7 +849,9 @@ export namespace Prisma {
     Activity: 'Activity',
     ActivityComment: 'ActivityComment',
     PushSubscription: 'PushSubscription',
-    GeminiKey: 'GeminiKey'
+    GeminiKey: 'GeminiKey',
+    HealthLog: 'HealthLog',
+    HealthComment: 'HealthComment'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -835,7 +867,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "apiKey" | "profile" | "message" | "threadComment" | "globalSettings" | "jarNote" | "loveNote" | "milestone" | "loginHistory" | "image" | "chatActivity" | "playlistSong" | "activity" | "activityComment" | "pushSubscription" | "geminiKey"
+      modelProps: "apiKey" | "profile" | "message" | "threadComment" | "globalSettings" | "jarNote" | "loveNote" | "milestone" | "loginHistory" | "image" | "chatActivity" | "playlistSong" | "activity" | "activityComment" | "pushSubscription" | "geminiKey" | "healthLog" | "healthComment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2023,6 +2055,154 @@ export namespace Prisma {
           }
         }
       }
+      HealthLog: {
+        payload: Prisma.$HealthLogPayload<ExtArgs>
+        fields: Prisma.HealthLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.HealthLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.HealthLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthLogPayload>
+          }
+          findFirst: {
+            args: Prisma.HealthLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.HealthLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthLogPayload>
+          }
+          findMany: {
+            args: Prisma.HealthLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthLogPayload>[]
+          }
+          create: {
+            args: Prisma.HealthLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthLogPayload>
+          }
+          createMany: {
+            args: Prisma.HealthLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.HealthLogCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthLogPayload>[]
+          }
+          delete: {
+            args: Prisma.HealthLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthLogPayload>
+          }
+          update: {
+            args: Prisma.HealthLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.HealthLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.HealthLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.HealthLogUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthLogPayload>[]
+          }
+          upsert: {
+            args: Prisma.HealthLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthLogPayload>
+          }
+          aggregate: {
+            args: Prisma.HealthLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateHealthLog>
+          }
+          groupBy: {
+            args: Prisma.HealthLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<HealthLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.HealthLogCountArgs<ExtArgs>
+            result: $Utils.Optional<HealthLogCountAggregateOutputType> | number
+          }
+        }
+      }
+      HealthComment: {
+        payload: Prisma.$HealthCommentPayload<ExtArgs>
+        fields: Prisma.HealthCommentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.HealthCommentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthCommentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.HealthCommentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthCommentPayload>
+          }
+          findFirst: {
+            args: Prisma.HealthCommentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthCommentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.HealthCommentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthCommentPayload>
+          }
+          findMany: {
+            args: Prisma.HealthCommentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthCommentPayload>[]
+          }
+          create: {
+            args: Prisma.HealthCommentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthCommentPayload>
+          }
+          createMany: {
+            args: Prisma.HealthCommentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.HealthCommentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthCommentPayload>[]
+          }
+          delete: {
+            args: Prisma.HealthCommentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthCommentPayload>
+          }
+          update: {
+            args: Prisma.HealthCommentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthCommentPayload>
+          }
+          deleteMany: {
+            args: Prisma.HealthCommentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.HealthCommentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.HealthCommentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthCommentPayload>[]
+          }
+          upsert: {
+            args: Prisma.HealthCommentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HealthCommentPayload>
+          }
+          aggregate: {
+            args: Prisma.HealthCommentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateHealthComment>
+          }
+          groupBy: {
+            args: Prisma.HealthCommentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<HealthCommentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.HealthCommentCountArgs<ExtArgs>
+            result: $Utils.Optional<HealthCommentCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2147,6 +2327,8 @@ export namespace Prisma {
     activityComment?: ActivityCommentOmit
     pushSubscription?: PushSubscriptionOmit
     geminiKey?: GeminiKeyOmit
+    healthLog?: HealthLogOmit
+    healthComment?: HealthCommentOmit
   }
 
   /* Types for Logging */
@@ -2250,6 +2432,37 @@ export namespace Prisma {
    */
   export type ActivityCountOutputTypeCountCommentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ActivityCommentWhereInput
+  }
+
+
+  /**
+   * Count Type HealthLogCountOutputType
+   */
+
+  export type HealthLogCountOutputType = {
+    comments: number
+  }
+
+  export type HealthLogCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    comments?: boolean | HealthLogCountOutputTypeCountCommentsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * HealthLogCountOutputType without action
+   */
+  export type HealthLogCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLogCountOutputType
+     */
+    select?: HealthLogCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * HealthLogCountOutputType without action
+   */
+  export type HealthLogCountOutputTypeCountCommentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HealthCommentWhereInput
   }
 
 
@@ -19067,6 +19280,2190 @@ export namespace Prisma {
 
 
   /**
+   * Model HealthLog
+   */
+
+  export type AggregateHealthLog = {
+    _count: HealthLogCountAggregateOutputType | null
+    _avg: HealthLogAvgAggregateOutputType | null
+    _sum: HealthLogSumAggregateOutputType | null
+    _min: HealthLogMinAggregateOutputType | null
+    _max: HealthLogMaxAggregateOutputType | null
+  }
+
+  export type HealthLogAvgAggregateOutputType = {
+    water: number | null
+  }
+
+  export type HealthLogSumAggregateOutputType = {
+    water: number | null
+  }
+
+  export type HealthLogMinAggregateOutputType = {
+    id: string | null
+    role: string | null
+    date: string | null
+    water: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type HealthLogMaxAggregateOutputType = {
+    id: string | null
+    role: string | null
+    date: string | null
+    water: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type HealthLogCountAggregateOutputType = {
+    id: number
+    role: number
+    date: number
+    water: number
+    meals: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type HealthLogAvgAggregateInputType = {
+    water?: true
+  }
+
+  export type HealthLogSumAggregateInputType = {
+    water?: true
+  }
+
+  export type HealthLogMinAggregateInputType = {
+    id?: true
+    role?: true
+    date?: true
+    water?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type HealthLogMaxAggregateInputType = {
+    id?: true
+    role?: true
+    date?: true
+    water?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type HealthLogCountAggregateInputType = {
+    id?: true
+    role?: true
+    date?: true
+    water?: true
+    meals?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type HealthLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which HealthLog to aggregate.
+     */
+    where?: HealthLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HealthLogs to fetch.
+     */
+    orderBy?: HealthLogOrderByWithRelationInput | HealthLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: HealthLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HealthLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HealthLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned HealthLogs
+    **/
+    _count?: true | HealthLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: HealthLogAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: HealthLogSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: HealthLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: HealthLogMaxAggregateInputType
+  }
+
+  export type GetHealthLogAggregateType<T extends HealthLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateHealthLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateHealthLog[P]>
+      : GetScalarType<T[P], AggregateHealthLog[P]>
+  }
+
+
+
+
+  export type HealthLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HealthLogWhereInput
+    orderBy?: HealthLogOrderByWithAggregationInput | HealthLogOrderByWithAggregationInput[]
+    by: HealthLogScalarFieldEnum[] | HealthLogScalarFieldEnum
+    having?: HealthLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: HealthLogCountAggregateInputType | true
+    _avg?: HealthLogAvgAggregateInputType
+    _sum?: HealthLogSumAggregateInputType
+    _min?: HealthLogMinAggregateInputType
+    _max?: HealthLogMaxAggregateInputType
+  }
+
+  export type HealthLogGroupByOutputType = {
+    id: string
+    role: string
+    date: string
+    water: number
+    meals: JsonValue | null
+    createdAt: Date
+    updatedAt: Date
+    _count: HealthLogCountAggregateOutputType | null
+    _avg: HealthLogAvgAggregateOutputType | null
+    _sum: HealthLogSumAggregateOutputType | null
+    _min: HealthLogMinAggregateOutputType | null
+    _max: HealthLogMaxAggregateOutputType | null
+  }
+
+  type GetHealthLogGroupByPayload<T extends HealthLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<HealthLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof HealthLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], HealthLogGroupByOutputType[P]>
+            : GetScalarType<T[P], HealthLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type HealthLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    role?: boolean
+    date?: boolean
+    water?: boolean
+    meals?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    comments?: boolean | HealthLog$commentsArgs<ExtArgs>
+    _count?: boolean | HealthLogCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["healthLog"]>
+
+  export type HealthLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    role?: boolean
+    date?: boolean
+    water?: boolean
+    meals?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["healthLog"]>
+
+  export type HealthLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    role?: boolean
+    date?: boolean
+    water?: boolean
+    meals?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["healthLog"]>
+
+  export type HealthLogSelectScalar = {
+    id?: boolean
+    role?: boolean
+    date?: boolean
+    water?: boolean
+    meals?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type HealthLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "role" | "date" | "water" | "meals" | "createdAt" | "updatedAt", ExtArgs["result"]["healthLog"]>
+  export type HealthLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    comments?: boolean | HealthLog$commentsArgs<ExtArgs>
+    _count?: boolean | HealthLogCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type HealthLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type HealthLogIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $HealthLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "HealthLog"
+    objects: {
+      comments: Prisma.$HealthCommentPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      role: string
+      date: string
+      water: number
+      meals: Prisma.JsonValue | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["healthLog"]>
+    composites: {}
+  }
+
+  type HealthLogGetPayload<S extends boolean | null | undefined | HealthLogDefaultArgs> = $Result.GetResult<Prisma.$HealthLogPayload, S>
+
+  type HealthLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<HealthLogFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: HealthLogCountAggregateInputType | true
+    }
+
+  export interface HealthLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['HealthLog'], meta: { name: 'HealthLog' } }
+    /**
+     * Find zero or one HealthLog that matches the filter.
+     * @param {HealthLogFindUniqueArgs} args - Arguments to find a HealthLog
+     * @example
+     * // Get one HealthLog
+     * const healthLog = await prisma.healthLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends HealthLogFindUniqueArgs>(args: SelectSubset<T, HealthLogFindUniqueArgs<ExtArgs>>): Prisma__HealthLogClient<$Result.GetResult<Prisma.$HealthLogPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one HealthLog that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {HealthLogFindUniqueOrThrowArgs} args - Arguments to find a HealthLog
+     * @example
+     * // Get one HealthLog
+     * const healthLog = await prisma.healthLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends HealthLogFindUniqueOrThrowArgs>(args: SelectSubset<T, HealthLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__HealthLogClient<$Result.GetResult<Prisma.$HealthLogPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first HealthLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthLogFindFirstArgs} args - Arguments to find a HealthLog
+     * @example
+     * // Get one HealthLog
+     * const healthLog = await prisma.healthLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends HealthLogFindFirstArgs>(args?: SelectSubset<T, HealthLogFindFirstArgs<ExtArgs>>): Prisma__HealthLogClient<$Result.GetResult<Prisma.$HealthLogPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first HealthLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthLogFindFirstOrThrowArgs} args - Arguments to find a HealthLog
+     * @example
+     * // Get one HealthLog
+     * const healthLog = await prisma.healthLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends HealthLogFindFirstOrThrowArgs>(args?: SelectSubset<T, HealthLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__HealthLogClient<$Result.GetResult<Prisma.$HealthLogPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more HealthLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all HealthLogs
+     * const healthLogs = await prisma.healthLog.findMany()
+     * 
+     * // Get first 10 HealthLogs
+     * const healthLogs = await prisma.healthLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const healthLogWithIdOnly = await prisma.healthLog.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends HealthLogFindManyArgs>(args?: SelectSubset<T, HealthLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HealthLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a HealthLog.
+     * @param {HealthLogCreateArgs} args - Arguments to create a HealthLog.
+     * @example
+     * // Create one HealthLog
+     * const HealthLog = await prisma.healthLog.create({
+     *   data: {
+     *     // ... data to create a HealthLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends HealthLogCreateArgs>(args: SelectSubset<T, HealthLogCreateArgs<ExtArgs>>): Prisma__HealthLogClient<$Result.GetResult<Prisma.$HealthLogPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many HealthLogs.
+     * @param {HealthLogCreateManyArgs} args - Arguments to create many HealthLogs.
+     * @example
+     * // Create many HealthLogs
+     * const healthLog = await prisma.healthLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends HealthLogCreateManyArgs>(args?: SelectSubset<T, HealthLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many HealthLogs and returns the data saved in the database.
+     * @param {HealthLogCreateManyAndReturnArgs} args - Arguments to create many HealthLogs.
+     * @example
+     * // Create many HealthLogs
+     * const healthLog = await prisma.healthLog.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many HealthLogs and only return the `id`
+     * const healthLogWithIdOnly = await prisma.healthLog.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends HealthLogCreateManyAndReturnArgs>(args?: SelectSubset<T, HealthLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HealthLogPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a HealthLog.
+     * @param {HealthLogDeleteArgs} args - Arguments to delete one HealthLog.
+     * @example
+     * // Delete one HealthLog
+     * const HealthLog = await prisma.healthLog.delete({
+     *   where: {
+     *     // ... filter to delete one HealthLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends HealthLogDeleteArgs>(args: SelectSubset<T, HealthLogDeleteArgs<ExtArgs>>): Prisma__HealthLogClient<$Result.GetResult<Prisma.$HealthLogPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one HealthLog.
+     * @param {HealthLogUpdateArgs} args - Arguments to update one HealthLog.
+     * @example
+     * // Update one HealthLog
+     * const healthLog = await prisma.healthLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends HealthLogUpdateArgs>(args: SelectSubset<T, HealthLogUpdateArgs<ExtArgs>>): Prisma__HealthLogClient<$Result.GetResult<Prisma.$HealthLogPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more HealthLogs.
+     * @param {HealthLogDeleteManyArgs} args - Arguments to filter HealthLogs to delete.
+     * @example
+     * // Delete a few HealthLogs
+     * const { count } = await prisma.healthLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends HealthLogDeleteManyArgs>(args?: SelectSubset<T, HealthLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more HealthLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many HealthLogs
+     * const healthLog = await prisma.healthLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends HealthLogUpdateManyArgs>(args: SelectSubset<T, HealthLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more HealthLogs and returns the data updated in the database.
+     * @param {HealthLogUpdateManyAndReturnArgs} args - Arguments to update many HealthLogs.
+     * @example
+     * // Update many HealthLogs
+     * const healthLog = await prisma.healthLog.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more HealthLogs and only return the `id`
+     * const healthLogWithIdOnly = await prisma.healthLog.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends HealthLogUpdateManyAndReturnArgs>(args: SelectSubset<T, HealthLogUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HealthLogPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one HealthLog.
+     * @param {HealthLogUpsertArgs} args - Arguments to update or create a HealthLog.
+     * @example
+     * // Update or create a HealthLog
+     * const healthLog = await prisma.healthLog.upsert({
+     *   create: {
+     *     // ... data to create a HealthLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the HealthLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends HealthLogUpsertArgs>(args: SelectSubset<T, HealthLogUpsertArgs<ExtArgs>>): Prisma__HealthLogClient<$Result.GetResult<Prisma.$HealthLogPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of HealthLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthLogCountArgs} args - Arguments to filter HealthLogs to count.
+     * @example
+     * // Count the number of HealthLogs
+     * const count = await prisma.healthLog.count({
+     *   where: {
+     *     // ... the filter for the HealthLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends HealthLogCountArgs>(
+      args?: Subset<T, HealthLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], HealthLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a HealthLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends HealthLogAggregateArgs>(args: Subset<T, HealthLogAggregateArgs>): Prisma.PrismaPromise<GetHealthLogAggregateType<T>>
+
+    /**
+     * Group by HealthLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends HealthLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: HealthLogGroupByArgs['orderBy'] }
+        : { orderBy?: HealthLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, HealthLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetHealthLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the HealthLog model
+   */
+  readonly fields: HealthLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for HealthLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__HealthLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    comments<T extends HealthLog$commentsArgs<ExtArgs> = {}>(args?: Subset<T, HealthLog$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HealthCommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the HealthLog model
+   */
+  interface HealthLogFieldRefs {
+    readonly id: FieldRef<"HealthLog", 'String'>
+    readonly role: FieldRef<"HealthLog", 'String'>
+    readonly date: FieldRef<"HealthLog", 'String'>
+    readonly water: FieldRef<"HealthLog", 'Int'>
+    readonly meals: FieldRef<"HealthLog", 'Json'>
+    readonly createdAt: FieldRef<"HealthLog", 'DateTime'>
+    readonly updatedAt: FieldRef<"HealthLog", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * HealthLog findUnique
+   */
+  export type HealthLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLog
+     */
+    select?: HealthLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthLog
+     */
+    omit?: HealthLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthLogInclude<ExtArgs> | null
+    /**
+     * Filter, which HealthLog to fetch.
+     */
+    where: HealthLogWhereUniqueInput
+  }
+
+  /**
+   * HealthLog findUniqueOrThrow
+   */
+  export type HealthLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLog
+     */
+    select?: HealthLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthLog
+     */
+    omit?: HealthLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthLogInclude<ExtArgs> | null
+    /**
+     * Filter, which HealthLog to fetch.
+     */
+    where: HealthLogWhereUniqueInput
+  }
+
+  /**
+   * HealthLog findFirst
+   */
+  export type HealthLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLog
+     */
+    select?: HealthLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthLog
+     */
+    omit?: HealthLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthLogInclude<ExtArgs> | null
+    /**
+     * Filter, which HealthLog to fetch.
+     */
+    where?: HealthLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HealthLogs to fetch.
+     */
+    orderBy?: HealthLogOrderByWithRelationInput | HealthLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for HealthLogs.
+     */
+    cursor?: HealthLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HealthLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HealthLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of HealthLogs.
+     */
+    distinct?: HealthLogScalarFieldEnum | HealthLogScalarFieldEnum[]
+  }
+
+  /**
+   * HealthLog findFirstOrThrow
+   */
+  export type HealthLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLog
+     */
+    select?: HealthLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthLog
+     */
+    omit?: HealthLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthLogInclude<ExtArgs> | null
+    /**
+     * Filter, which HealthLog to fetch.
+     */
+    where?: HealthLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HealthLogs to fetch.
+     */
+    orderBy?: HealthLogOrderByWithRelationInput | HealthLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for HealthLogs.
+     */
+    cursor?: HealthLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HealthLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HealthLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of HealthLogs.
+     */
+    distinct?: HealthLogScalarFieldEnum | HealthLogScalarFieldEnum[]
+  }
+
+  /**
+   * HealthLog findMany
+   */
+  export type HealthLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLog
+     */
+    select?: HealthLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthLog
+     */
+    omit?: HealthLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthLogInclude<ExtArgs> | null
+    /**
+     * Filter, which HealthLogs to fetch.
+     */
+    where?: HealthLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HealthLogs to fetch.
+     */
+    orderBy?: HealthLogOrderByWithRelationInput | HealthLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing HealthLogs.
+     */
+    cursor?: HealthLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HealthLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HealthLogs.
+     */
+    skip?: number
+    distinct?: HealthLogScalarFieldEnum | HealthLogScalarFieldEnum[]
+  }
+
+  /**
+   * HealthLog create
+   */
+  export type HealthLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLog
+     */
+    select?: HealthLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthLog
+     */
+    omit?: HealthLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthLogInclude<ExtArgs> | null
+    /**
+     * The data needed to create a HealthLog.
+     */
+    data: XOR<HealthLogCreateInput, HealthLogUncheckedCreateInput>
+  }
+
+  /**
+   * HealthLog createMany
+   */
+  export type HealthLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many HealthLogs.
+     */
+    data: HealthLogCreateManyInput | HealthLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * HealthLog createManyAndReturn
+   */
+  export type HealthLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLog
+     */
+    select?: HealthLogSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthLog
+     */
+    omit?: HealthLogOmit<ExtArgs> | null
+    /**
+     * The data used to create many HealthLogs.
+     */
+    data: HealthLogCreateManyInput | HealthLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * HealthLog update
+   */
+  export type HealthLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLog
+     */
+    select?: HealthLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthLog
+     */
+    omit?: HealthLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthLogInclude<ExtArgs> | null
+    /**
+     * The data needed to update a HealthLog.
+     */
+    data: XOR<HealthLogUpdateInput, HealthLogUncheckedUpdateInput>
+    /**
+     * Choose, which HealthLog to update.
+     */
+    where: HealthLogWhereUniqueInput
+  }
+
+  /**
+   * HealthLog updateMany
+   */
+  export type HealthLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update HealthLogs.
+     */
+    data: XOR<HealthLogUpdateManyMutationInput, HealthLogUncheckedUpdateManyInput>
+    /**
+     * Filter which HealthLogs to update
+     */
+    where?: HealthLogWhereInput
+    /**
+     * Limit how many HealthLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * HealthLog updateManyAndReturn
+   */
+  export type HealthLogUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLog
+     */
+    select?: HealthLogSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthLog
+     */
+    omit?: HealthLogOmit<ExtArgs> | null
+    /**
+     * The data used to update HealthLogs.
+     */
+    data: XOR<HealthLogUpdateManyMutationInput, HealthLogUncheckedUpdateManyInput>
+    /**
+     * Filter which HealthLogs to update
+     */
+    where?: HealthLogWhereInput
+    /**
+     * Limit how many HealthLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * HealthLog upsert
+   */
+  export type HealthLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLog
+     */
+    select?: HealthLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthLog
+     */
+    omit?: HealthLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthLogInclude<ExtArgs> | null
+    /**
+     * The filter to search for the HealthLog to update in case it exists.
+     */
+    where: HealthLogWhereUniqueInput
+    /**
+     * In case the HealthLog found by the `where` argument doesn't exist, create a new HealthLog with this data.
+     */
+    create: XOR<HealthLogCreateInput, HealthLogUncheckedCreateInput>
+    /**
+     * In case the HealthLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<HealthLogUpdateInput, HealthLogUncheckedUpdateInput>
+  }
+
+  /**
+   * HealthLog delete
+   */
+  export type HealthLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLog
+     */
+    select?: HealthLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthLog
+     */
+    omit?: HealthLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthLogInclude<ExtArgs> | null
+    /**
+     * Filter which HealthLog to delete.
+     */
+    where: HealthLogWhereUniqueInput
+  }
+
+  /**
+   * HealthLog deleteMany
+   */
+  export type HealthLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which HealthLogs to delete
+     */
+    where?: HealthLogWhereInput
+    /**
+     * Limit how many HealthLogs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * HealthLog.comments
+   */
+  export type HealthLog$commentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentInclude<ExtArgs> | null
+    where?: HealthCommentWhereInput
+    orderBy?: HealthCommentOrderByWithRelationInput | HealthCommentOrderByWithRelationInput[]
+    cursor?: HealthCommentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HealthCommentScalarFieldEnum | HealthCommentScalarFieldEnum[]
+  }
+
+  /**
+   * HealthLog without action
+   */
+  export type HealthLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthLog
+     */
+    select?: HealthLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthLog
+     */
+    omit?: HealthLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthLogInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model HealthComment
+   */
+
+  export type AggregateHealthComment = {
+    _count: HealthCommentCountAggregateOutputType | null
+    _min: HealthCommentMinAggregateOutputType | null
+    _max: HealthCommentMaxAggregateOutputType | null
+  }
+
+  export type HealthCommentMinAggregateOutputType = {
+    id: string | null
+    text: string | null
+    sender: string | null
+    healthLogId: string | null
+    createdAt: Date | null
+  }
+
+  export type HealthCommentMaxAggregateOutputType = {
+    id: string | null
+    text: string | null
+    sender: string | null
+    healthLogId: string | null
+    createdAt: Date | null
+  }
+
+  export type HealthCommentCountAggregateOutputType = {
+    id: number
+    text: number
+    sender: number
+    healthLogId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type HealthCommentMinAggregateInputType = {
+    id?: true
+    text?: true
+    sender?: true
+    healthLogId?: true
+    createdAt?: true
+  }
+
+  export type HealthCommentMaxAggregateInputType = {
+    id?: true
+    text?: true
+    sender?: true
+    healthLogId?: true
+    createdAt?: true
+  }
+
+  export type HealthCommentCountAggregateInputType = {
+    id?: true
+    text?: true
+    sender?: true
+    healthLogId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type HealthCommentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which HealthComment to aggregate.
+     */
+    where?: HealthCommentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HealthComments to fetch.
+     */
+    orderBy?: HealthCommentOrderByWithRelationInput | HealthCommentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: HealthCommentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HealthComments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HealthComments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned HealthComments
+    **/
+    _count?: true | HealthCommentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: HealthCommentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: HealthCommentMaxAggregateInputType
+  }
+
+  export type GetHealthCommentAggregateType<T extends HealthCommentAggregateArgs> = {
+        [P in keyof T & keyof AggregateHealthComment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateHealthComment[P]>
+      : GetScalarType<T[P], AggregateHealthComment[P]>
+  }
+
+
+
+
+  export type HealthCommentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HealthCommentWhereInput
+    orderBy?: HealthCommentOrderByWithAggregationInput | HealthCommentOrderByWithAggregationInput[]
+    by: HealthCommentScalarFieldEnum[] | HealthCommentScalarFieldEnum
+    having?: HealthCommentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: HealthCommentCountAggregateInputType | true
+    _min?: HealthCommentMinAggregateInputType
+    _max?: HealthCommentMaxAggregateInputType
+  }
+
+  export type HealthCommentGroupByOutputType = {
+    id: string
+    text: string
+    sender: string
+    healthLogId: string
+    createdAt: Date
+    _count: HealthCommentCountAggregateOutputType | null
+    _min: HealthCommentMinAggregateOutputType | null
+    _max: HealthCommentMaxAggregateOutputType | null
+  }
+
+  type GetHealthCommentGroupByPayload<T extends HealthCommentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<HealthCommentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof HealthCommentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], HealthCommentGroupByOutputType[P]>
+            : GetScalarType<T[P], HealthCommentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type HealthCommentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    text?: boolean
+    sender?: boolean
+    healthLogId?: boolean
+    createdAt?: boolean
+    healthLog?: boolean | HealthLogDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["healthComment"]>
+
+  export type HealthCommentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    text?: boolean
+    sender?: boolean
+    healthLogId?: boolean
+    createdAt?: boolean
+    healthLog?: boolean | HealthLogDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["healthComment"]>
+
+  export type HealthCommentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    text?: boolean
+    sender?: boolean
+    healthLogId?: boolean
+    createdAt?: boolean
+    healthLog?: boolean | HealthLogDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["healthComment"]>
+
+  export type HealthCommentSelectScalar = {
+    id?: boolean
+    text?: boolean
+    sender?: boolean
+    healthLogId?: boolean
+    createdAt?: boolean
+  }
+
+  export type HealthCommentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "text" | "sender" | "healthLogId" | "createdAt", ExtArgs["result"]["healthComment"]>
+  export type HealthCommentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    healthLog?: boolean | HealthLogDefaultArgs<ExtArgs>
+  }
+  export type HealthCommentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    healthLog?: boolean | HealthLogDefaultArgs<ExtArgs>
+  }
+  export type HealthCommentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    healthLog?: boolean | HealthLogDefaultArgs<ExtArgs>
+  }
+
+  export type $HealthCommentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "HealthComment"
+    objects: {
+      healthLog: Prisma.$HealthLogPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      text: string
+      sender: string
+      healthLogId: string
+      createdAt: Date
+    }, ExtArgs["result"]["healthComment"]>
+    composites: {}
+  }
+
+  type HealthCommentGetPayload<S extends boolean | null | undefined | HealthCommentDefaultArgs> = $Result.GetResult<Prisma.$HealthCommentPayload, S>
+
+  type HealthCommentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<HealthCommentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: HealthCommentCountAggregateInputType | true
+    }
+
+  export interface HealthCommentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['HealthComment'], meta: { name: 'HealthComment' } }
+    /**
+     * Find zero or one HealthComment that matches the filter.
+     * @param {HealthCommentFindUniqueArgs} args - Arguments to find a HealthComment
+     * @example
+     * // Get one HealthComment
+     * const healthComment = await prisma.healthComment.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends HealthCommentFindUniqueArgs>(args: SelectSubset<T, HealthCommentFindUniqueArgs<ExtArgs>>): Prisma__HealthCommentClient<$Result.GetResult<Prisma.$HealthCommentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one HealthComment that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {HealthCommentFindUniqueOrThrowArgs} args - Arguments to find a HealthComment
+     * @example
+     * // Get one HealthComment
+     * const healthComment = await prisma.healthComment.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends HealthCommentFindUniqueOrThrowArgs>(args: SelectSubset<T, HealthCommentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__HealthCommentClient<$Result.GetResult<Prisma.$HealthCommentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first HealthComment that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthCommentFindFirstArgs} args - Arguments to find a HealthComment
+     * @example
+     * // Get one HealthComment
+     * const healthComment = await prisma.healthComment.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends HealthCommentFindFirstArgs>(args?: SelectSubset<T, HealthCommentFindFirstArgs<ExtArgs>>): Prisma__HealthCommentClient<$Result.GetResult<Prisma.$HealthCommentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first HealthComment that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthCommentFindFirstOrThrowArgs} args - Arguments to find a HealthComment
+     * @example
+     * // Get one HealthComment
+     * const healthComment = await prisma.healthComment.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends HealthCommentFindFirstOrThrowArgs>(args?: SelectSubset<T, HealthCommentFindFirstOrThrowArgs<ExtArgs>>): Prisma__HealthCommentClient<$Result.GetResult<Prisma.$HealthCommentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more HealthComments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthCommentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all HealthComments
+     * const healthComments = await prisma.healthComment.findMany()
+     * 
+     * // Get first 10 HealthComments
+     * const healthComments = await prisma.healthComment.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const healthCommentWithIdOnly = await prisma.healthComment.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends HealthCommentFindManyArgs>(args?: SelectSubset<T, HealthCommentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HealthCommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a HealthComment.
+     * @param {HealthCommentCreateArgs} args - Arguments to create a HealthComment.
+     * @example
+     * // Create one HealthComment
+     * const HealthComment = await prisma.healthComment.create({
+     *   data: {
+     *     // ... data to create a HealthComment
+     *   }
+     * })
+     * 
+     */
+    create<T extends HealthCommentCreateArgs>(args: SelectSubset<T, HealthCommentCreateArgs<ExtArgs>>): Prisma__HealthCommentClient<$Result.GetResult<Prisma.$HealthCommentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many HealthComments.
+     * @param {HealthCommentCreateManyArgs} args - Arguments to create many HealthComments.
+     * @example
+     * // Create many HealthComments
+     * const healthComment = await prisma.healthComment.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends HealthCommentCreateManyArgs>(args?: SelectSubset<T, HealthCommentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many HealthComments and returns the data saved in the database.
+     * @param {HealthCommentCreateManyAndReturnArgs} args - Arguments to create many HealthComments.
+     * @example
+     * // Create many HealthComments
+     * const healthComment = await prisma.healthComment.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many HealthComments and only return the `id`
+     * const healthCommentWithIdOnly = await prisma.healthComment.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends HealthCommentCreateManyAndReturnArgs>(args?: SelectSubset<T, HealthCommentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HealthCommentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a HealthComment.
+     * @param {HealthCommentDeleteArgs} args - Arguments to delete one HealthComment.
+     * @example
+     * // Delete one HealthComment
+     * const HealthComment = await prisma.healthComment.delete({
+     *   where: {
+     *     // ... filter to delete one HealthComment
+     *   }
+     * })
+     * 
+     */
+    delete<T extends HealthCommentDeleteArgs>(args: SelectSubset<T, HealthCommentDeleteArgs<ExtArgs>>): Prisma__HealthCommentClient<$Result.GetResult<Prisma.$HealthCommentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one HealthComment.
+     * @param {HealthCommentUpdateArgs} args - Arguments to update one HealthComment.
+     * @example
+     * // Update one HealthComment
+     * const healthComment = await prisma.healthComment.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends HealthCommentUpdateArgs>(args: SelectSubset<T, HealthCommentUpdateArgs<ExtArgs>>): Prisma__HealthCommentClient<$Result.GetResult<Prisma.$HealthCommentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more HealthComments.
+     * @param {HealthCommentDeleteManyArgs} args - Arguments to filter HealthComments to delete.
+     * @example
+     * // Delete a few HealthComments
+     * const { count } = await prisma.healthComment.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends HealthCommentDeleteManyArgs>(args?: SelectSubset<T, HealthCommentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more HealthComments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthCommentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many HealthComments
+     * const healthComment = await prisma.healthComment.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends HealthCommentUpdateManyArgs>(args: SelectSubset<T, HealthCommentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more HealthComments and returns the data updated in the database.
+     * @param {HealthCommentUpdateManyAndReturnArgs} args - Arguments to update many HealthComments.
+     * @example
+     * // Update many HealthComments
+     * const healthComment = await prisma.healthComment.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more HealthComments and only return the `id`
+     * const healthCommentWithIdOnly = await prisma.healthComment.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends HealthCommentUpdateManyAndReturnArgs>(args: SelectSubset<T, HealthCommentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HealthCommentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one HealthComment.
+     * @param {HealthCommentUpsertArgs} args - Arguments to update or create a HealthComment.
+     * @example
+     * // Update or create a HealthComment
+     * const healthComment = await prisma.healthComment.upsert({
+     *   create: {
+     *     // ... data to create a HealthComment
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the HealthComment we want to update
+     *   }
+     * })
+     */
+    upsert<T extends HealthCommentUpsertArgs>(args: SelectSubset<T, HealthCommentUpsertArgs<ExtArgs>>): Prisma__HealthCommentClient<$Result.GetResult<Prisma.$HealthCommentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of HealthComments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthCommentCountArgs} args - Arguments to filter HealthComments to count.
+     * @example
+     * // Count the number of HealthComments
+     * const count = await prisma.healthComment.count({
+     *   where: {
+     *     // ... the filter for the HealthComments we want to count
+     *   }
+     * })
+    **/
+    count<T extends HealthCommentCountArgs>(
+      args?: Subset<T, HealthCommentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], HealthCommentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a HealthComment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthCommentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends HealthCommentAggregateArgs>(args: Subset<T, HealthCommentAggregateArgs>): Prisma.PrismaPromise<GetHealthCommentAggregateType<T>>
+
+    /**
+     * Group by HealthComment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HealthCommentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends HealthCommentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: HealthCommentGroupByArgs['orderBy'] }
+        : { orderBy?: HealthCommentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, HealthCommentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetHealthCommentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the HealthComment model
+   */
+  readonly fields: HealthCommentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for HealthComment.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__HealthCommentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    healthLog<T extends HealthLogDefaultArgs<ExtArgs> = {}>(args?: Subset<T, HealthLogDefaultArgs<ExtArgs>>): Prisma__HealthLogClient<$Result.GetResult<Prisma.$HealthLogPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the HealthComment model
+   */
+  interface HealthCommentFieldRefs {
+    readonly id: FieldRef<"HealthComment", 'String'>
+    readonly text: FieldRef<"HealthComment", 'String'>
+    readonly sender: FieldRef<"HealthComment", 'String'>
+    readonly healthLogId: FieldRef<"HealthComment", 'String'>
+    readonly createdAt: FieldRef<"HealthComment", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * HealthComment findUnique
+   */
+  export type HealthCommentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentInclude<ExtArgs> | null
+    /**
+     * Filter, which HealthComment to fetch.
+     */
+    where: HealthCommentWhereUniqueInput
+  }
+
+  /**
+   * HealthComment findUniqueOrThrow
+   */
+  export type HealthCommentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentInclude<ExtArgs> | null
+    /**
+     * Filter, which HealthComment to fetch.
+     */
+    where: HealthCommentWhereUniqueInput
+  }
+
+  /**
+   * HealthComment findFirst
+   */
+  export type HealthCommentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentInclude<ExtArgs> | null
+    /**
+     * Filter, which HealthComment to fetch.
+     */
+    where?: HealthCommentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HealthComments to fetch.
+     */
+    orderBy?: HealthCommentOrderByWithRelationInput | HealthCommentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for HealthComments.
+     */
+    cursor?: HealthCommentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HealthComments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HealthComments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of HealthComments.
+     */
+    distinct?: HealthCommentScalarFieldEnum | HealthCommentScalarFieldEnum[]
+  }
+
+  /**
+   * HealthComment findFirstOrThrow
+   */
+  export type HealthCommentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentInclude<ExtArgs> | null
+    /**
+     * Filter, which HealthComment to fetch.
+     */
+    where?: HealthCommentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HealthComments to fetch.
+     */
+    orderBy?: HealthCommentOrderByWithRelationInput | HealthCommentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for HealthComments.
+     */
+    cursor?: HealthCommentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HealthComments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HealthComments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of HealthComments.
+     */
+    distinct?: HealthCommentScalarFieldEnum | HealthCommentScalarFieldEnum[]
+  }
+
+  /**
+   * HealthComment findMany
+   */
+  export type HealthCommentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentInclude<ExtArgs> | null
+    /**
+     * Filter, which HealthComments to fetch.
+     */
+    where?: HealthCommentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of HealthComments to fetch.
+     */
+    orderBy?: HealthCommentOrderByWithRelationInput | HealthCommentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing HealthComments.
+     */
+    cursor?: HealthCommentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` HealthComments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` HealthComments.
+     */
+    skip?: number
+    distinct?: HealthCommentScalarFieldEnum | HealthCommentScalarFieldEnum[]
+  }
+
+  /**
+   * HealthComment create
+   */
+  export type HealthCommentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a HealthComment.
+     */
+    data: XOR<HealthCommentCreateInput, HealthCommentUncheckedCreateInput>
+  }
+
+  /**
+   * HealthComment createMany
+   */
+  export type HealthCommentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many HealthComments.
+     */
+    data: HealthCommentCreateManyInput | HealthCommentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * HealthComment createManyAndReturn
+   */
+  export type HealthCommentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * The data used to create many HealthComments.
+     */
+    data: HealthCommentCreateManyInput | HealthCommentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * HealthComment update
+   */
+  export type HealthCommentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a HealthComment.
+     */
+    data: XOR<HealthCommentUpdateInput, HealthCommentUncheckedUpdateInput>
+    /**
+     * Choose, which HealthComment to update.
+     */
+    where: HealthCommentWhereUniqueInput
+  }
+
+  /**
+   * HealthComment updateMany
+   */
+  export type HealthCommentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update HealthComments.
+     */
+    data: XOR<HealthCommentUpdateManyMutationInput, HealthCommentUncheckedUpdateManyInput>
+    /**
+     * Filter which HealthComments to update
+     */
+    where?: HealthCommentWhereInput
+    /**
+     * Limit how many HealthComments to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * HealthComment updateManyAndReturn
+   */
+  export type HealthCommentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * The data used to update HealthComments.
+     */
+    data: XOR<HealthCommentUpdateManyMutationInput, HealthCommentUncheckedUpdateManyInput>
+    /**
+     * Filter which HealthComments to update
+     */
+    where?: HealthCommentWhereInput
+    /**
+     * Limit how many HealthComments to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * HealthComment upsert
+   */
+  export type HealthCommentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the HealthComment to update in case it exists.
+     */
+    where: HealthCommentWhereUniqueInput
+    /**
+     * In case the HealthComment found by the `where` argument doesn't exist, create a new HealthComment with this data.
+     */
+    create: XOR<HealthCommentCreateInput, HealthCommentUncheckedCreateInput>
+    /**
+     * In case the HealthComment was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<HealthCommentUpdateInput, HealthCommentUncheckedUpdateInput>
+  }
+
+  /**
+   * HealthComment delete
+   */
+  export type HealthCommentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentInclude<ExtArgs> | null
+    /**
+     * Filter which HealthComment to delete.
+     */
+    where: HealthCommentWhereUniqueInput
+  }
+
+  /**
+   * HealthComment deleteMany
+   */
+  export type HealthCommentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which HealthComments to delete
+     */
+    where?: HealthCommentWhereInput
+    /**
+     * Limit how many HealthComments to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * HealthComment without action
+   */
+  export type HealthCommentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the HealthComment
+     */
+    select?: HealthCommentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the HealthComment
+     */
+    omit?: HealthCommentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HealthCommentInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -19299,6 +21696,30 @@ export namespace Prisma {
   };
 
   export type GeminiKeyScalarFieldEnum = (typeof GeminiKeyScalarFieldEnum)[keyof typeof GeminiKeyScalarFieldEnum]
+
+
+  export const HealthLogScalarFieldEnum: {
+    id: 'id',
+    role: 'role',
+    date: 'date',
+    water: 'water',
+    meals: 'meals',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type HealthLogScalarFieldEnum = (typeof HealthLogScalarFieldEnum)[keyof typeof HealthLogScalarFieldEnum]
+
+
+  export const HealthCommentScalarFieldEnum: {
+    id: 'id',
+    text: 'text',
+    sender: 'sender',
+    healthLogId: 'healthLogId',
+    createdAt: 'createdAt'
+  };
+
+  export type HealthCommentScalarFieldEnum = (typeof HealthCommentScalarFieldEnum)[keyof typeof HealthCommentScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -20498,6 +22919,129 @@ export namespace Prisma {
     errorMessage?: StringNullableWithAggregatesFilter<"GeminiKey"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"GeminiKey"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"GeminiKey"> | Date | string
+  }
+
+  export type HealthLogWhereInput = {
+    AND?: HealthLogWhereInput | HealthLogWhereInput[]
+    OR?: HealthLogWhereInput[]
+    NOT?: HealthLogWhereInput | HealthLogWhereInput[]
+    id?: StringFilter<"HealthLog"> | string
+    role?: StringFilter<"HealthLog"> | string
+    date?: StringFilter<"HealthLog"> | string
+    water?: IntFilter<"HealthLog"> | number
+    meals?: JsonNullableFilter<"HealthLog">
+    createdAt?: DateTimeFilter<"HealthLog"> | Date | string
+    updatedAt?: DateTimeFilter<"HealthLog"> | Date | string
+    comments?: HealthCommentListRelationFilter
+  }
+
+  export type HealthLogOrderByWithRelationInput = {
+    id?: SortOrder
+    role?: SortOrder
+    date?: SortOrder
+    water?: SortOrder
+    meals?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    comments?: HealthCommentOrderByRelationAggregateInput
+  }
+
+  export type HealthLogWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    role_date?: HealthLogRoleDateCompoundUniqueInput
+    AND?: HealthLogWhereInput | HealthLogWhereInput[]
+    OR?: HealthLogWhereInput[]
+    NOT?: HealthLogWhereInput | HealthLogWhereInput[]
+    role?: StringFilter<"HealthLog"> | string
+    date?: StringFilter<"HealthLog"> | string
+    water?: IntFilter<"HealthLog"> | number
+    meals?: JsonNullableFilter<"HealthLog">
+    createdAt?: DateTimeFilter<"HealthLog"> | Date | string
+    updatedAt?: DateTimeFilter<"HealthLog"> | Date | string
+    comments?: HealthCommentListRelationFilter
+  }, "id" | "role_date">
+
+  export type HealthLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    role?: SortOrder
+    date?: SortOrder
+    water?: SortOrder
+    meals?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: HealthLogCountOrderByAggregateInput
+    _avg?: HealthLogAvgOrderByAggregateInput
+    _max?: HealthLogMaxOrderByAggregateInput
+    _min?: HealthLogMinOrderByAggregateInput
+    _sum?: HealthLogSumOrderByAggregateInput
+  }
+
+  export type HealthLogScalarWhereWithAggregatesInput = {
+    AND?: HealthLogScalarWhereWithAggregatesInput | HealthLogScalarWhereWithAggregatesInput[]
+    OR?: HealthLogScalarWhereWithAggregatesInput[]
+    NOT?: HealthLogScalarWhereWithAggregatesInput | HealthLogScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"HealthLog"> | string
+    role?: StringWithAggregatesFilter<"HealthLog"> | string
+    date?: StringWithAggregatesFilter<"HealthLog"> | string
+    water?: IntWithAggregatesFilter<"HealthLog"> | number
+    meals?: JsonNullableWithAggregatesFilter<"HealthLog">
+    createdAt?: DateTimeWithAggregatesFilter<"HealthLog"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"HealthLog"> | Date | string
+  }
+
+  export type HealthCommentWhereInput = {
+    AND?: HealthCommentWhereInput | HealthCommentWhereInput[]
+    OR?: HealthCommentWhereInput[]
+    NOT?: HealthCommentWhereInput | HealthCommentWhereInput[]
+    id?: StringFilter<"HealthComment"> | string
+    text?: StringFilter<"HealthComment"> | string
+    sender?: StringFilter<"HealthComment"> | string
+    healthLogId?: StringFilter<"HealthComment"> | string
+    createdAt?: DateTimeFilter<"HealthComment"> | Date | string
+    healthLog?: XOR<HealthLogScalarRelationFilter, HealthLogWhereInput>
+  }
+
+  export type HealthCommentOrderByWithRelationInput = {
+    id?: SortOrder
+    text?: SortOrder
+    sender?: SortOrder
+    healthLogId?: SortOrder
+    createdAt?: SortOrder
+    healthLog?: HealthLogOrderByWithRelationInput
+  }
+
+  export type HealthCommentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: HealthCommentWhereInput | HealthCommentWhereInput[]
+    OR?: HealthCommentWhereInput[]
+    NOT?: HealthCommentWhereInput | HealthCommentWhereInput[]
+    text?: StringFilter<"HealthComment"> | string
+    sender?: StringFilter<"HealthComment"> | string
+    healthLogId?: StringFilter<"HealthComment"> | string
+    createdAt?: DateTimeFilter<"HealthComment"> | Date | string
+    healthLog?: XOR<HealthLogScalarRelationFilter, HealthLogWhereInput>
+  }, "id">
+
+  export type HealthCommentOrderByWithAggregationInput = {
+    id?: SortOrder
+    text?: SortOrder
+    sender?: SortOrder
+    healthLogId?: SortOrder
+    createdAt?: SortOrder
+    _count?: HealthCommentCountOrderByAggregateInput
+    _max?: HealthCommentMaxOrderByAggregateInput
+    _min?: HealthCommentMinOrderByAggregateInput
+  }
+
+  export type HealthCommentScalarWhereWithAggregatesInput = {
+    AND?: HealthCommentScalarWhereWithAggregatesInput | HealthCommentScalarWhereWithAggregatesInput[]
+    OR?: HealthCommentScalarWhereWithAggregatesInput[]
+    NOT?: HealthCommentScalarWhereWithAggregatesInput | HealthCommentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"HealthComment"> | string
+    text?: StringWithAggregatesFilter<"HealthComment"> | string
+    sender?: StringWithAggregatesFilter<"HealthComment"> | string
+    healthLogId?: StringWithAggregatesFilter<"HealthComment"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"HealthComment"> | Date | string
   }
 
   export type ApiKeyCreateInput = {
@@ -21714,6 +24258,135 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type HealthLogCreateInput = {
+    id?: string
+    role: string
+    date: string
+    water?: number
+    meals?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    comments?: HealthCommentCreateNestedManyWithoutHealthLogInput
+  }
+
+  export type HealthLogUncheckedCreateInput = {
+    id?: string
+    role: string
+    date: string
+    water?: number
+    meals?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    comments?: HealthCommentUncheckedCreateNestedManyWithoutHealthLogInput
+  }
+
+  export type HealthLogUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    date?: StringFieldUpdateOperationsInput | string
+    water?: IntFieldUpdateOperationsInput | number
+    meals?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    comments?: HealthCommentUpdateManyWithoutHealthLogNestedInput
+  }
+
+  export type HealthLogUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    date?: StringFieldUpdateOperationsInput | string
+    water?: IntFieldUpdateOperationsInput | number
+    meals?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    comments?: HealthCommentUncheckedUpdateManyWithoutHealthLogNestedInput
+  }
+
+  export type HealthLogCreateManyInput = {
+    id?: string
+    role: string
+    date: string
+    water?: number
+    meals?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HealthLogUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    date?: StringFieldUpdateOperationsInput | string
+    water?: IntFieldUpdateOperationsInput | number
+    meals?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HealthLogUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    date?: StringFieldUpdateOperationsInput | string
+    water?: IntFieldUpdateOperationsInput | number
+    meals?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HealthCommentCreateInput = {
+    id?: string
+    text: string
+    sender: string
+    createdAt?: Date | string
+    healthLog: HealthLogCreateNestedOneWithoutCommentsInput
+  }
+
+  export type HealthCommentUncheckedCreateInput = {
+    id?: string
+    text: string
+    sender: string
+    healthLogId: string
+    createdAt?: Date | string
+  }
+
+  export type HealthCommentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    healthLog?: HealthLogUpdateOneRequiredWithoutCommentsNestedInput
+  }
+
+  export type HealthCommentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    healthLogId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HealthCommentCreateManyInput = {
+    id?: string
+    text: string
+    sender: string
+    healthLogId: string
+    createdAt?: Date | string
+  }
+
+  export type HealthCommentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HealthCommentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    healthLogId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -22550,6 +25223,86 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type HealthCommentListRelationFilter = {
+    every?: HealthCommentWhereInput
+    some?: HealthCommentWhereInput
+    none?: HealthCommentWhereInput
+  }
+
+  export type HealthCommentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type HealthLogRoleDateCompoundUniqueInput = {
+    role: string
+    date: string
+  }
+
+  export type HealthLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    role?: SortOrder
+    date?: SortOrder
+    water?: SortOrder
+    meals?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type HealthLogAvgOrderByAggregateInput = {
+    water?: SortOrder
+  }
+
+  export type HealthLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    role?: SortOrder
+    date?: SortOrder
+    water?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type HealthLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    role?: SortOrder
+    date?: SortOrder
+    water?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type HealthLogSumOrderByAggregateInput = {
+    water?: SortOrder
+  }
+
+  export type HealthLogScalarRelationFilter = {
+    is?: HealthLogWhereInput
+    isNot?: HealthLogWhereInput
+  }
+
+  export type HealthCommentCountOrderByAggregateInput = {
+    id?: SortOrder
+    text?: SortOrder
+    sender?: SortOrder
+    healthLogId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type HealthCommentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    text?: SortOrder
+    sender?: SortOrder
+    healthLogId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type HealthCommentMinOrderByAggregateInput = {
+    id?: SortOrder
+    text?: SortOrder
+    sender?: SortOrder
+    healthLogId?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -22648,6 +25401,62 @@ export namespace Prisma {
     upsert?: ActivityUpsertWithoutCommentsInput
     connect?: ActivityWhereUniqueInput
     update?: XOR<XOR<ActivityUpdateToOneWithWhereWithoutCommentsInput, ActivityUpdateWithoutCommentsInput>, ActivityUncheckedUpdateWithoutCommentsInput>
+  }
+
+  export type HealthCommentCreateNestedManyWithoutHealthLogInput = {
+    create?: XOR<HealthCommentCreateWithoutHealthLogInput, HealthCommentUncheckedCreateWithoutHealthLogInput> | HealthCommentCreateWithoutHealthLogInput[] | HealthCommentUncheckedCreateWithoutHealthLogInput[]
+    connectOrCreate?: HealthCommentCreateOrConnectWithoutHealthLogInput | HealthCommentCreateOrConnectWithoutHealthLogInput[]
+    createMany?: HealthCommentCreateManyHealthLogInputEnvelope
+    connect?: HealthCommentWhereUniqueInput | HealthCommentWhereUniqueInput[]
+  }
+
+  export type HealthCommentUncheckedCreateNestedManyWithoutHealthLogInput = {
+    create?: XOR<HealthCommentCreateWithoutHealthLogInput, HealthCommentUncheckedCreateWithoutHealthLogInput> | HealthCommentCreateWithoutHealthLogInput[] | HealthCommentUncheckedCreateWithoutHealthLogInput[]
+    connectOrCreate?: HealthCommentCreateOrConnectWithoutHealthLogInput | HealthCommentCreateOrConnectWithoutHealthLogInput[]
+    createMany?: HealthCommentCreateManyHealthLogInputEnvelope
+    connect?: HealthCommentWhereUniqueInput | HealthCommentWhereUniqueInput[]
+  }
+
+  export type HealthCommentUpdateManyWithoutHealthLogNestedInput = {
+    create?: XOR<HealthCommentCreateWithoutHealthLogInput, HealthCommentUncheckedCreateWithoutHealthLogInput> | HealthCommentCreateWithoutHealthLogInput[] | HealthCommentUncheckedCreateWithoutHealthLogInput[]
+    connectOrCreate?: HealthCommentCreateOrConnectWithoutHealthLogInput | HealthCommentCreateOrConnectWithoutHealthLogInput[]
+    upsert?: HealthCommentUpsertWithWhereUniqueWithoutHealthLogInput | HealthCommentUpsertWithWhereUniqueWithoutHealthLogInput[]
+    createMany?: HealthCommentCreateManyHealthLogInputEnvelope
+    set?: HealthCommentWhereUniqueInput | HealthCommentWhereUniqueInput[]
+    disconnect?: HealthCommentWhereUniqueInput | HealthCommentWhereUniqueInput[]
+    delete?: HealthCommentWhereUniqueInput | HealthCommentWhereUniqueInput[]
+    connect?: HealthCommentWhereUniqueInput | HealthCommentWhereUniqueInput[]
+    update?: HealthCommentUpdateWithWhereUniqueWithoutHealthLogInput | HealthCommentUpdateWithWhereUniqueWithoutHealthLogInput[]
+    updateMany?: HealthCommentUpdateManyWithWhereWithoutHealthLogInput | HealthCommentUpdateManyWithWhereWithoutHealthLogInput[]
+    deleteMany?: HealthCommentScalarWhereInput | HealthCommentScalarWhereInput[]
+  }
+
+  export type HealthCommentUncheckedUpdateManyWithoutHealthLogNestedInput = {
+    create?: XOR<HealthCommentCreateWithoutHealthLogInput, HealthCommentUncheckedCreateWithoutHealthLogInput> | HealthCommentCreateWithoutHealthLogInput[] | HealthCommentUncheckedCreateWithoutHealthLogInput[]
+    connectOrCreate?: HealthCommentCreateOrConnectWithoutHealthLogInput | HealthCommentCreateOrConnectWithoutHealthLogInput[]
+    upsert?: HealthCommentUpsertWithWhereUniqueWithoutHealthLogInput | HealthCommentUpsertWithWhereUniqueWithoutHealthLogInput[]
+    createMany?: HealthCommentCreateManyHealthLogInputEnvelope
+    set?: HealthCommentWhereUniqueInput | HealthCommentWhereUniqueInput[]
+    disconnect?: HealthCommentWhereUniqueInput | HealthCommentWhereUniqueInput[]
+    delete?: HealthCommentWhereUniqueInput | HealthCommentWhereUniqueInput[]
+    connect?: HealthCommentWhereUniqueInput | HealthCommentWhereUniqueInput[]
+    update?: HealthCommentUpdateWithWhereUniqueWithoutHealthLogInput | HealthCommentUpdateWithWhereUniqueWithoutHealthLogInput[]
+    updateMany?: HealthCommentUpdateManyWithWhereWithoutHealthLogInput | HealthCommentUpdateManyWithWhereWithoutHealthLogInput[]
+    deleteMany?: HealthCommentScalarWhereInput | HealthCommentScalarWhereInput[]
+  }
+
+  export type HealthLogCreateNestedOneWithoutCommentsInput = {
+    create?: XOR<HealthLogCreateWithoutCommentsInput, HealthLogUncheckedCreateWithoutCommentsInput>
+    connectOrCreate?: HealthLogCreateOrConnectWithoutCommentsInput
+    connect?: HealthLogWhereUniqueInput
+  }
+
+  export type HealthLogUpdateOneRequiredWithoutCommentsNestedInput = {
+    create?: XOR<HealthLogCreateWithoutCommentsInput, HealthLogUncheckedCreateWithoutCommentsInput>
+    connectOrCreate?: HealthLogCreateOrConnectWithoutCommentsInput
+    upsert?: HealthLogUpsertWithoutCommentsInput
+    connect?: HealthLogWhereUniqueInput
+    update?: XOR<XOR<HealthLogUpdateToOneWithWhereWithoutCommentsInput, HealthLogUpdateWithoutCommentsInput>, HealthLogUncheckedUpdateWithoutCommentsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -23017,6 +25826,113 @@ export namespace Prisma {
     reactions?: NullableJsonNullValueInput | InputJsonValue
   }
 
+  export type HealthCommentCreateWithoutHealthLogInput = {
+    id?: string
+    text: string
+    sender: string
+    createdAt?: Date | string
+  }
+
+  export type HealthCommentUncheckedCreateWithoutHealthLogInput = {
+    id?: string
+    text: string
+    sender: string
+    createdAt?: Date | string
+  }
+
+  export type HealthCommentCreateOrConnectWithoutHealthLogInput = {
+    where: HealthCommentWhereUniqueInput
+    create: XOR<HealthCommentCreateWithoutHealthLogInput, HealthCommentUncheckedCreateWithoutHealthLogInput>
+  }
+
+  export type HealthCommentCreateManyHealthLogInputEnvelope = {
+    data: HealthCommentCreateManyHealthLogInput | HealthCommentCreateManyHealthLogInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type HealthCommentUpsertWithWhereUniqueWithoutHealthLogInput = {
+    where: HealthCommentWhereUniqueInput
+    update: XOR<HealthCommentUpdateWithoutHealthLogInput, HealthCommentUncheckedUpdateWithoutHealthLogInput>
+    create: XOR<HealthCommentCreateWithoutHealthLogInput, HealthCommentUncheckedCreateWithoutHealthLogInput>
+  }
+
+  export type HealthCommentUpdateWithWhereUniqueWithoutHealthLogInput = {
+    where: HealthCommentWhereUniqueInput
+    data: XOR<HealthCommentUpdateWithoutHealthLogInput, HealthCommentUncheckedUpdateWithoutHealthLogInput>
+  }
+
+  export type HealthCommentUpdateManyWithWhereWithoutHealthLogInput = {
+    where: HealthCommentScalarWhereInput
+    data: XOR<HealthCommentUpdateManyMutationInput, HealthCommentUncheckedUpdateManyWithoutHealthLogInput>
+  }
+
+  export type HealthCommentScalarWhereInput = {
+    AND?: HealthCommentScalarWhereInput | HealthCommentScalarWhereInput[]
+    OR?: HealthCommentScalarWhereInput[]
+    NOT?: HealthCommentScalarWhereInput | HealthCommentScalarWhereInput[]
+    id?: StringFilter<"HealthComment"> | string
+    text?: StringFilter<"HealthComment"> | string
+    sender?: StringFilter<"HealthComment"> | string
+    healthLogId?: StringFilter<"HealthComment"> | string
+    createdAt?: DateTimeFilter<"HealthComment"> | Date | string
+  }
+
+  export type HealthLogCreateWithoutCommentsInput = {
+    id?: string
+    role: string
+    date: string
+    water?: number
+    meals?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HealthLogUncheckedCreateWithoutCommentsInput = {
+    id?: string
+    role: string
+    date: string
+    water?: number
+    meals?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type HealthLogCreateOrConnectWithoutCommentsInput = {
+    where: HealthLogWhereUniqueInput
+    create: XOR<HealthLogCreateWithoutCommentsInput, HealthLogUncheckedCreateWithoutCommentsInput>
+  }
+
+  export type HealthLogUpsertWithoutCommentsInput = {
+    update: XOR<HealthLogUpdateWithoutCommentsInput, HealthLogUncheckedUpdateWithoutCommentsInput>
+    create: XOR<HealthLogCreateWithoutCommentsInput, HealthLogUncheckedCreateWithoutCommentsInput>
+    where?: HealthLogWhereInput
+  }
+
+  export type HealthLogUpdateToOneWithWhereWithoutCommentsInput = {
+    where?: HealthLogWhereInput
+    data: XOR<HealthLogUpdateWithoutCommentsInput, HealthLogUncheckedUpdateWithoutCommentsInput>
+  }
+
+  export type HealthLogUpdateWithoutCommentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    date?: StringFieldUpdateOperationsInput | string
+    water?: IntFieldUpdateOperationsInput | number
+    meals?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HealthLogUncheckedUpdateWithoutCommentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    date?: StringFieldUpdateOperationsInput | string
+    water?: IntFieldUpdateOperationsInput | number
+    meals?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ActivityCommentCreateManyActivityInput = {
     id?: string
     text: string
@@ -23039,6 +25955,34 @@ export namespace Prisma {
   }
 
   export type ActivityCommentUncheckedUpdateManyWithoutActivityInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HealthCommentCreateManyHealthLogInput = {
+    id?: string
+    text: string
+    sender: string
+    createdAt?: Date | string
+  }
+
+  export type HealthCommentUpdateWithoutHealthLogInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HealthCommentUncheckedUpdateWithoutHealthLogInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    sender?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HealthCommentUncheckedUpdateManyWithoutHealthLogInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     sender?: StringFieldUpdateOperationsInput | string

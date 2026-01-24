@@ -183,3 +183,25 @@ model GeminiKey {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+model HealthLog {
+  id        String   @id @default(cuid())
+  role      String   // sajid or nasywa
+  date      String   // YYYY-MM-DD (e.g., 2024-01-24)
+  water     Int      @default(0)
+  meals     Json?    // { breakfast: Meal, lunch: Meal, dinner: Meal, snacks: Meal[] }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  comments  HealthComment[]
+
+  @@unique([role, date])
+}
+
+model HealthComment {
+  id          String    @id @default(cuid())
+  text        String
+  sender      String    // sajid or nasywa
+  healthLogId String
+  healthLog   HealthLog @relation(fields: [healthLogId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+}
